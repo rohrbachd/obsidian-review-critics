@@ -82,18 +82,11 @@ Example Windows path:
 
 ## Screenshots
 
-Recommended: keep 2-4 key screenshots in the README, and put extended walkthrough images in docs.
-
-- Add screenshot files under `docs/screenshots/`
-- Follow file naming from [docs/screenshots/README.md](docs/screenshots/README.md)
-- Then embed images here, for example:
-
-```md
 ![Commands palette](docs/screenshots/commands-palette.png)
+
 ![Live Preview tokens](docs/screenshots/live-preview-tokens.png)
-![Comments pane](docs/screenshots/comments-pane.png)
+
 ![Settings tab](docs/screenshots/settings-tab.png)
-```
 
 ## Development
 
