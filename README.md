@@ -1,6 +1,10 @@
 # Review & Critic
 
-Review and comment on Markdown in Obsidian using CriticMarkup-style tokens.
+Review & Critic helps you edit and review notes collaboratively inside Obsidian without leaving Markdown.
+Use quick commands to mark additions, deletions, replacements, highlights, and inline comments, then review everything with clear visual rendering in Reading View and Live Preview.
+It is designed for drafting, peer review, and content polishing workflows where you want tracked-style edits while keeping your notes plain-text and portable.
+
+![Live Preview tokens](docs/screenshots/live-preview-tokens.png)
 
 ## Features
 
@@ -82,9 +86,15 @@ Example Windows path:
 
 ## Screenshots
 
+### Commands Palette
+
+Shows the plugin commands available in Obsidian's command palette (`Comment`, `Add`, `Delete`, `Highlight`, `Replace`, and `Comments Pane`).
+
 ![Commands palette](docs/screenshots/commands-palette.png)
 
-![Live Preview tokens](docs/screenshots/live-preview-tokens.png)
+### Settings Tab
+
+Shows configurable options for default author name, reading/live rendering toggles, and token color customization.
 
 ![Settings tab](docs/screenshots/settings-tab.png)
 
