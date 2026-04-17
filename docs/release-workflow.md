@@ -2,6 +2,22 @@
 
 This is the exact process to publish each new plugin release.
 
+```powershell
+.\scripts\release.ps1 -Type patch
+```
+
+or
+
+```powershell
+npm run release:auto -- patch
+```
+
+Supported types:
+
+patch (0.1.1 -> 0.1.2)
+minor (0.1.1 -> 0.2.0)
+major (1.1.4 -> 2.0.0)
+
 ## One-time Setup
 
 ### 1. Install GitHub CLI (`gh`)
