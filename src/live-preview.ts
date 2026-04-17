@@ -29,9 +29,10 @@ class CommentBadgeWidget extends WidgetType {
   toDOM(): HTMLElement {
     const element = document.createElement('span');
     element.className = 'review-comment-badge review-live-comment-badge';
-    element.textContent = '💬';
+    element.textContent = ReviewReadingViewText.COMMENT_BADGE;
     element.setAttribute('role', 'note');
     element.setAttribute('data-review-tooltip', this.tooltipText);
+    element.setAttribute('title', this.tooltipText);
     return element;
   }
 }

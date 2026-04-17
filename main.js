@@ -186,15 +186,15 @@ ReviewMarkupSyntax.SUBSTITUTION_MIDDLE = "~>";
 ReviewMarkupSyntax.SUBSTITUTION_SUFFIX = "~~}";
 var ReviewRegexPatterns = class {
 };
-ReviewRegexPatterns.ADDITION = /\{\+\+([\s\S]+?)\+\+\}/g;
-ReviewRegexPatterns.DELETION = /\{--([\s\S]+?)--\}/g;
-ReviewRegexPatterns.SUBSTITUTION = /\{~~([\s\S]+?)~>([\s\S]*?)~~\}/g;
-ReviewRegexPatterns.HIGHLIGHT = /\{==([\s\S]+?)==\}/g;
-ReviewRegexPatterns.COMMENT = /\{>>\s*(?:\[author=([^\]]+)\]\s*)?([\s\S]*?)\s*<<\}/g;
+ReviewRegexPatterns.ADDITION = /(?:\{\+\+|‹\+\+)([\s\S]+?)(?:\+\+\}|\+\+›)/g;
+ReviewRegexPatterns.DELETION = /(?:\{--|‹--)([\s\S]+?)(?:--\}|--›)/g;
+ReviewRegexPatterns.SUBSTITUTION = /(?:\{~~|‹~~)([\s\S]+?)~>([\s\S]*?)(?:~~\}|~~›)/g;
+ReviewRegexPatterns.HIGHLIGHT = /(?:\{==|‹==)([\s\S]+?)(?:==\}|==›)/g;
+ReviewRegexPatterns.COMMENT = /(?:\{>>|‹>>)\s*(?:\[author=([^\]]+)\]\s*)?([\s\S]*?)\s*(?:<<\}|<<›)/g;
 ReviewRegexPatterns.HEADING = /^(#{1,6})\s+(.+)$/;
 ReviewRegexPatterns.FENCE = /^\s*(```+|~~~+)/;
 ReviewRegexPatterns.ANCHORED_WHITESPACE = /^\s*$/;
-ReviewRegexPatterns.INLINE_TOKEN = /\{\+\+[\s\S]+?\+\+\}|\{--[\s\S]+?--\}|\{~~[\s\S]+?~>[\s\S]*?~~\}|\{==[\s\S]+?==\}|\{>>\s*(?:\[author=[^\]]+\]\s*)?[\s\S]*?\s*<<\}/;
+ReviewRegexPatterns.INLINE_TOKEN = /(?:\{\+\+|‹\+\+)[\s\S]+?(?:\+\+\}|\+\+›)|(?:\{--|‹--)[\s\S]+?(?:--\}|--›)|(?:\{~~|‹~~)[\s\S]+?~>[\s\S]*?(?:~~\}|~~›)|(?:\{==|‹==)[\s\S]+?(?:==\}|==›)|(?:\{>>|‹>>)\s*(?:\[author=[^\]]+\]\s*)?[\s\S]*?\s*(?:<<\}|<<›)/;
 
 // src/comments-view.ts
 var _ReviewCommentsView = class _ReviewCommentsView extends import_obsidian.ItemView {
@@ -241,11 +241,12 @@ var _ReviewCommentsView = class _ReviewCommentsView extends import_obsidian.Item
         attr: { type: "button" }
       });
       const heading = item.createEl("div", { cls: "review-comments-item-heading" });
-      heading.createSpan({ text: entry.author || ReviewCommentsPaneText.UNKNOWN_AUTHOR });
-      heading.createSpan({ text: `${ReviewCommentsPaneText.LINE_PREFIX}${entry.line}` });
+      heading.createSpan({
+        text: `${entry.author || ReviewCommentsPaneText.UNKNOWN_AUTHOR} \u2022 ${ReviewCommentsPaneText.LINE_PREFIX}${entry.line}`
+      });
       item.createEl("div", {
         cls: "review-comments-item-body",
-        text: entry.commentText || ReviewCommentsPaneText.EMPTY_COMMENT
+        text: `Comment: ${entry.commentText || ReviewCommentsPaneText.EMPTY_COMMENT}`
       });
       if (entry.highlightedText) {
         item.createEl("div", {
@@ -284,9 +285,10 @@ var CommentBadgeWidget = class extends import_view.WidgetType {
   toDOM() {
     const element = document.createElement("span");
     element.className = "review-comment-badge review-live-comment-badge";
-    element.textContent = "\u{1F4AC}";
+    element.textContent = ReviewReadingViewText.COMMENT_BADGE;
     element.setAttribute("role", "note");
     element.setAttribute("data-review-tooltip", this.tooltipText);
+    element.setAttribute("title", this.tooltipText);
     return element;
   }
 };
@@ -925,6 +927,8 @@ var ReviewReadingViewDecorator = class {
         const span = document.createElement("span");
         span.className = "review-token review-token-addition";
         span.textContent = token.text;
+        span.style.backgroundColor = "var(--review-preview-addition)";
+        span.style.color = "var(--review-preview-text-addition)";
         fragment.append(span);
         return;
       }
@@ -932,6 +936,9 @@ var ReviewReadingViewDecorator = class {
         const span = document.createElement("span");
         span.className = "review-token review-token-deletion";
         span.textContent = token.text;
+        span.style.backgroundColor = "var(--review-preview-deletion)";
+        span.style.color = "var(--review-preview-text-deletion)";
+        span.style.textDecoration = "line-through";
         fragment.append(span);
         return;
       }
@@ -941,12 +948,16 @@ var ReviewReadingViewDecorator = class {
         const oldElement = document.createElement("span");
         oldElement.className = "review-sub-old";
         oldElement.textContent = token.oldText;
+        oldElement.style.color = "var(--review-preview-text-deletion)";
+        oldElement.style.textDecoration = "line-through";
         const arrowElement = document.createElement("span");
         arrowElement.className = "review-sub-arrow";
         arrowElement.textContent = ReviewReadingViewText.SUBSTITUTION_ARROW;
         const newElement = document.createElement("span");
         newElement.className = "review-sub-new";
         newElement.textContent = token.newText;
+        newElement.style.color = "var(--review-preview-text-addition)";
+        newElement.style.fontWeight = "600";
         wrapper.append(oldElement, arrowElement, newElement);
         fragment.append(wrapper);
         return;
@@ -955,6 +966,8 @@ var ReviewReadingViewDecorator = class {
         const mark = document.createElement("mark");
         mark.className = "review-token review-token-highlight";
         mark.textContent = token.text;
+        mark.style.backgroundColor = "var(--review-preview-highlight)";
+        mark.style.color = "var(--review-preview-text-highlight)";
         fragment.append(mark);
         return;
       }
@@ -965,6 +978,7 @@ var ReviewReadingViewDecorator = class {
         commentBadge.setAttribute("role", "note");
         const tooltip = this.buildCommentTooltip(token.author, token.text);
         commentBadge.setAttribute("data-review-tooltip", tooltip);
+        commentBadge.setAttribute("title", tooltip);
         fragment.append(commentBadge);
         return;
       }
@@ -974,6 +988,9 @@ var ReviewReadingViewDecorator = class {
         highlight.textContent = token.highlightedText;
         const tooltip = this.buildCommentTooltip(token.author, token.commentText);
         highlight.setAttribute("data-review-tooltip", tooltip);
+        highlight.setAttribute("title", tooltip);
+        highlight.style.backgroundColor = "var(--review-preview-highlight)";
+        highlight.style.color = "var(--review-preview-text-highlight)";
         fragment.append(highlight);
         return;
       }

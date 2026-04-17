@@ -116,6 +116,36 @@ npm run release:check -- 0.1.0
 - Tag must exactly match `manifest.json` version (example: `0.1.0`, not `v0.1.0`)
 - GitHub release must include `manifest.json`, `main.js`, `styles.css` as assets
 
+## Automated Release Publish
+
+Prerequisites:
+
+- `gh` CLI installed (`https://cli.github.com/`)
+- `gh auth login` completed
+- clean git working tree (all changes committed)
+- `manifest.json` and `versions.json` already bumped to the target version
+
+Publish in one command:
+
+```powershell
+npm run release:publish
+```
+
+What it does:
+
+1. Runs `npm run build`
+2. Runs `npm run release:check -- <manifest-version>`
+3. Pushes your current branch to `origin`
+4. Creates and pushes git tag `<manifest-version>`
+5. Creates a GitHub release for that tag
+6. Uploads `manifest.json`, `main.js`, `styles.css` as release assets
+
+Optional explicit version arg:
+
+```powershell
+npm run release:publish:version -- 0.1.1
+```
+
 ## Project Docs
 
 - PRD: [docs/obsidian-review-plugin-prd.md](docs/obsidian-review-plugin-prd.md)

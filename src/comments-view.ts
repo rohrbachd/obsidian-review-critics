@@ -62,12 +62,13 @@ export class ReviewCommentsView extends ItemView {
       });
 
       const heading = item.createEl('div', { cls: 'review-comments-item-heading' });
-      heading.createSpan({ text: entry.author || ReviewCommentsPaneText.UNKNOWN_AUTHOR });
-      heading.createSpan({ text: `${ReviewCommentsPaneText.LINE_PREFIX}${entry.line}` });
+      heading.createSpan({
+        text: `${entry.author || ReviewCommentsPaneText.UNKNOWN_AUTHOR} • ${ReviewCommentsPaneText.LINE_PREFIX}${entry.line}`,
+      });
 
       item.createEl('div', {
         cls: 'review-comments-item-body',
-        text: entry.commentText || ReviewCommentsPaneText.EMPTY_COMMENT,
+        text: `Comment: ${entry.commentText || ReviewCommentsPaneText.EMPTY_COMMENT}`,
       });
 
       if (entry.highlightedText) {

@@ -187,15 +187,16 @@ export class ReviewMarkupSyntax {
 }
 
 export class ReviewRegexPatterns {
-  static readonly ADDITION = /\{\+\+([\s\S]+?)\+\+\}/g;
-  static readonly DELETION = /\{--([\s\S]+?)--\}/g;
-  static readonly SUBSTITUTION = /\{~~([\s\S]+?)~>([\s\S]*?)~~\}/g;
-  static readonly HIGHLIGHT = /\{==([\s\S]+?)==\}/g;
-  static readonly COMMENT = /\{>>\s*(?:\[author=([^\]]+)\]\s*)?([\s\S]*?)\s*<<\}/g;
+  static readonly ADDITION = /(?:\{\+\+|‹\+\+)([\s\S]+?)(?:\+\+\}|\+\+›)/g;
+  static readonly DELETION = /(?:\{--|‹--)([\s\S]+?)(?:--\}|--›)/g;
+  static readonly SUBSTITUTION = /(?:\{~~|‹~~)([\s\S]+?)~>([\s\S]*?)(?:~~\}|~~›)/g;
+  static readonly HIGHLIGHT = /(?:\{==|‹==)([\s\S]+?)(?:==\}|==›)/g;
+  static readonly COMMENT =
+    /(?:\{>>|‹>>)\s*(?:\[author=([^\]]+)\]\s*)?([\s\S]*?)\s*(?:<<\}|<<›)/g;
 
   static readonly HEADING = /^(#{1,6})\s+(.+)$/;
   static readonly FENCE = /^\s*(```+|~~~+)/;
   static readonly ANCHORED_WHITESPACE = /^\s*$/;
   static readonly INLINE_TOKEN =
-    /\{\+\+[\s\S]+?\+\+\}|\{--[\s\S]+?--\}|\{~~[\s\S]+?~>[\s\S]*?~~\}|\{==[\s\S]+?==\}|\{>>\s*(?:\[author=[^\]]+\]\s*)?[\s\S]*?\s*<<\}/;
+    /(?:\{\+\+|‹\+\+)[\s\S]+?(?:\+\+\}|\+\+›)|(?:\{--|‹--)[\s\S]+?(?:--\}|--›)|(?:\{~~|‹~~)[\s\S]+?~>[\s\S]*?(?:~~\}|~~›)|(?:\{==|‹==)[\s\S]+?(?:==\}|==›)|(?:\{>>|‹>>)\s*(?:\[author=[^\]]+\]\s*)?[\s\S]*?\s*(?:<<\}|<<›)/;
 }
