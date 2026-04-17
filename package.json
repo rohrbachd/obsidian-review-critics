@@ -18,6 +18,7 @@
     "test:perf": "vitest run tests/perf",
     "test": "npm run test:unit && npm run test:integration && npm run test:perf",
     "release:check": "node scripts/check-obsidian-release.mjs",
+    "release:auto": "node scripts/release.mjs",
     "release:publish": "node scripts/publish-github-release.mjs",
     "release:publish:version": "node scripts/publish-github-release.mjs"
   },

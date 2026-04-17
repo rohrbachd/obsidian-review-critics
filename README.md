@@ -120,30 +120,31 @@ npm run release:check -- 0.1.0
 
 Prerequisites:
 
-- `gh` CLI installed (`https://cli.github.com/`)
+- `gh` CLI installed
 - `gh auth login` completed
 - clean git working tree (all changes committed)
-- `manifest.json` and `versions.json` already bumped to the target version
 
-Publish in one command:
+Full setup + repeatable release steps: [docs/release-workflow.md](docs/release-workflow.md)
+
+One-command end-to-end release:
 
 ```powershell
-npm run release:publish
+.\scripts\release.ps1 -Type patch
 ```
 
 What it does:
 
-1. Runs `npm run build`
-2. Runs `npm run release:check -- <manifest-version>`
-3. Pushes your current branch to `origin`
-4. Creates and pushes git tag `<manifest-version>`
-5. Creates a GitHub release for that tag
-6. Uploads `manifest.json`, `main.js`, `styles.css` as release assets
+1. Bumps version files (`manifest.json`, `versions.json`, `package.json`)
+2. Commits release bump
+3. Builds + validates release assets
+4. Pushes `main`
+5. Tags and publishes GitHub release
+6. Uploads `manifest.json`, `main.js`, `styles.css`
 
-Optional explicit version arg:
+Alternative npm command:
 
 ```powershell
-npm run release:publish:version -- 0.1.1
+npm run release:auto -- patch
 ```
 
 ## Project Docs
@@ -152,4 +153,5 @@ npm run release:publish:version -- 0.1.1
 - Obsidian integration/testing: [docs/obsidian-integration-testing.md](docs/obsidian-integration-testing.md)
 - Feature usage: [docs/obsidian-feature-usage.md](docs/obsidian-feature-usage.md)
 - Publication prep: [docs/Obsidian Publication Guide.md](docs/Obsidian Publication Guide.md)
+- Release workflow: [docs/release-workflow.md](docs/release-workflow.md)
 - Screenshot capture guide: [docs/screenshots/README.md](docs/screenshots/README.md)

@@ -15,6 +15,7 @@ Use this checklist before submitting to `obsidianmd/obsidian-releases`.
 - [ ] `npm run lint`
 - [ ] `npm test`
 - [ ] `npm run release:check -- <version>`
+- [ ] Follow [release workflow](docs/release-workflow.md)
 
 ## Release
 
