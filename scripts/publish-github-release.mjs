@@ -5,7 +5,6 @@ import path from 'node:path';
 const repoRoot = process.cwd();
 const manifestPath = path.join(repoRoot, 'manifest.json');
 const releaseAssets = ['manifest.json', 'main.js', 'styles.css'];
-const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 function fail(message) {
   console.error(`[release-publish] ${message}`);
@@ -123,10 +122,10 @@ function main() {
   assertTagDoesNotExist(releaseVersion);
 
   console.log(`[release-publish] Building ${releaseVersion}...`);
-  run(npmCommand, ['run', 'build']);
+  run(process.execPath, ['esbuild.config.mjs', 'production']);
 
   console.log(`[release-publish] Validating release assets and version mapping...`);
-  run(npmCommand, ['run', 'release:check', '--', releaseVersion]);
+  run(process.execPath, ['scripts/check-obsidian-release.mjs', releaseVersion]);
 
   assertCleanWorkingTree();
 

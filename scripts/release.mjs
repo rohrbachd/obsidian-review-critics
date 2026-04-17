@@ -7,7 +7,6 @@ const manifestPath = path.join(repoRoot, 'manifest.json');
 const versionsPath = path.join(repoRoot, 'versions.json');
 const packagePath = path.join(repoRoot, 'package.json');
 const ALLOWED_TYPES = new Set(['patch', 'minor', 'major']);
-const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 function fail(message) {
   console.error(`[release-auto] ${message}`);
@@ -87,6 +86,19 @@ function bumpVersion(currentVersion, releaseType) {
   }
 
   fail(`Unsupported release type "${releaseType}".`);
+}
+
+function compareSemver(left, right) {
+  const a = parseSemver(left);
+  const b = parseSemver(right);
+
+  if (a.major !== b.major) {
+    return a.major - b.major;
+  }
+  if (a.minor !== b.minor) {
+    return a.minor - b.minor;
+  }
+  return a.patch - b.patch;
 }
 
 function ensureGhReady() {
@@ -180,7 +192,10 @@ function main() {
 
   const currentManifestVersion = manifest.version;
   const latestPublishedVersion = getLatestPublishedVersion();
-  const baseVersion = latestPublishedVersion ?? currentManifestVersion;
+  const baseVersion =
+    latestPublishedVersion && compareSemver(latestPublishedVersion, currentManifestVersion) > 0
+      ? latestPublishedVersion
+      : currentManifestVersion;
   const nextVersion = bumpVersion(baseVersion, releaseType);
 
   manifest.version = nextVersion;
@@ -217,7 +232,7 @@ function main() {
   }
 
   console.log(`[release-auto] Publishing ${nextVersion}...`);
-  run(npmCommand, ['run', 'release:publish:version', '--', nextVersion]);
+  run(process.execPath, ['scripts/publish-github-release.mjs', nextVersion]);
 
   console.log(`[release-auto] Done: ${nextVersion}`);
 }
