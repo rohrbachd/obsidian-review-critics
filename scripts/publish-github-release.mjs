@@ -5,6 +5,7 @@ import path from 'node:path';
 const repoRoot = process.cwd();
 const manifestPath = path.join(repoRoot, 'manifest.json');
 const releaseAssets = ['manifest.json', 'main.js', 'styles.css'];
+const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 function fail(message) {
   console.error(`[release-publish] ${message}`);
@@ -122,10 +123,10 @@ function main() {
   assertTagDoesNotExist(releaseVersion);
 
   console.log(`[release-publish] Building ${releaseVersion}...`);
-  run('npm', ['run', 'build']);
+  run(npmCommand, ['run', 'build']);
 
   console.log(`[release-publish] Validating release assets and version mapping...`);
-  run('npm', ['run', 'release:check', '--', releaseVersion]);
+  run(npmCommand, ['run', 'release:check', '--', releaseVersion]);
 
   assertCleanWorkingTree();
 

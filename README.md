@@ -134,12 +134,13 @@ One-command end-to-end release:
 
 What it does:
 
-1. Bumps version files (`manifest.json`, `versions.json`, `package.json`)
-2. Commits release bump
-3. Builds + validates release assets
-4. Pushes `main`
-5. Tags and publishes GitHub release
-6. Uploads `manifest.json`, `main.js`, `styles.css`
+1. Uses latest published GitHub release as version base
+2. Bumps version files (`manifest.json`, `versions.json`, `package.json`)
+3. Commits release bump (if needed)
+4. Builds + validates release assets
+5. Pushes `main`
+6. Tags and publishes GitHub release
+7. Uploads `manifest.json`, `main.js`, `styles.css`
 
 Alternative npm command:
 

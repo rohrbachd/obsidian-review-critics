@@ -87,7 +87,8 @@ Release types:
 
 1. Verifies you are on `main`
 2. Verifies clean working tree
-3. Bumps version in `manifest.json` and `package.json`
+3. Reads latest **published GitHub release** tag as release base
+4. Bumps version in `manifest.json` and `package.json`
 4. Updates `versions.json` for the new version
 5. Commits release bump (`release: <newVersion>`)
 6. Builds plugin artifacts
@@ -116,3 +117,4 @@ Check that the new release contains:
 - `gh auth` failure: run `gh auth login` again.
 - version mismatch error: ensure release version equals `manifest.json` version exactly.
 - `not on main`: checkout `main` and pull latest before running release.
+- publish failed before release creation: rerun the same command. The script derives next version from the latest published release, so it will not keep incrementing on retries.
