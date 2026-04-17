@@ -5,6 +5,5 @@
   "minAppVersion": "1.5.0",
   "description": "Review and CriticMarkup-style comments for Obsidian.",
   "author": "Daniel Rohrbach",
-  "authorUrl": "",
   "isDesktopOnly": false
 }

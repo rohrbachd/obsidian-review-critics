@@ -53,7 +53,7 @@ ReviewCommands.OPEN_COMMENTS_PANE_NAME = "Comments Pane";
 var ReviewSettingsText = class {
 };
 ReviewSettingsText.TAB_TITLE = "Review & CriticMarkup settings";
-ReviewSettingsText.PRD_REFERENCE = "PRD reference: docs/obsidian-review-plugin-prd.md";
+ReviewSettingsText.SETTINGS_DESCRIPTION = "Configure default author, rendering toggles, and token colors.";
 ReviewSettingsText.AUTHOR_NAME_LABEL = "Default Author Name";
 ReviewSettingsText.AUTHOR_NAME_PLACEHOLDER = "Your name";
 ReviewSettingsText.AUTHOR_NAME_DESCRIPTION = "Used when inserting comments.";
@@ -1290,7 +1290,7 @@ var ReviewSettingTab = class extends import_obsidian2.PluginSettingTab {
     containerEl.empty();
     containerEl.createEl("h2", { text: ReviewSettingsText.TAB_TITLE });
     containerEl.createEl("p", {
-      text: ReviewSettingsText.PRD_REFERENCE,
+      text: ReviewSettingsText.SETTINGS_DESCRIPTION,
       cls: ReviewCssClasses.SETTINGS_PRD_LINK
     });
     new import_obsidian2.Setting(containerEl).setName(ReviewSettingsText.AUTHOR_NAME_LABEL).setDesc(ReviewSettingsText.AUTHOR_NAME_DESCRIPTION).addText(

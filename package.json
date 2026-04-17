@@ -16,7 +16,8 @@
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
     "test:perf": "vitest run tests/perf",
-    "test": "npm run test:unit && npm run test:integration && npm run test:perf"
+    "test": "npm run test:unit && npm run test:integration && npm run test:perf",
+    "release:check": "node scripts/check-obsidian-release.mjs"
   },
   "keywords": [
     "obsidian",

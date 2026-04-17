@@ -381,7 +381,7 @@ class ReviewSettingTab extends PluginSettingTab {
 
     containerEl.createEl('h2', { text: ReviewSettingsText.TAB_TITLE });
     containerEl.createEl('p', {
-      text: ReviewSettingsText.PRD_REFERENCE,
+      text: ReviewSettingsText.SETTINGS_DESCRIPTION,
       cls: ReviewCssClasses.SETTINGS_PRD_LINK,
     });
 

@@ -30,7 +30,8 @@ export class ReviewCommands {
 
 export class ReviewSettingsText {
   static readonly TAB_TITLE = 'Review & CriticMarkup settings';
-  static readonly PRD_REFERENCE = 'PRD reference: docs/obsidian-review-plugin-prd.md';
+  static readonly SETTINGS_DESCRIPTION =
+    'Configure default author, rendering toggles, and token colors.';
 
   static readonly AUTHOR_NAME_LABEL = 'Default Author Name';
   static readonly AUTHOR_NAME_PLACEHOLDER = 'Your name';
