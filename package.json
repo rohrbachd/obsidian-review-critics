@@ -1,6 +1,6 @@
 {
   "name": "obsidian-review-comments",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Obsidian plugin for review comments and CriticMarkup-inspired editing.",
   "main": "main.js",
   "scripts": {
