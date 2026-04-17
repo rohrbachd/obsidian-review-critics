@@ -22,3 +22,21 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# 
+.codex
+.specify
+
+# Ignore build and dependency directories
+node_modules/
+dist/
+build/
+coverage/
+artifacts/metrics/*.json
+.env*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.tmp
+*.swp

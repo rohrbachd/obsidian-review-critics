@@ -1,0 +1,5 @@
+.specify/
+.codex/
+specs/
+tests/
+node_modules/

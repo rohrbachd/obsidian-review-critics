@@ -1,0 +1,182 @@
+openapi: 3.0.3
+info:
+  title: Obsidian Review Workflow Local Contract
+  version: 1.0.0
+  description: |
+    Contract-style description of plugin command and pane operations for planning and test design.
+servers:
+  - url: local://obsidian-plugin
+paths:
+  /commands/insert-comment:
+    post:
+      summary: Insert standalone comment at cursor
+      operationId: insertComment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                selectedText:
+                  type: string
+                  description: Optional text selection (ignored for this command)
+                authorName:
+                  type: string
+              required:
+                - authorName
+      responses:
+        '200':
+          description: Comment token inserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandResult'
+  /commands/add-comment-to-selection:
+    post:
+      summary: Wrap selected text with highlight and append adjacent comment
+      operationId: addCommentToSelection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - selectedText
+                - authorName
+              properties:
+                selectedText:
+                  type: string
+                  minLength: 1
+                authorName:
+                  type: string
+      responses:
+        '200':
+          description: Anchored pair inserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandResult'
+        '400':
+          description: Empty selection
+  /commands/mark-selection:
+    post:
+      summary: Mark selected text as addition/deletion/substitution
+      operationId: markSelection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - mode
+                - selectedText
+              properties:
+                mode:
+                  type: string
+                  enum: [addition, deletion, substitution]
+                selectedText:
+                  type: string
+                  minLength: 1
+      responses:
+        '200':
+          description: Selection marked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandResult'
+        '400':
+          description: Empty selection
+  /pane/comments:
+    get:
+      summary: List comments for active note
+      operationId: listCommentsForActiveNote
+      responses:
+        '200':
+          description: Active-note comments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notePath:
+                    type: string
+                  comments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CommentPaneEntry'
+  /commands/open-comments-pane:
+    post:
+      summary: Open or focus the comments pane
+      operationId: openCommentsPane
+      responses:
+        '200':
+          description: Comments pane is open and focused
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  viewType:
+                    type: string
+                    example: review-comments-pane
+  /pane/comments/navigate:
+    post:
+      summary: Navigate editor to comment source offset
+      operationId: navigateToComment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - from
+              properties:
+                from:
+                  type: integer
+                  minimum: 0
+      responses:
+        '200':
+          description: Editor cursor positioned
+components:
+  schemas:
+    CommandResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        insertedMarkup:
+          type: string
+    CommentPaneEntry:
+      type: object
+      required:
+        - id
+        - from
+        - to
+        - line
+        - heading
+        - commentText
+      properties:
+        id:
+          type: string
+        from:
+          type: integer
+        to:
+          type: integer
+        line:
+          type: integer
+        heading:
+          type: string
+        commentText:
+          type: string
+        author:
+          type: string
+          nullable: true
+        highlightedText:
+          type: string
+          nullable: true

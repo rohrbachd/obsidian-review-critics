@@ -1,0 +1,44 @@
+{
+  "name": "obsidian-review-comments",
+  "version": "0.1.0",
+  "description": "Obsidian plugin for review comments and CriticMarkup-inspired editing.",
+  "main": "main.js",
+  "scripts": {
+    "build": "node esbuild.config.mjs production",
+    "dev": "node esbuild.config.mjs",
+    "deploy": "node scripts/deploy-obsidian.mjs",
+    "deploy:build": "npm run build && npm run deploy --",
+    "check": "tsc --noEmit",
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "lint:fix": "npm run lint -- --fix",
+    "format": "prettier --write \"**/*.{ts,js,cjs,mjs,json,md,yml,yaml,css}\"",
+    "format:check": "prettier --check \"**/*.{ts,js,cjs,mjs,json,md,yml,yaml,css}\"",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:perf": "vitest run tests/perf",
+    "test": "npm run test:unit && npm run test:integration && npm run test:perf"
+  },
+  "keywords": [
+    "obsidian",
+    "obsidian-plugin",
+    "criticmarkup",
+    "review"
+  ],
+  "author": "Daniel Rohrbach",
+  "license": "MIT",
+  "dependencies": {
+    "obsidian": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@typescript-eslint/eslint-plugin": "^8.46.1",
+    "@typescript-eslint/parser": "^8.46.1",
+    "builtin-modules": "latest",
+    "esbuild": "latest",
+    "eslint": "^8.57.0",
+    "jsdom": "^28.1.0",
+    "prettier": "^3.6.2",
+    "typescript": "latest",
+    "vitest": "^3.2.4"
+  }
+}
