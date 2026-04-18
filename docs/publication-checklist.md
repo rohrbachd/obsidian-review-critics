@@ -6,7 +6,7 @@ Use this checklist before submitting to `obsidianmd/obsidian-releases`.
 
 - [ ] Public GitHub repository
 - [ ] Root files present: `README.md`, `manifest.json`, `versions.json`, `LICENSE`
-- [ ] Stable plugin id in `manifest.json` (`obsidian-review-comments`)
+- [ ] Stable plugin id in `manifest.json` (`review-critic`)
 - [ ] `manifest.json` and `versions.json` version mapping match
 
 ## Quality Gates

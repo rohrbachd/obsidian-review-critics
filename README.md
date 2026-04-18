@@ -73,7 +73,7 @@ Before acceptance (manual install from a GitHub release):
    - `styles.css`
 4. Open your vault folder on disk.
 5. Go to `.obsidian/plugins/` inside the vault.
-6. Create this folder: `.obsidian/plugins/obsidian-review-comments`
+6. Create this folder: `.obsidian/plugins/review-critic`
 7. Copy the three downloaded files into that folder.
 8. In Obsidian, open `Settings -> Community plugins`.
 9. If needed, turn off `Restricted mode`.
@@ -82,7 +82,7 @@ Before acceptance (manual install from a GitHub release):
 
 Example Windows path:
 
-`D:\YourVault\.obsidian\plugins\obsidian-review-comments`
+`D:\YourVault\.obsidian\plugins\review-critic`
 
 ## Screenshots
 

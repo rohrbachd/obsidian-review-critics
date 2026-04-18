@@ -49,7 +49,7 @@ export default class ReviewPlugin extends Plugin {
       try {
         this.readingViewDecorator.decorate(element, context, this.settings.enableReadingView);
       } catch (error) {
-        console.error('[obsidian-review-comments] Reading view decoration failed.', error);
+        console.error('[review-critic] Reading view decoration failed.', error);
       }
     });
 

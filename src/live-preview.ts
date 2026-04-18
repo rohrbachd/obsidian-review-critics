@@ -131,7 +131,7 @@ export class ReviewLivePreviewExtensionFactory {
       const text = view.state.doc.toString();
       tokens = parser.parseTokens(text);
     } catch (error) {
-      console.error('[obsidian-review-comments] Live Preview decoration failed.', error);
+      console.error('[review-critic] Live Preview decoration failed.', error);
       return builder.finish();
     }
 

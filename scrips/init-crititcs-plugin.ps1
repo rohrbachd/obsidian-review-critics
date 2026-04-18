@@ -1,9 +1,9 @@
 param(
     [Parameter(Mandatory = $false)]
-    [string]$ProjectRoot = ".\obsidian-review-comments",
+    [string]$ProjectRoot = ".\review-critic",
 
     [Parameter(Mandatory = $false)]
-    [string]$PluginId = "obsidian-review-comments",
+    [string]$PluginId = "review-critic",
 
     [Parameter(Mandatory = $false)]
     [string]$PluginName = "Review & CriticMarkup",

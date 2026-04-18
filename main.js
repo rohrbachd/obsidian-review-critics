@@ -356,7 +356,7 @@ var ReviewLivePreviewExtensionFactory = class _ReviewLivePreviewExtensionFactory
       const text = view.state.doc.toString();
       tokens = parser.parseTokens(text);
     } catch (error) {
-      console.error("[obsidian-review-comments] Live Preview decoration failed.", error);
+      console.error("[review-critic] Live Preview decoration failed.", error);
       return builder.finish();
     }
     const cursorOffset = view.state.selection.main.head;
@@ -1025,7 +1025,7 @@ var ReviewPlugin = class extends import_obsidian2.Plugin {
       try {
         this.readingViewDecorator.decorate(element, context, this.settings.enableReadingView);
       } catch (error) {
-        console.error("[obsidian-review-comments] Reading view decoration failed.", error);
+        console.error("[review-critic] Reading view decoration failed.", error);
       }
     });
     this.registerEditorExtension(

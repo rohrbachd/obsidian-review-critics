@@ -31,7 +31,7 @@ Do not copy the entire repository into the vault. Copy only the built runtime fi
 Target directory:
 
 ```text
-<VaultPath>/.obsidian/plugins/obsidian-review-comments
+<VaultPath>/.obsidian/plugins/review-critic
 ```
 
 Files to copy:
@@ -44,7 +44,7 @@ PowerShell example:
 
 ```powershell
 $vault = "D:\\Path\\To\\Your\\Vault"
-$pluginDir = Join-Path $vault ".obsidian\\plugins\\obsidian-review-comments"
+$pluginDir = Join-Path $vault ".obsidian\\plugins\\review-critic"
 New-Item -ItemType Directory -Force -Path $pluginDir | Out-Null
 Copy-Item .\\main.js, .\\manifest.json, .\\styles.css -Destination $pluginDir -Force
 ```
@@ -83,7 +83,7 @@ If Node still crashes for deploy, use direct copy fallback:
 
 ```powershell
 $vault = "D:\\Path\\To\\Your\\Vault"
-$pluginDir = Join-Path $vault ".obsidian\\plugins\\obsidian-review-comments"
+$pluginDir = Join-Path $vault ".obsidian\\plugins\\review-critic"
 New-Item -ItemType Directory -Force -Path $pluginDir | Out-Null
 Copy-Item .\\main.js, .\\manifest.json, .\\styles.css -Destination $pluginDir -Force
 ```
@@ -144,7 +144,7 @@ Use `npm run dev` while editing plugin code to rebuild quickly.
 ## 9. Troubleshooting
 
 - Plugin does not appear in Obsidian:
-  - Verify folder path is exactly `<Vault>/.obsidian/plugins/obsidian-review-comments`.
+  - Verify folder path is exactly `<Vault>/.obsidian/plugins/review-critic`.
   - Verify `manifest.json` and `main.js` exist in that folder.
 - Plugin appears but cannot be enabled:
   - Check Obsidian developer console for errors.
@@ -153,7 +153,7 @@ Use `npm run dev` while editing plugin code to rebuild quickly.
 - Plugin enables but notes do not open or render:
   - Open Obsidian developer tools:
     - `Ctrl+Shift+I` (Windows/Linux) or `Cmd+Option+I` (macOS)
-  - Go to `Console` and look for errors containing `obsidian-review-comments`.
+  - Go to `Console` and look for errors containing `review-critic`.
   - Disable this plugin and verify notes open again.
   - If notes recover, re-enable and capture the first stack trace from Console.
   - Deploy fresh build artifacts again:

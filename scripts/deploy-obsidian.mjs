@@ -2,7 +2,7 @@ import { copyFileSync, existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 
-const PLUGIN_ID = 'obsidian-review-comments';
+const PLUGIN_ID = 'review-critic';
 const REQUIRED_FILES = ['main.js', 'manifest.json', 'styles.css'];
 
 function resolveVaultPath() {
