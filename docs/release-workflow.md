@@ -89,15 +89,15 @@ Release types:
 2. Verifies clean working tree
 3. Reads latest **published GitHub release** and compares with local `manifest.json`
 4. Uses the higher version as release base (prevents downgrade on retries)
-4. Bumps version in `manifest.json` and `package.json`
-4. Updates `versions.json` for the new version
-5. Commits release bump (`release: <newVersion>`)
-6. Builds plugin artifacts
-7. Runs release validation checks
-8. Pushes `main` to `origin`
-9. Creates and pushes git tag `<newVersion>` (no `v`)
-10. Creates GitHub release `<newVersion>`
-11. Uploads `manifest.json`, `main.js`, `styles.css`
+5. Bumps version in `manifest.json` and `package.json`
+6. Updates `versions.json` for the new version
+7. Commits release bump (`release: <newVersion>`)
+8. Builds plugin artifacts
+9. Runs release validation checks
+10. Pushes `main` to `origin`
+11. Creates and pushes git tag `<newVersion>` (no `v`)
+12. Creates GitHub release `<newVersion>`
+13. Uploads `manifest.json`, `main.js`, `styles.css`
 
 ### 3. Verify on GitHub
 

@@ -58,7 +58,9 @@ for (const asset of requiredAssets) {
 
 if (releaseTag) {
   if (releaseTag.startsWith('v')) {
-    fail(`Release tag "${releaseTag}" is invalid. Use "${manifest.version}" without a leading "v".`);
+    fail(
+      `Release tag "${releaseTag}" is invalid. Use "${manifest.version}" without a leading "v".`
+    );
   }
 
   if (releaseTag !== manifest.version) {

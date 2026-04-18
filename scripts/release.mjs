@@ -114,7 +114,14 @@ function ensureGhReady() {
 }
 
 function getLatestPublishedVersion() {
-  const repoResult = runMaybe('gh', ['repo', 'view', '--json', 'nameWithOwner', '--jq', '.nameWithOwner']);
+  const repoResult = runMaybe('gh', [
+    'repo',
+    'view',
+    '--json',
+    'nameWithOwner',
+    '--jq',
+    '.nameWithOwner',
+  ]);
   if (repoResult.error || repoResult.status !== 0) {
     const detail = (repoResult.stderr || repoResult.stdout || '').trim();
     fail(`Could not resolve GitHub repository for this folder. ${detail}`);
@@ -228,7 +235,9 @@ function main() {
   if (stagedDiff.status !== 0) {
     run('git', ['commit', '-m', `release: ${nextVersion}`]);
   } else {
-    console.log(`[release-auto] Version files already set for ${nextVersion}; skipping bump commit.`);
+    console.log(
+      `[release-auto] Version files already set for ${nextVersion}; skipping bump commit.`
+    );
   }
 
   console.log(`[release-auto] Publishing ${nextVersion}...`);

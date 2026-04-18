@@ -27,10 +27,11 @@ A minimal release checklist is:
 manifest.json version = 0.1.0  
 versions.json includes "0.1.0": "<min-app-version>"  
 GitHub tag = 0.1.0  
-Release assets uploaded:  
-- manifest.json  
-- main.js  
-- styles.css   (if you use it)
+Release assets uploaded:
+
+- manifest.json
+- main.js
+- styles.css (if you use it)
 
 That exact asset set and tag format are what Obsidian expects.
 

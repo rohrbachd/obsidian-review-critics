@@ -191,8 +191,7 @@ export class ReviewRegexPatterns {
   static readonly DELETION = /(?:\{--|‹--)([\s\S]+?)(?:--\}|--›)/g;
   static readonly SUBSTITUTION = /(?:\{~~|‹~~)([\s\S]+?)~>([\s\S]*?)(?:~~\}|~~›)/g;
   static readonly HIGHLIGHT = /(?:\{==|‹==)([\s\S]+?)(?:==\}|==›)/g;
-  static readonly COMMENT =
-    /(?:\{>>|‹>>)\s*(?:\[author=([^\]]+)\]\s*)?([\s\S]*?)\s*(?:<<\}|<<›)/g;
+  static readonly COMMENT = /(?:\{>>|‹>>)\s*(?:\[author=([^\]]+)\]\s*)?([\s\S]*?)\s*(?:<<\}|<<›)/g;
 
   static readonly HEADING = /^(#{1,6})\s+(.+)$/;
   static readonly FENCE = /^\s*(```+|~~~+)/;
