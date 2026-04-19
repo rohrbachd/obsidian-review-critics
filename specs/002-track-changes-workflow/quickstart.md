@@ -62,6 +62,17 @@ Validate in this order:
     - built-in preset cannot be deleted
     - restart Obsidian and confirm persistence
 
+### SC-001 timed protocol
+
+Run this as a deterministic internal usability check:
+
+1. Open `tests/fixtures/track-changes-phase2.md` in Obsidian.
+2. Start a timer.
+3. Enable Track Changes Mode.
+4. Create one addition (no selection typing), one deletion, and one substitution.
+5. Stop the timer when all three are present as markup.
+6. Pass criterion: completed in under 2 minutes.
+
 ## 5. Regression checks
 
 - Existing reading view rendering still works.

@@ -91,11 +91,11 @@ As an author, I want to accept or reject tracked changes individually and accept
 
 ### User Story - Quick Review Actions in a Pane (Priority: P4)
 
-As an author, I want a pane with quick-action buttons for addition, deletion, highlight, and comment insertion so that I can apply common review markup at the current cursor position or current selection without opening the command palette each time.
+As an author, I want a pane with quick-action buttons for addition, deletion, highlight, replacement, and comment insertion so that I can apply common review markup at the current cursor position or current selection without opening the command palette each time.
 
 **Why this priority**: Quick buttons reduce friction for repeated review actions and make the plugin usable as an always-visible editing toolbar.
 
-**Independent Test**: Can be tested by opening the quick actions pane, placing the cursor or selecting text in a note, pressing each quick-action button, and verifying that the expected review markup is inserted or applied at the active editor location.
+**Independent Test**: Can be tested by opening the quick actions pane, placing the cursor or selecting text in a note, pressing each quick-action button (including replacement), and verifying that the expected review markup is inserted or applied at the active editor location.
 
 **Acceptance Scenarios**:
 
@@ -198,13 +198,13 @@ As a user, I want to save named color themes and switch between them so that I c
 - **FR-020**: Rejecting an addition MUST remove the inserted text and addition markers.
 - **FR-021**: The system MUST provide a changes pane for the active note.
 - **FR-022**: The changes pane MUST list additions, deletions, and substitutions in the active note.
-- **FR-023**: Each changes pane item MUST show change type, affected text, approximate location, and relevant context.
+- **FR-023**: Each changes pane item MUST show change type, affected text, location as nearest heading plus 1-based line number, and a short context snippet.
 - **FR-024**: Selecting a changes pane item MUST navigate to the corresponding source location.
 - **FR-025**: Users MUST be able to accept or reject individual changes from the changes pane.
 - **FR-026**: The changes pane MUST provide an accept-all action for the current note.
 - **FR-027**: The changes pane MUST show a clear empty state when no tracked changes are present.
 - **FR-028**: The system MUST provide a visible quick actions pane or toolbar for common review actions.
-- **FR-029**: The quick actions UI MUST include buttons for addition, deletion, highlight, and comment insertion.
+- **FR-029**: The quick actions UI MUST include buttons for addition, deletion, highlight, replacement, and comment insertion.
 - **FR-030**: Pressing a quick-action button MUST apply the action to the current selection when text is selected.
 - **FR-031**: Pressing the Add quick-action button with no text selected MUST insert empty addition markup and place the cursor where added text should be typed.
 - **FR-032**: Pressing the Comment quick-action button with no text selected MUST insert an empty comment at the cursor using the configured author when available.
@@ -242,11 +242,11 @@ As a user, I want to save named color themes and switch between them so that I c
 
 ### Measurable Outcomes
 
-- **SC-001**: In usability testing, users can enable Track Changes Mode and create an addition, deletion, and substitution in under 2 minutes without reading documentation.
+- **SC-001**: In a timed internal validation run using a predefined checklist and fixture note, a tester can enable Track Changes Mode and create an addition, deletion, and substitution in under 2 minutes.
 - **SC-002**: For common notes under 10,000 words, users can type with Track Changes Mode enabled without perceivable editing delay in normal use.
 - **SC-003**: Users can accept all tracked changes in a note containing 50 changes in under 10 seconds.
 - **SC-004**: Users can locate and navigate to any tracked change in the active note from the changes pane in under 5 seconds.
-- **SC-005**: Users can apply addition, deletion, highlight, and comment quick actions from the pane without opening the command palette in 100% of manual quick-action test scenarios.
+- **SC-005**: Users can apply addition, deletion, highlight, replacement, and comment quick actions from the pane without opening the command palette in 100% of manual quick-action test scenarios.
 - **SC-006**: Accepted-text display accurately represents accepted output for additions, deletions, and substitutions while keeping comments visible in 100% of defined acceptance test fixtures.
 - **SC-007**: Theme presets survive restart, restore selected colors, and handle duplicate-name overwrite prompts in 100% of persistence and naming tests.
 - **SC-008**: No test fixture for tracked editing, accept-all, quick actions, or comment cleanup results in silent content loss outside the intended change resolution.
