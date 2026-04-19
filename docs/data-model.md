@@ -25,6 +25,46 @@ This document defines the canonical conceptual model for review workflow feature
   - `commentText`
   - optional `author`
   - optional `highlightedText`
+  - optional `isAnchored`
+  - optional `canResolve`
+
+## Entity: TrackedChangeEntry
+
+- Fields:
+  - `id`
+  - `type` (`addition` | `deletion` | `substitution`)
+  - `from`
+  - `to`
+  - `line`
+  - `heading`
+  - optional `text`
+  - optional `oldText`
+  - optional `newText`
+
+## Entity: QuickActionRequest
+
+- Fields:
+  - `action` (`add` | `delete` | `highlight` | `replace` | `comment`)
+  - `hasSelection`
+  - optional `selectionText`
+  - `cursorOffset`
+
+## Entity: ThemePreset
+
+- Fields:
+  - `id`
+  - `name` (case-insensitive unique)
+  - `previewColors` (`insert`, `addition`, `deletion`, `comment`, `highlight`)
+  - `editingColors` (`insert`, `addition`, `deletion`, `comment`, `highlight`)
+  - `previewTextColors` (`insert`, `addition`, `deletion`, `comment`, `highlight`)
+  - `editingTextColors` (`insert`, `addition`, `deletion`, `comment`, `highlight`)
+  - `isBuiltIn`
+
+## Entity: ThemePresetRegistry
+
+- Fields:
+  - `presets` (`ThemePreset[]`)
+  - optional `activePresetId`
 
 ## Entity: ReviewPluginSettings
 
@@ -32,8 +72,14 @@ This document defines the canonical conceptual model for review workflow feature
   - `authorName`
   - `enableReadingView`
   - `enableLivePreview`
+  - `trackChangesEnabled`
+  - `acceptedTextViewEnabled`
+  - optional `activeThemePresetId`
+  - `themePresets` (`ThemePreset[]`)
   - `previewColors` (`insert`, `addition`, `deletion`, `comment`, `highlight`)
   - `editingColors` (`insert`, `addition`, `deletion`, `comment`, `highlight`)
+  - `previewTextColors` (`insert`, `addition`, `deletion`, `comment`, `highlight`)
+  - `editingTextColors` (`insert`, `addition`, `deletion`, `comment`, `highlight`)
 
 ## Source of Record
 
