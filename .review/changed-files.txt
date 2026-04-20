@@ -1,0 +1,11 @@
+AGENTS.md
+docs/data-model.md
+docs/obsidian-review-plugin-prd-phase-2.md
+specs/002-track-changes-workflow/checklists/requirements.md
+specs/002-track-changes-workflow/contracts/openapi.yaml
+specs/002-track-changes-workflow/data-model.md
+specs/002-track-changes-workflow/plan.md
+specs/002-track-changes-workflow/quickstart.md
+specs/002-track-changes-workflow/research.md
+specs/002-track-changes-workflow/spec.md
+specs/002-track-changes-workflow/tasks.md

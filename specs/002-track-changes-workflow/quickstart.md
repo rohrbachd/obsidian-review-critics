@@ -79,3 +79,12 @@ Run this as a deterministic internal usability check:
 - Existing live preview decoration still works.
 - Existing comment parsing and navigation still work.
 - No performance regression during normal typing in common notes.
+
+## 6. Validation record
+
+- Date: 2026-04-19
+- Build/type check: pass
+- Lint: pass
+- Format check: pass
+- Automated tests: pass (unit/integration/perf)
+- Manual checklist: pending final human verification in Obsidian UI

@@ -1,18 +1,30 @@
 import { type MarkdownPostProcessorContext } from 'obsidian';
 import { ReviewReadingViewText } from './review-config';
+import { DisplayModeRenderer, type IDisplayModeRenderer } from './display-mode';
 import { ReviewSyntaxCatalog } from './review-constants';
 import type { IReviewParser, ReviewToken } from './review-types';
 
 export class ReviewReadingViewDecorator {
   private readonly parser: IReviewParser;
   private readonly syntax: ReviewSyntaxCatalog;
+  private readonly displayModeRenderer: IDisplayModeRenderer;
 
-  constructor(parser: IReviewParser, syntax?: ReviewSyntaxCatalog) {
+  constructor(
+    parser: IReviewParser,
+    syntax?: ReviewSyntaxCatalog,
+    displayModeRenderer?: IDisplayModeRenderer
+  ) {
     this.parser = parser;
     this.syntax = syntax ?? new ReviewSyntaxCatalog();
+    this.displayModeRenderer = displayModeRenderer ?? new DisplayModeRenderer();
   }
 
-  decorate(root: HTMLElement, _context: MarkdownPostProcessorContext, enabled: boolean): void {
+  decorate(
+    root: HTMLElement,
+    _context: MarkdownPostProcessorContext,
+    enabled: boolean,
+    acceptedTextViewEnabled = false
+  ): void {
     if (!enabled) {
       return;
     }
@@ -34,7 +46,7 @@ export class ReviewReadingViewDecorator {
         continue;
       }
 
-      const renderedFragment = this.renderInlineMarkup(sourceText);
+      const renderedFragment = this.renderInlineMarkup(sourceText, acceptedTextViewEnabled);
       if (!renderedFragment) {
         continue;
       }
@@ -43,7 +55,10 @@ export class ReviewReadingViewDecorator {
     }
   }
 
-  private renderInlineMarkup(input: string): DocumentFragment | null {
+  private renderInlineMarkup(
+    input: string,
+    acceptedTextViewEnabled: boolean
+  ): DocumentFragment | null {
     const tokens = this.parser
       .parseTokens(input)
       .filter((token) => token.from >= 0 && token.to <= input.length);
@@ -64,7 +79,7 @@ export class ReviewReadingViewDecorator {
         fragment.append(input.slice(cursor, token.from));
       }
 
-      this.appendTokenElement(fragment, token);
+      this.appendTokenElement(fragment, token, acceptedTextViewEnabled);
       cursor = token.to;
     }
 
@@ -75,9 +90,17 @@ export class ReviewReadingViewDecorator {
     return fragment;
   }
 
-  private appendTokenElement(fragment: DocumentFragment, token: ReviewToken): void {
+  private appendTokenElement(
+    fragment: DocumentFragment,
+    token: ReviewToken,
+    acceptedTextViewEnabled: boolean
+  ): void {
     switch (token.type) {
       case 'addition': {
+        if (acceptedTextViewEnabled) {
+          fragment.append(this.displayModeRenderer.renderAcceptedTextForToken(token));
+          return;
+        }
         const span = document.createElement('span');
         span.className = 'review-token review-token-addition';
         span.textContent = token.text;
@@ -87,6 +110,9 @@ export class ReviewReadingViewDecorator {
         return;
       }
       case 'deletion': {
+        if (acceptedTextViewEnabled) {
+          return;
+        }
         const span = document.createElement('span');
         span.className = 'review-token review-token-deletion';
         span.textContent = token.text;
@@ -97,6 +123,10 @@ export class ReviewReadingViewDecorator {
         return;
       }
       case 'substitution': {
+        if (acceptedTextViewEnabled) {
+          fragment.append(this.displayModeRenderer.renderAcceptedTextForToken(token));
+          return;
+        }
         const wrapper = document.createElement('span');
         wrapper.className = 'review-token review-token-substitution';
 
@@ -137,7 +167,6 @@ export class ReviewReadingViewDecorator {
 
         const tooltip = this.buildCommentTooltip(token.author, token.text);
         commentBadge.setAttribute('data-review-tooltip', tooltip);
-        commentBadge.setAttribute('title', tooltip);
 
         fragment.append(commentBadge);
         return;
@@ -150,7 +179,6 @@ export class ReviewReadingViewDecorator {
 
         const tooltip = this.buildCommentTooltip(token.author, token.commentText);
         highlight.setAttribute('data-review-tooltip', tooltip);
-        highlight.setAttribute('title', tooltip);
         highlight.style.backgroundColor = 'var(--review-preview-highlight)';
         highlight.style.color = 'var(--review-preview-text-highlight)';
 

@@ -252,3 +252,79 @@
   font-size: 0.9rem;
   color: var(--text-muted);
 }
+
+.review-changes-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.review-quick-actions-row,
+.review-changes-controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.review-pane-separator {
+  margin: 0.6rem 0 0.7rem;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.review-track-toggle {
+  font-weight: 600;
+}
+
+.review-changes-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.review-quick-actions-row,
+.review-changes-controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.review-track-toggle {
+  font-weight: 600;
+}
+
+.review-pane-separator {
+  margin: 0.5rem 0 0.75rem;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.review-changes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.review-changes-item {
+  appearance: none;
+  display: block;
+  text-align: left;
+  width: 100%;
+  min-height: 0;
+  height: auto;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  white-space: normal;
+  line-height: 1.35;
+}
+
+.review-changes-item:hover {
+  border-color: var(--interactive-accent);
+}
+
+.review-changes-item-actions {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0.35rem 0 0.6rem;
+}

@@ -17,4 +17,15 @@ describe('US3 rendering behavior', () => {
     expect(root.querySelector('.review-token-highlight')).toBeTruthy();
     expect(root.querySelector('.review-comment-badge, .review-token-has-tooltip')).toBeTruthy();
   });
+
+  it('keeps comments visible in accepted-text reading view', () => {
+    const root = document.createElement('div');
+    root.textContent = '{++a++}{--b--}{~~x~>y~~}{>> [author=A] c <<}';
+    decorator.decorate(root, {} as never, true, true);
+
+    expect(root.textContent).toContain('a');
+    expect(root.textContent).not.toContain('b');
+    expect(root.textContent).toContain('y');
+    expect(root.querySelector('.review-comment-badge')).toBeTruthy();
+  });
 });

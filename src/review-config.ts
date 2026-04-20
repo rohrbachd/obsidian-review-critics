@@ -1,7 +1,9 @@
-import type { ReviewColorSettings, ReviewPluginSettings } from './review-types';
+import type { ReviewColorSettings, ReviewPluginSettings, ThemePreset } from './review-types';
 
 export class ReviewViewIds {
   static readonly COMMENTS_PANE = 'review-comments-pane';
+  static readonly CHANGES_PANE = 'review-changes-pane';
+  static readonly QUICK_ACTIONS_PANE = 'review-quick-actions-pane';
   static readonly MARKDOWN = 'markdown';
 }
 
@@ -26,6 +28,27 @@ export class ReviewCommands {
 
   static readonly OPEN_COMMENTS_PANE_ID = 'open-review-comments-pane';
   static readonly OPEN_COMMENTS_PANE_NAME = 'Comments Pane';
+
+  static readonly OPEN_CHANGES_PANE_ID = 'open-review-changes-pane';
+  static readonly OPEN_CHANGES_PANE_NAME = 'Changes Pane';
+
+  static readonly OPEN_QUICK_ACTIONS_PANE_ID = 'open-review-quick-actions-pane';
+  static readonly OPEN_QUICK_ACTIONS_PANE_NAME = 'Quick Actions Pane';
+
+  static readonly TOGGLE_TRACK_CHANGES_ID = 'toggle-track-changes-mode';
+  static readonly TOGGLE_TRACK_CHANGES_NAME = 'Toggle Track Changes Mode';
+
+  static readonly TOGGLE_ACCEPTED_TEXT_VIEW_ID = 'toggle-accepted-text-view';
+  static readonly TOGGLE_ACCEPTED_TEXT_VIEW_NAME = 'Toggle Accepted Text View';
+
+  static readonly ACCEPT_ALL_CHANGES_ID = 'accept-all-tracked-changes';
+  static readonly ACCEPT_ALL_CHANGES_NAME = 'Accept All Tracked Changes';
+
+  static readonly ACCEPT_CHANGE_AT_CURSOR_ID = 'accept-tracked-change-at-cursor';
+  static readonly ACCEPT_CHANGE_AT_CURSOR_NAME = 'Accept Tracked Change At Cursor';
+
+  static readonly REJECT_CHANGE_AT_CURSOR_ID = 'reject-tracked-change-at-cursor';
+  static readonly REJECT_CHANGE_AT_CURSOR_NAME = 'Reject Tracked Change At Cursor';
 }
 
 export class ReviewSettingsText {
@@ -39,6 +62,8 @@ export class ReviewSettingsText {
 
   static readonly ENABLE_READING_LABEL = 'Enable Reading View Rendering';
   static readonly ENABLE_LIVE_LABEL = 'Enable Live Preview Decoration';
+  static readonly ENABLE_TRACK_CHANGES_LABEL = 'Enable Track Changes Mode';
+  static readonly ENABLE_ACCEPTED_TEXT_LABEL = 'Enable Accepted Text View';
 
   static readonly PREVIEW_COLORS_TITLE = 'Preview Mode Colors';
   static readonly EDITING_COLORS_TITLE = 'Editing Mode Colors';
@@ -51,12 +76,30 @@ export class ReviewSettingsText {
   static readonly COLOR_COMMENT_LABEL = 'Comment';
   static readonly COLOR_HIGHLIGHT_LABEL = 'Highlight';
   static readonly COLOR_DESCRIPTION = 'Hex color, e.g. #daf7dc';
+
+  static readonly THEMES_TITLE = 'Theme Presets';
+  static readonly THEME_ACTIVE_LABEL = 'Active Theme';
+  static readonly THEME_SAVE_NAME_LABEL = 'Theme Name';
+  static readonly THEME_SAVE_BUTTON_LABEL = 'Save Theme';
+  static readonly THEME_DELETE_LABEL = 'Delete Theme';
+  static readonly THEME_DELETE_BUTTON_LABEL = 'Delete Selected Theme';
 }
 
 export class ReviewNotices {
   static readonly SELECT_TEXT_FIRST = 'Select some text first.';
   static readonly SELECT_TEXT_FOR_SUBSTITUTION = 'Select text to mark as substitution.';
   static readonly COULD_NOT_OPEN_COMMENTS_PANE = 'Could not open comments pane.';
+  static readonly COULD_NOT_OPEN_CHANGES_PANE = 'Could not open changes pane.';
+  static readonly COULD_NOT_OPEN_QUICK_ACTIONS_PANE = 'Could not open quick actions pane.';
+  static readonly NO_ACTIVE_MARKDOWN_EDITOR = 'No active Markdown editor found.';
+  static readonly TRACK_CHANGES_ENABLED = 'Track Changes Mode enabled.';
+  static readonly TRACK_CHANGES_DISABLED = 'Track Changes Mode disabled.';
+  static readonly ACCEPTED_TEXT_VIEW_ENABLED = 'Accepted Text View enabled.';
+  static readonly ACCEPTED_TEXT_VIEW_DISABLED = 'Accepted Text View disabled.';
+  static readonly THEME_SAVED = 'Theme preset saved.';
+  static readonly THEME_DELETED = 'Theme preset deleted.';
+  static readonly THEME_DUPLICATE = 'Theme name exists. Overwrite enabled for this save.';
+  static readonly THEME_DELETE_BLOCKED = 'Built-in presets cannot be deleted.';
 }
 
 export class ReviewCssClasses {
@@ -79,6 +122,19 @@ export class ReviewCommentsPaneText {
   static readonly SNIPPET_PREFIX = 'On: "';
   static readonly SNIPPET_SUFFIX = '"';
   static readonly SECTION_PREFIX = 'Section: ';
+}
+
+export class ReviewChangesPaneText {
+  static readonly DISPLAY_TEXT = 'Tracked changes';
+  static readonly ICON = 'git-compare';
+  static readonly TITLE = 'Changes in current note';
+  static readonly EMPTY_STATE = 'No tracked changes found in this note.';
+}
+
+export class ReviewQuickActionsPaneText {
+  static readonly DISPLAY_TEXT = 'Quick actions';
+  static readonly ICON = 'mouse-pointer-click';
+  static readonly TITLE = 'Quick actions';
 }
 
 export class ReviewWorkspaceEvents {
@@ -115,6 +171,8 @@ export class ReviewCssVariables {
 
 export class ReviewDefaults {
   static readonly AUTHOR_NAME = 'Daniel Rohrbach';
+  static readonly DEFAULT_THEME_PRESET_ID = 'default';
+  static readonly DEFAULT_THEME_PRESET_NAME = 'Default';
 
   static createDefaultColors(): ReviewColorSettings {
     return {
@@ -139,16 +197,35 @@ export class ReviewDefaults {
   static createDefaultSettings(): ReviewPluginSettings {
     const colors = ReviewDefaults.createDefaultColors();
     const textColors = ReviewDefaults.createDefaultTextColors();
+    const presets = ReviewDefaults.createDefaultThemePresets();
 
     return {
       authorName: ReviewDefaults.AUTHOR_NAME,
       enableReadingView: true,
       enableLivePreview: true,
+      trackChangesEnabled: false,
+      acceptedTextViewEnabled: false,
+      themePresets: presets,
+      activeThemePresetId: ReviewDefaults.DEFAULT_THEME_PRESET_ID,
       previewColors: { ...colors },
       editingColors: { ...colors },
       previewTextColors: { ...textColors },
       editingTextColors: { ...textColors },
     };
+  }
+
+  static createDefaultThemePresets(): ThemePreset[] {
+    return [
+      {
+        id: ReviewDefaults.DEFAULT_THEME_PRESET_ID,
+        name: ReviewDefaults.DEFAULT_THEME_PRESET_NAME,
+        isBuiltIn: true,
+        previewColors: ReviewDefaults.createDefaultColors(),
+        editingColors: ReviewDefaults.createDefaultColors(),
+        previewTextColors: ReviewDefaults.createDefaultTextColors(),
+        editingTextColors: ReviewDefaults.createDefaultTextColors(),
+      },
+    ];
   }
 }
 

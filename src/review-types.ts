@@ -68,12 +68,57 @@ export interface CommentPaneEntry {
   commentText: string;
   author?: string;
   highlightedText?: string;
+  isAnchored?: boolean;
+  canResolve?: boolean;
+  commentFrom?: number;
+  commentTo?: number;
+}
+
+export type TrackedChangeType = 'addition' | 'deletion' | 'substitution';
+
+export interface TrackedChangeEntry {
+  id: string;
+  type: TrackedChangeType;
+  from: number;
+  to: number;
+  line: number;
+  heading: string;
+  context: string;
+  text?: string;
+  oldText?: string;
+  newText?: string;
+}
+
+export type QuickActionType = 'add' | 'delete' | 'highlight' | 'replace' | 'comment';
+
+export interface QuickActionRequest {
+  action: QuickActionType;
+  hasSelection: boolean;
+  selectionText?: string;
+  cursorOffset: number;
+}
+
+export interface ThemePresetPayload {
+  previewColors: ReviewColorSettings;
+  editingColors: ReviewColorSettings;
+  previewTextColors: ReviewColorSettings;
+  editingTextColors: ReviewColorSettings;
+}
+
+export interface ThemePreset extends ThemePresetPayload {
+  id: string;
+  name: string;
+  isBuiltIn: boolean;
 }
 
 export interface ReviewPluginSettings {
   authorName: string;
   enableReadingView: boolean;
   enableLivePreview: boolean;
+  trackChangesEnabled: boolean;
+  acceptedTextViewEnabled: boolean;
+  themePresets: ThemePreset[];
+  activeThemePresetId?: string;
   previewColors: ReviewColorSettings;
   editingColors: ReviewColorSettings;
   previewTextColors: ReviewColorSettings;
@@ -98,4 +143,5 @@ export interface IReviewMarkupBuilder {
 export interface IReviewParser {
   parseTokens(content: string): ReviewToken[];
   buildCommentEntries(content: string): CommentPaneEntry[];
+  buildTrackedChangeEntries(content: string): TrackedChangeEntry[];
 }

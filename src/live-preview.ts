@@ -8,6 +8,7 @@ import {
   WidgetType,
 } from '@codemirror/view';
 import { ReviewReadingViewText } from './review-config';
+import { DisplayModeRenderer, type IDisplayModeRenderer } from './display-mode';
 import type { IReviewParser } from './review-types';
 
 class HiddenDelimiterWidget extends WidgetType {
@@ -32,7 +33,6 @@ class CommentBadgeWidget extends WidgetType {
     element.textContent = ReviewReadingViewText.COMMENT_BADGE;
     element.setAttribute('role', 'note');
     element.setAttribute('data-review-tooltip', this.tooltipText);
-    element.setAttribute('title', this.tooltipText);
     return element;
   }
 }
@@ -68,17 +68,36 @@ class SubstitutionWidget extends WidgetType {
   }
 }
 
-export class ReviewLivePreviewExtensionFactory {
-  private readonly parser: IReviewParser;
-  private readonly hiddenDelimiterWidget = new HiddenDelimiterWidget();
+class PlainTextWidget extends WidgetType {
+  private readonly text: string;
 
-  constructor(parser: IReviewParser) {
-    this.parser = parser;
+  constructor(text: string) {
+    super();
+    this.text = text;
   }
 
-  createExtension(isEnabled: () => boolean) {
+  toDOM(): HTMLElement {
+    const element = document.createElement('span');
+    element.textContent = this.text;
+    return element;
+  }
+}
+
+export class ReviewLivePreviewExtensionFactory {
+  private readonly parser: IReviewParser;
+  private readonly displayModeRenderer: IDisplayModeRenderer;
+  private readonly hiddenDelimiterWidget = new HiddenDelimiterWidget();
+
+  constructor(parser: IReviewParser, displayModeRenderer?: IDisplayModeRenderer) {
+    this.parser = parser;
+    this.displayModeRenderer = displayModeRenderer ?? new DisplayModeRenderer();
+  }
+
+  createExtension(isEnabled: () => boolean, isAcceptedTextViewEnabled?: () => boolean) {
     const parser = this.parser;
+    const displayModeRenderer = this.displayModeRenderer;
     const hiddenDelimiterWidget = this.hiddenDelimiterWidget;
+    const acceptedTextViewEnabled = isAcceptedTextViewEnabled ?? (() => false);
 
     class LivePreviewDecorations {
       decorations: DecorationSet;
@@ -87,7 +106,9 @@ export class ReviewLivePreviewExtensionFactory {
         this.decorations = ReviewLivePreviewExtensionFactory.buildDecorations(
           view,
           parser,
+          displayModeRenderer,
           isEnabled,
+          acceptedTextViewEnabled,
           hiddenDelimiterWidget
         );
       }
@@ -102,7 +123,9 @@ export class ReviewLivePreviewExtensionFactory {
           this.decorations = ReviewLivePreviewExtensionFactory.buildDecorations(
             update.view,
             parser,
+            displayModeRenderer,
             isEnabled,
+            acceptedTextViewEnabled,
             hiddenDelimiterWidget
           );
         }
@@ -117,7 +140,9 @@ export class ReviewLivePreviewExtensionFactory {
   private static buildDecorations(
     view: EditorView,
     parser: IReviewParser,
+    displayModeRenderer: IDisplayModeRenderer,
     isEnabled: () => boolean,
+    isAcceptedTextViewEnabled: () => boolean,
     hiddenDelimiterWidget: HiddenDelimiterWidget
   ): DecorationSet {
     const builder = new RangeSetBuilder<Decoration>();
@@ -136,8 +161,81 @@ export class ReviewLivePreviewExtensionFactory {
     }
 
     const cursorOffset = view.state.selection.main.head;
+    const acceptedTextMode = isAcceptedTextViewEnabled();
 
     for (const token of tokens) {
+      if (acceptedTextMode) {
+        switch (token.type) {
+          case 'addition':
+            ReviewLivePreviewExtensionFactory.addCriticTokenDecorations(
+              builder,
+              token.from,
+              token.to,
+              3,
+              3,
+              'review-live review-live-addition',
+              hiddenDelimiterWidget
+            );
+            break;
+          case 'deletion':
+            ReviewLivePreviewExtensionFactory.addHiddenRange(
+              builder,
+              token.from,
+              token.to,
+              hiddenDelimiterWidget
+            );
+            break;
+          case 'substitution':
+            builder.add(
+              token.from,
+              token.to,
+              Decoration.replace({
+                widget: new PlainTextWidget(displayModeRenderer.renderAcceptedTextForToken(token)),
+              })
+            );
+            break;
+          case 'highlight':
+            ReviewLivePreviewExtensionFactory.addCriticTokenDecorations(
+              builder,
+              token.from,
+              token.to,
+              3,
+              3,
+              'review-live review-live-highlight',
+              hiddenDelimiterWidget
+            );
+            break;
+          case 'comment':
+            ReviewLivePreviewExtensionFactory.addCommentBadge(
+              builder,
+              token.from,
+              token.to,
+              token.author,
+              token.text
+            );
+            break;
+          case 'anchoredComment':
+            ReviewLivePreviewExtensionFactory.addCriticTokenDecorations(
+              builder,
+              token.highlightRange.from,
+              token.highlightRange.to,
+              3,
+              3,
+              'review-live review-live-highlight review-live-anchored',
+              hiddenDelimiterWidget
+            );
+            ReviewLivePreviewExtensionFactory.addCommentBadge(
+              builder,
+              token.commentRange.from,
+              token.commentRange.to,
+              token.author,
+              token.commentText
+            );
+            break;
+        }
+        continue;
+      }
+
       const tokenIsActive = cursorOffset >= token.from && cursorOffset <= token.to;
 
       if (tokenIsActive) {

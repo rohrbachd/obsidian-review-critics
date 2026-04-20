@@ -19,4 +19,15 @@ describe('reading-view', () => {
     decorator.decorate(root, {} as never, false);
     expect(root.textContent).toContain('{++new++}');
   });
+
+  it('renders comment badge without native title tooltip', () => {
+    const root = document.createElement('div');
+    root.textContent = '{>> [author=Alex] Needs citation <<}';
+    decorator.decorate(root, {} as never, true);
+
+    const badge = root.querySelector('.review-comment-badge');
+    expect(badge).toBeTruthy();
+    expect(badge?.getAttribute('data-review-tooltip')).toContain('Alex');
+    expect(badge?.hasAttribute('title')).toBe(false);
+  });
 });

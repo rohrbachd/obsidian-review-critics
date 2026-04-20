@@ -1,3 +1,45 @@
+if (typeof document !== 'undefined') {
+  const proto = HTMLElement.prototype as any;
+  if (!proto.empty) {
+    proto.empty = function (): void {
+      this.innerHTML = '';
+    };
+  }
+  if (!proto.addClass) {
+    proto.addClass = function (cls: string): void {
+      this.classList.add(cls);
+    };
+  }
+  if (!proto.createEl) {
+    proto.createEl = function (tag: string, options?: any): HTMLElement {
+      const element = document.createElement(tag);
+      if (options?.text) {
+        element.textContent = options.text;
+      }
+      if (options?.cls) {
+        element.className = options.cls;
+      }
+      if (options?.attr) {
+        Object.entries(options.attr).forEach(([key, value]) => {
+          element.setAttribute(key, String(value));
+        });
+      }
+      this.appendChild(element);
+      return element;
+    };
+  }
+  if (!proto.createDiv) {
+    proto.createDiv = function (options?: any): HTMLDivElement {
+      return (this as any).createEl('div', options) as HTMLDivElement;
+    };
+  }
+  if (!proto.createSpan) {
+    proto.createSpan = function (options?: any): HTMLSpanElement {
+      return (this as any).createEl('span', options) as HTMLSpanElement;
+    };
+  }
+}
+
 export class Notice {
   constructor(_message: string) {}
 }
@@ -26,6 +68,9 @@ export class Plugin {
   addSettingTab(): void {}
   addCommand(): void {}
   registerEvent(): void {}
+  addStatusBarItem(): HTMLElement {
+    return document.createElement('div');
+  }
 }
 
 export class PluginSettingTab {
@@ -67,6 +112,23 @@ export class Setting {
     });
     return this;
   }
+  addDropdown(cb: (dropdown: any) => void): this {
+    cb({
+      addOption: () => {},
+      setValue: () => ({
+        onChange: () => {},
+      }),
+    });
+    return this;
+  }
+  addButton(cb: (button: any) => void): this {
+    cb({
+      setButtonText: () => ({
+        onClick: () => {},
+      }),
+    });
+    return this;
+  }
 }
 
 export class ItemView {
@@ -78,5 +140,10 @@ export class ItemView {
 }
 
 export interface App {}
-export interface WorkspaceLeaf {}
 export interface MarkdownPostProcessorContext {}
+
+export class WorkspaceLeaf {
+  view: any = { getViewType: () => 'markdown' };
+  async setViewState(): Promise<void> {}
+  async openFile(): Promise<void> {}
+}

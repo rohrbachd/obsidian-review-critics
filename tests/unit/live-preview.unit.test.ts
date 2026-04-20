@@ -8,4 +8,13 @@ describe('live-preview', () => {
     const ext = factory.createExtension(() => true);
     expect(ext).toBeDefined();
   });
+
+  it('creates extension with accepted-text mode callback', () => {
+    const factory = new ReviewLivePreviewExtensionFactory(new ReviewParser());
+    const ext = factory.createExtension(
+      () => true,
+      () => true
+    );
+    expect(ext).toBeDefined();
+  });
 });

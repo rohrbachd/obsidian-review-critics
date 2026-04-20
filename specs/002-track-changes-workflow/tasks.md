@@ -17,10 +17,10 @@
 
 **Purpose**: Create feature scaffolding and baseline artifacts used by all stories.
 
-- [ ] T001 Create Phase 2 module scaffolds in `src/track-changes.ts`, `src/change-resolution.ts`, `src/changes-view.ts`, `src/quick-actions-view.ts`, `src/display-mode.ts`, and `src/theme-presets.ts`
-- [ ] T002 Extend shared types/constants for Phase 2 command and state keys in `src/review-types.ts` and `src/review-constants.ts`
-- [ ] T003 [P] Add Phase 2 markdown fixtures for tracked-edit scenarios in `tests/fixtures/track-changes-phase2.md`
-- [ ] T004 [P] Add Phase 2 markdown fixtures for pane/theme scenarios in `tests/fixtures/review-workflow-phase2.md`
+- [x] T001 Create Phase 2 module scaffolds in `src/track-changes.ts`, `src/change-resolution.ts`, `src/changes-view.ts`, `src/quick-actions-view.ts`, `src/display-mode.ts`, and `src/theme-presets.ts`
+- [x] T002 Extend shared types/constants for Phase 2 command and state keys in `src/review-types.ts` and `src/review-constants.ts`
+- [x] T003 [P] Add Phase 2 markdown fixtures for tracked-edit scenarios in `tests/fixtures/track-changes-phase2.md`
+- [x] T004 [P] Add Phase 2 markdown fixtures for pane/theme scenarios in `tests/fixtures/review-workflow-phase2.md`
 
 ---
 
@@ -30,12 +30,12 @@
 
 **WARNING**: No user story work should begin before this phase is complete.
 
-- [ ] T005 Add parser support for stable tracked-change ranges and metadata in `src/review-parser.ts` and `src/review-types.ts`
-- [ ] T006 Add shared active-editor and cursor/selection helpers in `src/review-commands.ts`
-- [ ] T007 Add persisted settings fields and defaults for track/display/theme state in `src/main.ts`, `src/review-config.ts`, and `src/review-types.ts`
-- [ ] T008 Register baseline commands and view types for Phase 2 panes in `src/main.ts` and `src/review-constants.ts`
-- [ ] T009 [P] Extend Obsidian mocks for new commands/views used in tests in `tests/mocks/obsidian.ts`
-- [ ] T010 [P] Add foundational parser/settings regression tests in `tests/unit/review-parser.test.ts` and `tests/unit/main.unit.test.ts`
+- [x] T005 Add parser support for stable tracked-change ranges and metadata in `src/review-parser.ts` and `src/review-types.ts`
+- [x] T006 Add shared active-editor and cursor/selection helpers in `src/review-commands.ts`
+- [x] T007 Add persisted settings fields and defaults for track/display/theme state in `src/main.ts`, `src/review-config.ts`, and `src/review-types.ts`
+- [x] T008 Register baseline commands and view types for Phase 2 panes in `src/main.ts` and `src/review-constants.ts`
+- [x] T009 [P] Extend Obsidian mocks for new commands/views used in tests in `tests/mocks/obsidian.ts`
+- [x] T010 [P] Add foundational parser/settings regression tests in `tests/unit/review-parser.test.ts` and `tests/unit/main.unit.test.ts`
 
 **Checkpoint**: Foundation ready. User stories can now be implemented and tested independently.
 
@@ -49,16 +49,16 @@
 
 ### Tests for User Story 1
 
-- [ ] T011 [P] [US1] Add unit tests for tracked transform rules and safety fallbacks in `tests/unit/track-changes.unit.test.ts`
-- [ ] T012 [P] [US1] Add integration tests for insert/delete/replace and merge behavior in `tests/integration/us1-track-changes.integration.test.ts`
-- [ ] T013 [P] [US1] Add perf test for typing latency with track mode enabled in `tests/perf/us1-track-typing-latency.perf.test.ts`
+- [x] T011 [P] [US1] Add unit tests for tracked transform rules and safety fallbacks in `tests/unit/track-changes.unit.test.ts`
+- [x] T012 [P] [US1] Add integration tests for insert/delete/replace and merge behavior in `tests/integration/us1-track-changes.integration.test.ts`
+- [x] T013 [P] [US1] Add perf test for typing latency with track mode enabled in `tests/perf/us1-track-typing-latency.perf.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T014 [US1] Implement transaction interception and deterministic tracked-edit transforms in `src/track-changes.ts`
-- [ ] T015 [US1] Implement addition extension/adjacent merge and deletion merge rules in `src/track-changes.ts`
-- [ ] T016 [US1] Wire track mode toggle command/state indicator and persistence in `src/review-commands.ts`, `src/main.ts`, and `src/review-config.ts`
-- [ ] T017 [US1] Integrate track-edit pipeline with editor command flow and undo-safe dispatch in `src/main.ts` and `src/review-commands.ts`
+- [x] T014 [US1] Implement transaction interception and deterministic tracked-edit transforms in `src/track-changes.ts`
+- [x] T015 [US1] Implement addition extension/adjacent merge and deletion merge rules in `src/track-changes.ts`
+- [x] T016 [US1] Wire track mode toggle command/state indicator and persistence in `src/review-commands.ts`, `src/main.ts`, and `src/review-config.ts`
+- [x] T017 [US1] Integrate track-edit pipeline with editor command flow and undo-safe dispatch in `src/main.ts` and `src/review-commands.ts`
 
 **Checkpoint**: User Story 1 is independently functional and testable.
 
@@ -72,15 +72,15 @@
 
 ### Tests for User Story 2
 
-- [ ] T018 [P] [US2] Add unit tests for accepted-text display transforms in `tests/unit/display-mode.unit.test.ts`
-- [ ] T019 [P] [US2] Add integration tests for display toggle and comment visibility in `tests/integration/us2-accepted-text-view.integration.test.ts`
+- [x] T018 [P] [US2] Add unit tests for accepted-text display transforms in `tests/unit/display-mode.unit.test.ts`
+- [x] T019 [P] [US2] Add integration tests for display toggle and comment visibility in `tests/integration/us2-accepted-text-view.integration.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T020 [US2] Implement accepted-text display transform helpers in `src/display-mode.ts`
-- [ ] T021 [US2] Apply accepted-text display behavior in live preview rendering in `src/live-preview.ts`
-- [ ] T022 [US2] Apply accepted-text display behavior in reading view rendering in `src/reading-view.ts`
-- [ ] T023 [US2] Add display-mode toggle command and persisted setting flow in `src/review-commands.ts`, `src/main.ts`, and `src/review-config.ts`
+- [x] T020 [US2] Implement accepted-text display transform helpers in `src/display-mode.ts`
+- [x] T021 [US2] Apply accepted-text display behavior in live preview rendering in `src/live-preview.ts`
+- [x] T022 [US2] Apply accepted-text display behavior in reading view rendering in `src/reading-view.ts`
+- [x] T023 [US2] Add display-mode toggle command and persisted setting flow in `src/review-commands.ts`, `src/main.ts`, and `src/review-config.ts`
 
 **Checkpoint**: User Story 2 is independently functional and testable.
 
@@ -94,15 +94,15 @@
 
 ### Tests for User Story 3
 
-- [ ] T024 [P] [US3] Add unit tests for accept/reject token resolution transforms in `tests/unit/change-resolution.unit.test.ts`
-- [ ] T025 [P] [US3] Add integration tests for single-change resolve and accept-all workflows in `tests/integration/us3-change-resolution.integration.test.ts`
-- [ ] T026 [P] [US3] Add perf test for accept-all on 50 changes in `tests/perf/us3-accept-all-latency.perf.test.ts`
+- [x] T024 [P] [US3] Add unit tests for accept/reject token resolution transforms in `tests/unit/change-resolution.unit.test.ts`
+- [x] T025 [P] [US3] Add integration tests for single-change resolve and accept-all workflows in `tests/integration/us3-change-resolution.integration.test.ts`
+- [x] T026 [P] [US3] Add perf test for accept-all on 50 changes in `tests/perf/us3-accept-all-latency.perf.test.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T027 [US3] Implement accept/reject/accept-all transform engine for additions, deletions, and substitutions in `src/change-resolution.ts`
-- [ ] T028 [US3] Add commands for accept/reject single change and accept-all current note in `src/review-commands.ts`
-- [ ] T029 [US3] Wire command handlers to parser range lookup and active editor updates in `src/main.ts` and `src/review-parser.ts`
+- [x] T027 [US3] Implement accept/reject/accept-all transform engine for additions, deletions, and substitutions in `src/change-resolution.ts`
+- [x] T028 [US3] Add commands for accept/reject single change and accept-all current note in `src/review-commands.ts`
+- [x] T029 [US3] Wire command handlers to parser range lookup and active editor updates in `src/main.ts` and `src/review-parser.ts`
 
 **Checkpoint**: User Story 3 is independently functional and testable.
 
@@ -116,15 +116,15 @@
 
 ### Tests for User Story 4
 
-- [ ] T030 [P] [US4] Add unit tests for quick-action selection/no-selection rules, including replacement action no-op behavior, in `tests/unit/quick-actions-view.unit.test.ts`
-- [ ] T031 [P] [US4] Add integration tests for quick-action pane button workflows, including replacement action application, in `tests/integration/us4-quick-actions-pane.integration.test.ts`
+- [x] T030 [P] [US4] Add unit tests for quick-action selection/no-selection rules, including replacement action no-op behavior, in `tests/unit/quick-actions-view.unit.test.ts`
+- [x] T031 [P] [US4] Add integration tests for quick-action pane button workflows, including replacement action application, in `tests/integration/us4-quick-actions-pane.integration.test.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T032 [US4] Implement quick actions pane UI and button event wiring in `src/quick-actions-view.ts`
-- [ ] T033 [US4] Implement quick-action command handlers including Add/Comment insert, replacement action behavior, and no-op cases in `src/review-commands.ts`
-- [ ] T034 [US4] Register quick-actions view open/focus command and workspace lifecycle in `src/main.ts`
-- [ ] T035 [US4] Add clear user notices for no active Markdown editor cases in `src/quick-actions-view.ts` and `src/review-commands.ts`
+- [x] T032 [US4] Implement quick actions pane UI and button event wiring in `src/quick-actions-view.ts`
+- [x] T033 [US4] Implement quick-action command handlers including Add/Comment insert, replacement action behavior, and no-op cases in `src/review-commands.ts`
+- [x] T034 [US4] Register quick-actions view open/focus command and workspace lifecycle in `src/main.ts`
+- [x] T035 [US4] Add clear user notices for no active Markdown editor cases in `src/quick-actions-view.ts` and `src/review-commands.ts`
 
 **Checkpoint**: User Story 4 is independently functional and testable.
 
@@ -138,15 +138,15 @@
 
 ### Tests for User Story 5
 
-- [ ] T036 [P] [US5] Add unit tests for tracked-change entry mapping and empty state in `tests/unit/changes-view.unit.test.ts`
-- [ ] T037 [P] [US5] Add integration tests for changes pane listing, navigation, and actions with under-5-second navigation assertions in `tests/integration/us5-changes-pane.integration.test.ts`
+- [x] T036 [P] [US5] Add unit tests for tracked-change entry mapping and empty state in `tests/unit/changes-view.unit.test.ts`
+- [x] T037 [P] [US5] Add integration tests for changes pane listing, navigation, and actions with under-5-second navigation assertions in `tests/integration/us5-changes-pane.integration.test.ts`
 
 ### Implementation for User Story 5
 
-- [ ] T038 [US5] Implement changes pane rendering and entry models in `src/changes-view.ts`
-- [ ] T039 [US5] Implement tracked-change extraction and context generation in `src/review-parser.ts` and `src/changes-view.ts`
-- [ ] T040 [US5] Wire pane selection-to-editor navigation in `src/changes-view.ts` and `src/main.ts`
-- [ ] T041 [US5] Wire pane accept/reject/accept-all actions to resolution commands in `src/changes-view.ts` and `src/review-commands.ts`
+- [x] T038 [US5] Implement changes pane rendering and entry models in `src/changes-view.ts`
+- [x] T039 [US5] Implement tracked-change extraction and context generation in `src/review-parser.ts` and `src/changes-view.ts`
+- [x] T040 [US5] Wire pane selection-to-editor navigation in `src/changes-view.ts` and `src/main.ts`
+- [x] T041 [US5] Wire pane accept/reject/accept-all actions to resolution commands in `src/changes-view.ts` and `src/review-commands.ts`
 
 **Checkpoint**: User Story 5 is independently functional and testable.
 
@@ -160,14 +160,14 @@
 
 ### Tests for User Story 6
 
-- [ ] T042 [P] [US6] Add unit tests for comments-pane resolve action enablement and transforms in `tests/unit/comments-view-resolve.unit.test.ts`
-- [ ] T043 [P] [US6] Add integration tests for standalone and anchored comment resolve workflows in `tests/integration/us6-comments-resolve.integration.test.ts`
+- [x] T042 [P] [US6] Add unit tests for comments-pane resolve action enablement and transforms in `tests/unit/comments-view-resolve.unit.test.ts`
+- [x] T043 [P] [US6] Add integration tests for standalone and anchored comment resolve workflows in `tests/integration/us6-comments-resolve.integration.test.ts`
 
 ### Implementation for User Story 6
 
-- [ ] T044 [US6] Add resolve/remove controls and callbacks to comments pane entries in `src/comments-view.ts`
-- [ ] T045 [US6] Implement comment cleanup transforms for standalone and anchored comments in `src/change-resolution.ts` and `src/review-parser.ts`
-- [ ] T046 [US6] Refresh comments pane state and navigation after resolve actions in `src/comments-view.ts` and `src/main.ts`
+- [x] T044 [US6] Add resolve/remove controls and callbacks to comments pane entries in `src/comments-view.ts`
+- [x] T045 [US6] Implement comment cleanup transforms for standalone and anchored comments in `src/change-resolution.ts` and `src/review-parser.ts`
+- [x] T046 [US6] Refresh comments pane state and navigation after resolve actions in `src/comments-view.ts` and `src/main.ts`
 
 **Checkpoint**: User Story 6 is independently functional and testable.
 
@@ -181,15 +181,15 @@
 
 ### Tests for User Story 7
 
-- [ ] T047 [P] [US7] Add unit tests for preset naming, overwrite, and built-in delete guards in `tests/unit/theme-presets.unit.test.ts`
-- [ ] T048 [P] [US7] Add integration tests for theme preset persistence and switching in `tests/integration/us7-theme-presets.integration.test.ts`
+- [x] T047 [P] [US7] Add unit tests for preset naming, overwrite, and built-in delete guards in `tests/unit/theme-presets.unit.test.ts`
+- [x] T048 [P] [US7] Add integration tests for theme preset persistence and switching in `tests/integration/us7-theme-presets.integration.test.ts`
 
 ### Implementation for User Story 7
 
-- [ ] T049 [US7] Implement theme preset registry CRUD and case-insensitive lookup in `src/theme-presets.ts`
-- [ ] T050 [US7] Extend settings UI for save/select/delete/overwrite preset flows in `src/review-config.ts`
-- [ ] T051 [US7] Apply active preset colors to live preview and reading view pipelines in `src/live-preview.ts` and `src/reading-view.ts`
-- [ ] T052 [US7] Persist and restore preset registry and active preset in plugin settings lifecycle in `src/main.ts` and `src/review-types.ts`
+- [x] T049 [US7] Implement theme preset registry CRUD and case-insensitive lookup in `src/theme-presets.ts`
+- [x] T050 [US7] Extend settings UI for save/select/delete/overwrite preset flows in `src/review-config.ts`
+- [x] T051 [US7] Apply active preset colors to live preview and reading view pipelines in `src/live-preview.ts` and `src/reading-view.ts`
+- [x] T052 [US7] Persist and restore preset registry and active preset in plugin settings lifecycle in `src/main.ts` and `src/review-types.ts`
 
 **Checkpoint**: User Story 7 is independently functional and testable.
 
@@ -199,11 +199,11 @@
 
 **Purpose**: Stabilization, documentation, and full regression/quality validation.
 
-- [ ] T053 [P] Update feature documentation and user-facing behavior notes in `README.md` and `docs/obsidian-review-plugin-prd-phase-2.md`
-- [ ] T054 [P] Add regression coverage updates for existing rendering/comment behavior in `tests/unit/live-preview.unit.test.ts`, `tests/unit/comments-view.unit.test.ts`, and `tests/integration/us3-rendering.integration.test.ts`
-- [ ] T055 Run full quality gates and address failures via project scripts in `package.json` (`npm run check`, `npm run lint`, `npm run format:check`, `npm test`)
-- [ ] T056 Run and record manual validation checklist completion, including SC-001 timed protocol steps, in `specs/002-track-changes-workflow/quickstart.md`
-- [ ] T057 [P] Add a no-network-usage guard test for Phase 2 modules (no telemetry/external transfer) in `tests/unit/no-network-usage.unit.test.ts`
+- [x] T053 [P] Update feature documentation and user-facing behavior notes in `README.md` and `docs/obsidian-review-plugin-prd-phase-2.md`
+- [x] T054 [P] Add regression coverage updates for existing rendering/comment behavior in `tests/unit/live-preview.unit.test.ts`, `tests/unit/comments-view.unit.test.ts`, and `tests/integration/us3-rendering.integration.test.ts`
+- [x] T055 Run full quality gates and address failures via project scripts in `package.json` (`npm run check`, `npm run lint`, `npm run format:check`, `npm test`)
+- [x] T056 Run and record manual validation checklist completion, including SC-001 timed protocol steps, in `specs/002-track-changes-workflow/quickstart.md`
+- [x] T057 [P] Add a no-network-usage guard test for Phase 2 modules (no telemetry/external transfer) in `tests/unit/no-network-usage.unit.test.ts`
 
 ---
 

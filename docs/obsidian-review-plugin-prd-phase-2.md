@@ -9,6 +9,14 @@
 - **Primary platform:** Obsidian Desktop
 - **Document type:** Product Requirements Document
 
+### Implementation Status (2026-04-19)
+
+- Track changes mode, accepted-text view, and change-resolution engine implemented.
+- Changes pane and quick actions pane implemented with command wiring.
+- Comments pane resolve actions implemented.
+- Theme preset save/switch/delete flows implemented in settings.
+- Unit/integration/performance test coverage added for Phase 2 stories.
+
 ---
 
 ## 1. Executive Summary

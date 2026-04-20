@@ -8,6 +8,9 @@ describe('review types', () => {
       authorName: 'A',
       enableReadingView: true,
       enableLivePreview: true,
+      trackChangesEnabled: false,
+      acceptedTextViewEnabled: false,
+      themePresets: [],
       previewColors: {
         insert: '#fff',
         addition: '#fff',

@@ -11,6 +11,8 @@ export default defineConfig({
     environment: 'node',
     include: ['tests/**/*.test.ts'],
     globals: true,
+    pool: 'threads',
+    maxWorkers: 1,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],

@@ -10,10 +10,18 @@ It is designed for drafting, peer review, and content polishing workflows where 
 
 - Insert standalone and anchored comments
 - Mark additions, deletions, highlights, and substitutions
+- Toggle Track Changes Mode for automatic add/delete/replace markup
+- Toggle Accepted Text View to read edits as accepted output while keeping comments visible
+- Resolve tracked changes (accept/reject single change), accept all changes, and resolve comments
+- Use a unified Changes pane with quick action buttons (`Add`, `Delete`, `Highlight`, `Replace`, `Comment`) plus Track Changes toggle
+- Resolve/remove comments directly from the comments pane
+- Save, activate, overwrite, and delete named color theme presets
 - Render review tokens in Reading View
 - Highlight review tokens in Live Preview
 - Open a comments pane for the active note and jump to comment locations
 - Customize token colors and default author name in plugin settings
+- Guard review actions against duplicate clicks (accept/reject/resolve run as single in-flight commands)
+- Prevent accidental markup corruption in Track Changes mode by blocking edits to token delimiters
 
 ## How Features Work
 
@@ -29,6 +37,12 @@ It is designed for drafting, peer review, and content polishing workflows where 
 - `Replace`: Converts selected text into a substitution token and lets you fill in replacement text.  
   Example: `{~~old text~>new text~~}`
 - `Comments Pane`: Opens a side pane that lists comments for the active note; clicking an item jumps to that location in the note.
+- `Changes Pane`: Lists tracked changes, provides `Accept`/`Reject` per entry, `Accept All`, quick action buttons, and a Track Changes toggle in one place.
+- Track Changes editing rules:
+  - Typing/deleting inside `{++addition++}` edits the addition text directly (no nested deletion tokens).
+  - Typing inside `{--deletion--}` splits the deletion and inserts a separate addition token.
+  - Comment bodies (`{>> ... <<}`) are edited as normal text, not wrapped as additions.
+  - Edits that touch markup delimiters (`{++`, `++}`, `{--`, `--}`, `{~~`, `~>`, `~~}`, `{>>`, `<<}`) are blocked to protect token integrity.
 - Reading View rendering: tokens are rendered with clear visual styling (for review readability).
 - Live Preview rendering: tokens remain editable while still being visually distinct.
 
@@ -41,6 +55,13 @@ It is designed for drafting, peer review, and content polishing workflows where 
 - `Highlight`
 - `Replace`
 - `Comments Pane`
+- `Changes Pane`
+- `Quick Actions Pane` (opens the unified Changes/Quick Actions pane)
+- `Toggle Track Changes Mode`
+- `Toggle Accepted Text View`
+- `Accept All Tracked Changes`
+- `Accept Tracked Change At Cursor`
+- `Reject Tracked Change At Cursor`
 
 ## Privacy and Data Handling
 

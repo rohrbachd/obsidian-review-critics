@@ -10,5 +10,8 @@ describe('main plugin', () => {
     expect(plugin.settings.authorName).toBe('Alex');
     expect(plugin.settings.enableReadingView).toBe(false);
     expect(plugin.settings.enableLivePreview).toBe(true);
+    expect(plugin.settings.trackChangesEnabled).toBe(false);
+    expect(plugin.settings.acceptedTextViewEnabled).toBe(false);
+    expect(plugin.settings.themePresets.length).toBeGreaterThan(0);
   });
 });

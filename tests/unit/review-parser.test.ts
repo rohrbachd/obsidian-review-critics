@@ -52,4 +52,14 @@ describe('review-parser', () => {
     expect(entries[0].line).toBe(2);
     expect(entries[0].author).toBe('Dan');
   });
+
+  it('builds tracked change entries with heading and line context', () => {
+    const input = '# Intro\nA {++plus++} and {--minus--} and {~~old~>new~~}\n';
+    const entries = parser.buildTrackedChangeEntries(input);
+
+    expect(entries).toHaveLength(3);
+    expect(entries[0].heading).toBe('Intro');
+    expect(entries[0].line).toBe(2);
+    expect(entries[0].context.length).toBeGreaterThan(0);
+  });
 });
