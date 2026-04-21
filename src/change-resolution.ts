@@ -1,4 +1,3 @@
-import { ReviewMarkupSyntax } from './review-config';
 import type { CommentPaneEntry, TrackedChangeEntry } from './review-types';
 
 interface ResolutionRegexSet {
@@ -43,35 +42,32 @@ export class ChangeResolutionService implements IChangeResolutionService {
 
     const escaped = this.escapeRegExp(markup);
     const scoped = new RegExp(escaped);
-    if (!scoped.test(content)) {
+    const scopedMatch = scoped.exec(content);
+    if (!scopedMatch) {
       return content;
     }
 
-    const match = content.match(scoped)?.[0];
-    if (!match) {
-      return content;
+    const match = scopedMatch[0];
+    const matchStart = scopedMatch.index;
+    const matchEnd = matchStart + match.length;
+
+    const additionPattern = /\{\+\+([\s\S]*?)\+\+\}/;
+    const deletionPattern = /\{--([\s\S]*?)--\}/;
+    const substitutionPattern = /\{~~([\s\S]*?)~>([\s\S]*?)~~\}/;
+
+    const additionMatch = additionPattern.exec(match);
+    if (additionMatch) {
+      return `${content.slice(0, matchStart)}${content.slice(matchEnd)}`;
     }
 
-    const additionPattern = new RegExp(
-      `\\${ReviewMarkupSyntax.ADDITION_PREFIX}([\\s\\S]*?)\\${ReviewMarkupSyntax.ADDITION_SUFFIX}`
-    );
-    const deletionPattern = new RegExp(
-      `\\${ReviewMarkupSyntax.DELETION_PREFIX}([\\s\\S]*?)\\${ReviewMarkupSyntax.DELETION_SUFFIX}`
-    );
-    const substitutionPattern = new RegExp(
-      `\\${ReviewMarkupSyntax.SUBSTITUTION_PREFIX}([\\s\\S]*?)\\${ReviewMarkupSyntax.SUBSTITUTION_MIDDLE}([\\s\\S]*?)\\${ReviewMarkupSyntax.SUBSTITUTION_SUFFIX}`
-    );
-
-    if (additionPattern.test(match)) {
-      return content.replace(match, '');
+    const deletionMatch = deletionPattern.exec(match);
+    if (deletionMatch) {
+      return `${content.slice(0, matchStart)}${deletionMatch[1] || ''}${content.slice(matchEnd)}`;
     }
 
-    if (deletionPattern.test(match)) {
-      return content.replace(match, '$1');
-    }
-
-    if (substitutionPattern.test(match)) {
-      return content.replace(match, '$1');
+    const substitutionMatch = substitutionPattern.exec(match);
+    if (substitutionMatch) {
+      return `${content.slice(0, matchStart)}${substitutionMatch[1] || ''}${content.slice(matchEnd)}`;
     }
 
     return content;

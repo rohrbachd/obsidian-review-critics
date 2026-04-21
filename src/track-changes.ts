@@ -7,6 +7,15 @@ export interface ITrackChangesService {
     to: number,
     insertedText: string
   ): TrackEditResult | null;
+  shouldSkipTrackingForChange(
+    sourceContent: string,
+    from: number,
+    to: number,
+    insertedText: string,
+    nextContent?: string,
+    nextFrom?: number,
+    nextTo?: number
+  ): boolean;
 }
 
 export interface TrackEditResult {
@@ -47,14 +56,27 @@ export class TrackChangesService implements ITrackChangesService {
       return null;
     }
 
+    if (this.shouldSkipTrackingForChange(content, from, to, insertedText)) {
+      return null;
+    }
+
     const selected = content.slice(from, to);
+    if (from !== to && this.isStructuredEdit(selected, insertedText)) {
+      return null;
+    }
+
     const insideAddition = this.findTokenContentRange(content, from, 'addition');
-    const insideSubstitutionNew = this.findSubstitutionNewContentRange(content, from);
+    const insideSubstitutionNew = this.findSubstitutionContentRange(content, from, 'new');
+    const insideSubstitutionOld = this.findSubstitutionContentRange(content, from, 'old');
     const insideDeletion = this.findTokenContentRange(content, from, 'deletion');
     const insideComment = this.findCommentContentRange(content, from);
 
     if (from === to && insertedText.length > 0) {
       if (this.isInsideTokenDelimiter(content, from)) {
+        return { content, cursor: from, preventDefault: true };
+      }
+
+      if (insideSubstitutionOld) {
         return { content, cursor: from, preventDefault: true };
       }
 
@@ -90,6 +112,10 @@ export class TrackChangesService implements ITrackChangesService {
     }
 
     if (from !== to && insertedText.length > 0) {
+      if (this.overlapsTokenDelimiters(content, from, to)) {
+        return { content, cursor: from, preventDefault: true };
+      }
+
       const insideCommentFrom = this.findCommentContentRange(content, from);
       const insideCommentTo = this.findCommentContentRange(content, Math.max(from, to - 1));
       if (
@@ -114,8 +140,41 @@ export class TrackChangesService implements ITrackChangesService {
         return { content: next, cursor: from + insertedText.length };
       }
 
-      if (this.overlapsTokenDelimiters(content, from, to)) {
+      const insideSubstitutionNewFrom = this.findSubstitutionContentRange(content, from, 'new');
+      const insideSubstitutionNewTo = this.findSubstitutionContentRange(
+        content,
+        Math.max(from, to - 1),
+        'new'
+      );
+      if (
+        insideSubstitutionNewFrom &&
+        insideSubstitutionNewTo &&
+        insideSubstitutionNewFrom.outerStart === insideSubstitutionNewTo.outerStart &&
+        insideSubstitutionNewFrom.outerEnd === insideSubstitutionNewTo.outerEnd
+      ) {
+        const next = this.insertText(content, from, to, insertedText);
+        return { content: next, cursor: from + insertedText.length };
+      }
+
+      const insideSubstitutionOldFrom = this.findSubstitutionContentRange(content, from, 'old');
+      const insideSubstitutionOldTo = this.findSubstitutionContentRange(
+        content,
+        Math.max(from, to - 1),
+        'old'
+      );
+      if (
+        insideSubstitutionOldFrom &&
+        insideSubstitutionOldTo &&
+        insideSubstitutionOldFrom.outerStart === insideSubstitutionOldTo.outerStart &&
+        insideSubstitutionOldFrom.outerEnd === insideSubstitutionOldTo.outerEnd
+      ) {
         return { content, cursor: from, preventDefault: true };
+      }
+
+      if (selected.trim().length === 0) {
+        let next = this.insertText(content, from, to, `{++${insertedText}++}`);
+        next = this.mergeAdjacentTokens(next, '{++', '++}');
+        return { content: next, cursor: from + insertedText.length + 3 };
       }
 
       const replacement = `{~~${selected}~>${insertedText}~~}`;
@@ -125,6 +184,10 @@ export class TrackChangesService implements ITrackChangesService {
     }
 
     if (from !== to && insertedText.length === 0) {
+      if (this.overlapsTokenDelimiters(content, from, to)) {
+        return { content, cursor: from, preventDefault: true };
+      }
+
       const insideCommentFrom = this.findCommentContentRange(content, from);
       const insideCommentTo = this.findCommentContentRange(content, Math.max(from, to - 1));
       if (
@@ -145,8 +208,49 @@ export class TrackChangesService implements ITrackChangesService {
         insideAdditionFrom.outerStart === insideAdditionTo.outerStart &&
         insideAdditionFrom.outerEnd === insideAdditionTo.outerEnd
       ) {
+        const nextInner = `${content.slice(insideAdditionFrom.start, from)}${content.slice(to, insideAdditionFrom.end)}`;
+        if (nextInner.length === 0) {
+          const next = this.insertText(
+            content,
+            insideAdditionFrom.outerStart,
+            insideAdditionFrom.outerEnd,
+            ''
+          );
+          return { content: next, cursor: insideAdditionFrom.outerStart };
+        }
         const next = this.insertText(content, from, to, '');
         return { content: next, cursor: from };
+      }
+
+      const insideSubstitutionNewFrom = this.findSubstitutionContentRange(content, from, 'new');
+      const insideSubstitutionNewTo = this.findSubstitutionContentRange(
+        content,
+        Math.max(from, to - 1),
+        'new'
+      );
+      if (
+        insideSubstitutionNewFrom &&
+        insideSubstitutionNewTo &&
+        insideSubstitutionNewFrom.outerStart === insideSubstitutionNewTo.outerStart &&
+        insideSubstitutionNewFrom.outerEnd === insideSubstitutionNewTo.outerEnd
+      ) {
+        const next = this.insertText(content, from, to, '');
+        return { content: next, cursor: from };
+      }
+
+      const insideSubstitutionOldFrom = this.findSubstitutionContentRange(content, from, 'old');
+      const insideSubstitutionOldTo = this.findSubstitutionContentRange(
+        content,
+        Math.max(from, to - 1),
+        'old'
+      );
+      if (
+        insideSubstitutionOldFrom &&
+        insideSubstitutionOldTo &&
+        insideSubstitutionOldFrom.outerStart === insideSubstitutionOldTo.outerStart &&
+        insideSubstitutionOldFrom.outerEnd === insideSubstitutionOldTo.outerEnd
+      ) {
+        return { content, cursor: from, preventDefault: true };
       }
 
       const insideDeletionFrom = this.findTokenContentRange(content, from, 'deletion');
@@ -160,16 +264,57 @@ export class TrackChangesService implements ITrackChangesService {
         return { content, cursor: from, preventDefault: true };
       }
 
-      if (this.overlapsTokenDelimiters(content, from, to)) {
-        return { content, cursor: from, preventDefault: true };
-      }
-
       let next = this.insertText(content, from, to, `{--${selected}--}`);
       next = this.mergeAdjacentTokens(next, '{--', '--}');
       return { content: next, cursor: from };
     }
 
     return null;
+  }
+
+  shouldSkipTrackingForChange(
+    sourceContent: string,
+    from: number,
+    to: number,
+    insertedText: string,
+    nextContent?: string,
+    nextFrom?: number,
+    nextTo?: number
+  ): boolean {
+    if (
+      from < 0 ||
+      to < from ||
+      from > sourceContent.length ||
+      to > sourceContent.length
+    ) {
+      return true;
+    }
+
+    if (this.isInMarkdownTableContext(sourceContent, from, to)) {
+      return true;
+    }
+
+    if (nextContent !== undefined && nextFrom !== undefined && nextTo !== undefined) {
+      if (
+        nextFrom < 0 ||
+        nextTo < nextFrom ||
+        nextFrom > nextContent.length ||
+        nextTo > nextContent.length
+      ) {
+        return true;
+      }
+
+      if (this.isInMarkdownTableContext(nextContent, nextFrom, nextTo)) {
+        return true;
+      }
+    }
+
+    const selected = sourceContent.slice(from, to);
+    if (this.looksLikeTableStructure(selected) || this.looksLikeTableStructure(insertedText)) {
+      return true;
+    }
+
+    return false;
   }
 
   private findCommentContentRange(
@@ -227,20 +372,26 @@ export class TrackChangesService implements ITrackChangesService {
     return null;
   }
 
-  private findSubstitutionNewContentRange(
+  private findSubstitutionContentRange(
     content: string,
-    position: number
-  ): { start: number; end: number } | null {
+    position: number,
+    side: 'old' | 'new'
+  ): TokenContentRange | null {
     const pattern = /\{~~([\s\S]*?)~>([\s\S]*?)~~\}/g;
     let match = pattern.exec(content);
     while (match) {
       const outerStart = match.index;
       const oldTextLength = match[1].length;
       const newTextLength = match[2].length;
-      const start = outerStart + 3 + oldTextLength + 2;
-      const end = start + newTextLength;
+      const oldStart = outerStart + 3;
+      const oldEnd = oldStart + oldTextLength;
+      const newStart = oldEnd + 2;
+      const newEnd = newStart + newTextLength;
+      const start = side === 'old' ? oldStart : newStart;
+      const end = side === 'old' ? oldEnd : newEnd;
       if (position >= start && position <= end) {
-        return { start, end };
+        const outerEnd = outerStart + match[0].length;
+        return { outerStart, outerEnd, start, end };
       }
       match = pattern.exec(content);
     }
@@ -298,6 +449,104 @@ export class TrackChangesService implements ITrackChangesService {
     }
     return false;
   }
+
+  private isInMarkdownTableContext(content: string, from: number, to: number): boolean {
+    const lineRange = this.getLineRange(content, from, to);
+    if (!lineRange) {
+      return false;
+    }
+
+    const currentLine = content.slice(lineRange.start, lineRange.end);
+    if (!currentLine.includes('|')) {
+      return false;
+    }
+
+    const tableBlockLines = this.collectContiguousPipeLines(content, lineRange);
+    if (tableBlockLines.length < 2) {
+      return false;
+    }
+
+    const tableSeparator = /^\s*\|?(?:\s*:?-{3,}:?\s*\|)+\s*:?-{3,}:?\s*\|?\s*$/;
+    return tableBlockLines.some((line) => tableSeparator.test(line));
+  }
+
+  private getLineRange(content: string, from: number, to: number): { start: number; end: number } | null {
+    if (from < 0 || to < from || from > content.length || to > content.length) {
+      return null;
+    }
+
+    const start = content.lastIndexOf('\n', from - 1) + 1;
+    const endIdx = content.indexOf('\n', to);
+    const end = endIdx === -1 ? content.length : endIdx;
+    return { start, end };
+  }
+
+  private collectContiguousPipeLines(content: string, anchor: { start: number; end: number }): string[] {
+    const lines: string[] = [];
+
+    const anchorLine = content.slice(anchor.start, anchor.end);
+    if (!anchorLine.includes('|')) {
+      return lines;
+    }
+
+    lines.push(anchorLine);
+
+    let upwardLineStart = anchor.start;
+    while (upwardLineStart > 0) {
+      const previousLineEnd = upwardLineStart - 1;
+      const previousLineStart = content.lastIndexOf('\n', previousLineEnd - 1) + 1;
+      const previousLine = content.slice(previousLineStart, previousLineEnd);
+      if (!previousLine.includes('|')) {
+        break;
+      }
+      lines.unshift(previousLine);
+      upwardLineStart = previousLineStart;
+    }
+
+    let downwardLineEnd = anchor.end;
+    while (downwardLineEnd < content.length) {
+      if (content[downwardLineEnd] !== '\n') {
+        break;
+      }
+      const nextLineStart = downwardLineEnd + 1;
+      const nextLineEndIdx = content.indexOf('\n', nextLineStart);
+      const nextLineEnd = nextLineEndIdx === -1 ? content.length : nextLineEndIdx;
+      const nextLine = content.slice(nextLineStart, nextLineEnd);
+      if (!nextLine.includes('|')) {
+        break;
+      }
+      lines.push(nextLine);
+      downwardLineEnd = nextLineEnd;
+    }
+
+    return lines;
+  }
+
+  private looksLikeTableStructure(text: string): boolean {
+    if (!text.includes('|')) {
+      return false;
+    }
+
+    if (text.includes('\n')) {
+      return true;
+    }
+
+    const trimmed = text.trim();
+    if (!trimmed.startsWith('|') || !trimmed.endsWith('|')) {
+      return false;
+    }
+
+    return (trimmed.match(/\|/g) ?? []).length >= 2;
+  }
+
+  private isStructuredEdit(selected: string, insertedText: string): boolean {
+    return (
+      selected.includes('\n') ||
+      insertedText.includes('\n') ||
+      selected.includes('|') ||
+      insertedText.includes('|')
+    );
+  }
 }
 
 export class TrackChangesExtensionFactory {
@@ -320,12 +569,16 @@ export class TrackChangesExtensionFactory {
       let changeCount = 0;
       let from = 0;
       let to = 0;
+      let newFrom = 0;
+      let newTo = 0;
       let insertedText = '';
 
-      transaction.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
+      transaction.changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
         changeCount += 1;
         from = fromA;
         to = toA;
+        newFrom = fromB;
+        newTo = toB;
         insertedText = inserted.toString();
       });
 
@@ -334,11 +587,27 @@ export class TrackChangesExtensionFactory {
       }
 
       const source = transaction.startState.doc.toString();
+      const next = transaction.newDoc.toString();
+      if (
+        this.trackChangesService.shouldSkipTrackingForChange(
+          source,
+          from,
+          to,
+          insertedText,
+          next,
+          newFrom,
+          newTo
+        )
+      ) {
+        return transaction;
+      }
       const transformed = this.trackChangesService.applyTrackedEdit(source, from, to, insertedText);
       if (transformed?.preventDefault) {
         return {
-          changes: { from: 0, to: source.length, insert: source },
-          selection: EditorSelection.cursor(Math.max(0, transformed.cursor)),
+          changes: [],
+          selection: EditorSelection.cursor(
+            Math.max(0, Math.min(source.length, transformed.cursor))
+          ),
         };
       }
 
@@ -346,10 +615,48 @@ export class TrackChangesExtensionFactory {
         return transaction;
       }
 
+      if (transformed.content === transaction.newDoc.toString()) {
+        return transaction;
+      }
+
+      const minimal = this.computeMinimalReplacement(source, transformed.content);
+
       return {
-        changes: { from: 0, to: source.length, insert: transformed.content },
-        selection: EditorSelection.cursor(Math.max(0, transformed.cursor)),
+        changes: minimal,
+        selection: EditorSelection.cursor(
+          Math.max(0, Math.min(transformed.content.length, transformed.cursor))
+        ),
       };
     });
+  }
+
+  private computeMinimalReplacement(
+    source: string,
+    target: string
+  ): { from: number; to: number; insert: string } {
+    let start = 0;
+    const sourceLength = source.length;
+    const targetLength = target.length;
+    const minLength = Math.min(sourceLength, targetLength);
+    while (start < minLength && source.charCodeAt(start) === target.charCodeAt(start)) {
+      start += 1;
+    }
+
+    let sourceEnd = sourceLength;
+    let targetEnd = targetLength;
+    while (
+      sourceEnd > start &&
+      targetEnd > start &&
+      source.charCodeAt(sourceEnd - 1) === target.charCodeAt(targetEnd - 1)
+    ) {
+      sourceEnd -= 1;
+      targetEnd -= 1;
+    }
+
+    return {
+      from: start,
+      to: sourceEnd,
+      insert: target.slice(start, targetEnd),
+    };
   }
 }

@@ -1,0 +1,18 @@
+﻿{
+    "mode":  "full-scan",
+    "base_ref":  "origin/main",
+    "head_ref":  "774f23a720055a41c0f39b61f7fd8dc8d8994206",
+    "changed_files":  64,
+    "findings":  {
+                     "blocker":  0,
+                     "critical":  0,
+                     "major":  0,
+                     "minor":  0,
+                     "info":  1
+                 },
+    "risk_score":  1,
+    "recommendation":  "approve",
+    "hotspots":  [
+
+                 ]
+}

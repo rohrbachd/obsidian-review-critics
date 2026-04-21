@@ -1,4 +1,4 @@
-import type { ReviewColorSettings, ReviewPluginSettings, ThemePreset } from './review-types';
+﻿import type { ReviewColorSettings, ReviewPluginSettings, ThemePreset } from './review-types';
 
 export class ReviewViewIds {
   static readonly COMMENTS_PANE = 'review-comments-pane';
@@ -264,7 +264,7 @@ export class ReviewMarkupSyntax {
 }
 
 export class ReviewRegexPatterns {
-  static readonly ADDITION = /(?:\{\+\+|‹\+\+)([\s\S]+?)(?:\+\+\}|\+\+›)/g;
+  static readonly ADDITION = /(?:\{\+\+|‹\+\+)([\s\S]*?)(?:\+\+\}|\+\+›)/g;
   static readonly DELETION = /(?:\{--|‹--)([\s\S]+?)(?:--\}|--›)/g;
   static readonly SUBSTITUTION = /(?:\{~~|‹~~)([\s\S]+?)~>([\s\S]*?)(?:~~\}|~~›)/g;
   static readonly HIGHLIGHT = /(?:\{==|‹==)([\s\S]+?)(?:==\}|==›)/g;
@@ -274,5 +274,6 @@ export class ReviewRegexPatterns {
   static readonly FENCE = /^\s*(```+|~~~+)/;
   static readonly ANCHORED_WHITESPACE = /^\s*$/;
   static readonly INLINE_TOKEN =
-    /(?:\{\+\+|‹\+\+)[\s\S]+?(?:\+\+\}|\+\+›)|(?:\{--|‹--)[\s\S]+?(?:--\}|--›)|(?:\{~~|‹~~)[\s\S]+?~>[\s\S]*?(?:~~\}|~~›)|(?:\{==|‹==)[\s\S]+?(?:==\}|==›)|(?:\{>>|‹>>)\s*(?:\[author=[^\]]+\]\s*)?[\s\S]*?\s*(?:<<\}|<<›)/;
+    /(?:\{\+\+|‹\+\+)[\s\S]*?(?:\+\+\}|\+\+›)|(?:\{--|‹--)[\s\S]+?(?:--\}|--›)|(?:\{~~|‹~~)[\s\S]+?~>[\s\S]*?(?:~~\}|~~›)|(?:\{==|‹==)[\s\S]+?(?:==\}|==›)|(?:\{>>|‹>>)\s*(?:\[author=[^\]]+\]\s*)?[\s\S]*?\s*(?:<<\}|<<›)/;
 }
+

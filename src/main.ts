@@ -105,7 +105,13 @@ export default class ReviewPlugin extends Plugin {
               await this.toggleTrackChangesMode();
             }, true);
           },
+          async () => {
+            await this.runCommandExclusive(async () => {
+              await this.toggleAcceptedTextView();
+            }, true);
+          },
           () => this.settings.trackChangesEnabled,
+          () => this.settings.acceptedTextViewEnabled,
           () => this.commandInFlight
         )
     );
@@ -296,13 +302,7 @@ export default class ReviewPlugin extends Plugin {
       id: ReviewCommands.TOGGLE_ACCEPTED_TEXT_VIEW_ID,
       name: ReviewCommands.TOGGLE_ACCEPTED_TEXT_VIEW_NAME,
       callback: runGlobal(async () => {
-        this.settings.acceptedTextViewEnabled = !this.settings.acceptedTextViewEnabled;
-        await this.saveSettings();
-        new Notice(
-          this.settings.acceptedTextViewEnabled
-            ? ReviewNotices.ACCEPTED_TEXT_VIEW_ENABLED
-            : ReviewNotices.ACCEPTED_TEXT_VIEW_DISABLED
-        );
+        await this.toggleAcceptedTextView();
       }),
     });
 
@@ -682,10 +682,22 @@ export default class ReviewPlugin extends Plugin {
   private async toggleTrackChangesMode(): Promise<void> {
     this.settings.trackChangesEnabled = !this.settings.trackChangesEnabled;
     await this.saveSettings();
+    this.nudgeActiveEditorSelection();
     new Notice(
       this.settings.trackChangesEnabled
         ? ReviewNotices.TRACK_CHANGES_ENABLED
         : ReviewNotices.TRACK_CHANGES_DISABLED
+    );
+  }
+
+  private async toggleAcceptedTextView(): Promise<void> {
+    this.settings.acceptedTextViewEnabled = !this.settings.acceptedTextViewEnabled;
+    await this.saveSettings();
+    this.nudgeActiveEditorSelection();
+    new Notice(
+      this.settings.acceptedTextViewEnabled
+        ? ReviewNotices.ACCEPTED_TEXT_VIEW_ENABLED
+        : ReviewNotices.ACCEPTED_TEXT_VIEW_DISABLED
     );
   }
 
@@ -701,18 +713,32 @@ export default class ReviewPlugin extends Plugin {
     }
 
     this.commandInFlight = true;
-    await Promise.all([this.refreshCommentsPane(), this.refreshChangesPane()]);
     try {
+      await Promise.all([this.refreshCommentsPane(), this.refreshChangesPane()]);
       return await task();
     } finally {
       this.commandInFlight = false;
-      await Promise.all([this.refreshCommentsPane(), this.refreshChangesPane()]);
+      try {
+        await Promise.all([this.refreshCommentsPane(), this.refreshChangesPane()]);
+      } catch (error) {
+        console.error('[review-critic] Pane refresh failed after command.', error);
+      }
     }
   }
 
   private replaceSelectionWithoutTrackChanges(editor: Editor, value: string): void {
     this.trackChangesService.suppressNextTransaction();
     editor.replaceSelection(value);
+  }
+
+  private nudgeActiveEditorSelection(): void {
+    const editor = this.editorContextService.getActiveMarkdownEditor();
+    if (!editor) {
+      return;
+    }
+    const from = editor.getCursor('from');
+    const to = editor.getCursor('to');
+    editor.setSelection(from, to);
   }
 
   private findExactTrackedChangeEntry(

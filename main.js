@@ -252,7 +252,7 @@ ReviewMarkupSyntax.SUBSTITUTION_MIDDLE = "~>";
 ReviewMarkupSyntax.SUBSTITUTION_SUFFIX = "~~}";
 var ReviewRegexPatterns = class {
 };
-ReviewRegexPatterns.ADDITION = /(?:\{\+\+|‹\+\+)([\s\S]+?)(?:\+\+\}|\+\+›)/g;
+ReviewRegexPatterns.ADDITION = /(?:\{\+\+|‹\+\+)([\s\S]*?)(?:\+\+\}|\+\+›)/g;
 ReviewRegexPatterns.DELETION = /(?:\{--|‹--)([\s\S]+?)(?:--\}|--›)/g;
 ReviewRegexPatterns.SUBSTITUTION = /(?:\{~~|‹~~)([\s\S]+?)~>([\s\S]*?)(?:~~\}|~~›)/g;
 ReviewRegexPatterns.HIGHLIGHT = /(?:\{==|‹==)([\s\S]+?)(?:==\}|==›)/g;
@@ -260,7 +260,7 @@ ReviewRegexPatterns.COMMENT = /(?:\{>>|‹>>)\s*(?:\[author=([^\]]+)\]\s*)?([\s\
 ReviewRegexPatterns.HEADING = /^(#{1,6})\s+(.+)$/;
 ReviewRegexPatterns.FENCE = /^\s*(```+|~~~+)/;
 ReviewRegexPatterns.ANCHORED_WHITESPACE = /^\s*$/;
-ReviewRegexPatterns.INLINE_TOKEN = /(?:\{\+\+|‹\+\+)[\s\S]+?(?:\+\+\}|\+\+›)|(?:\{--|‹--)[\s\S]+?(?:--\}|--›)|(?:\{~~|‹~~)[\s\S]+?~>[\s\S]*?(?:~~\}|~~›)|(?:\{==|‹==)[\s\S]+?(?:==\}|==›)|(?:\{>>|‹>>)\s*(?:\[author=[^\]]+\]\s*)?[\s\S]*?\s*(?:<<\}|<<›)/;
+ReviewRegexPatterns.INLINE_TOKEN = /(?:\{\+\+|‹\+\+)[\s\S]*?(?:\+\+\}|\+\+›)|(?:\{--|‹--)[\s\S]+?(?:--\}|--›)|(?:\{~~|‹~~)[\s\S]+?~>[\s\S]*?(?:~~\}|~~›)|(?:\{==|‹==)[\s\S]+?(?:==\}|==›)|(?:\{>>|‹>>)\s*(?:\[author=[^\]]+\]\s*)?[\s\S]*?\s*(?:<<\}|<<›)/;
 
 // src/comments-view.ts
 var _ReviewCommentsView = class _ReviewCommentsView extends import_obsidian.ItemView {
@@ -387,30 +387,27 @@ var ChangeResolutionService = class {
     }
     const escaped = this.escapeRegExp(markup);
     const scoped = new RegExp(escaped);
-    if (!scoped.test(content)) {
+    const scopedMatch = scoped.exec(content);
+    if (!scopedMatch) {
       return content;
     }
-    const match = content.match(scoped)?.[0];
-    if (!match) {
-      return content;
+    const match = scopedMatch[0];
+    const matchStart = scopedMatch.index;
+    const matchEnd = matchStart + match.length;
+    const additionPattern = /\{\+\+([\s\S]*?)\+\+\}/;
+    const deletionPattern = /\{--([\s\S]*?)--\}/;
+    const substitutionPattern = /\{~~([\s\S]*?)~>([\s\S]*?)~~\}/;
+    const additionMatch = additionPattern.exec(match);
+    if (additionMatch) {
+      return `${content.slice(0, matchStart)}${content.slice(matchEnd)}`;
     }
-    const additionPattern = new RegExp(
-      `\\${ReviewMarkupSyntax.ADDITION_PREFIX}([\\s\\S]*?)\\${ReviewMarkupSyntax.ADDITION_SUFFIX}`
-    );
-    const deletionPattern = new RegExp(
-      `\\${ReviewMarkupSyntax.DELETION_PREFIX}([\\s\\S]*?)\\${ReviewMarkupSyntax.DELETION_SUFFIX}`
-    );
-    const substitutionPattern = new RegExp(
-      `\\${ReviewMarkupSyntax.SUBSTITUTION_PREFIX}([\\s\\S]*?)\\${ReviewMarkupSyntax.SUBSTITUTION_MIDDLE}([\\s\\S]*?)\\${ReviewMarkupSyntax.SUBSTITUTION_SUFFIX}`
-    );
-    if (additionPattern.test(match)) {
-      return content.replace(match, "");
+    const deletionMatch = deletionPattern.exec(match);
+    if (deletionMatch) {
+      return `${content.slice(0, matchStart)}${deletionMatch[1] || ""}${content.slice(matchEnd)}`;
     }
-    if (deletionPattern.test(match)) {
-      return content.replace(match, "$1");
-    }
-    if (substitutionPattern.test(match)) {
-      return content.replace(match, "$1");
+    const substitutionMatch = substitutionPattern.exec(match);
+    if (substitutionMatch) {
+      return `${content.slice(0, matchStart)}${substitutionMatch[1] || ""}${content.slice(matchEnd)}`;
     }
     return content;
   }
@@ -450,7 +447,7 @@ var ChangeResolutionService = class {
 // src/changes-view.ts
 var import_obsidian2 = require("obsidian");
 var _ReviewChangesView = class _ReviewChangesView extends import_obsidian2.ItemView {
-  constructor(leaf, onNavigate, onAccept, onReject, onAcceptAll, onQuickAction, onToggleTrackChanges, isTrackChangesEnabled, isBusy) {
+  constructor(leaf, onNavigate, onAccept, onReject, onAcceptAll, onQuickAction, onToggleTrackChanges, onToggleAcceptedTextView, isTrackChangesEnabled, isAcceptedTextViewEnabled, isBusy) {
     super(leaf);
     this.entries = [];
     this.pendingEntryIds = /* @__PURE__ */ new Set();
@@ -462,7 +459,9 @@ var _ReviewChangesView = class _ReviewChangesView extends import_obsidian2.ItemV
     this.onAcceptAll = onAcceptAll;
     this.onQuickAction = onQuickAction;
     this.onToggleTrackChanges = onToggleTrackChanges;
+    this.onToggleAcceptedTextView = onToggleAcceptedTextView;
     this.isTrackChangesEnabled = isTrackChangesEnabled;
+    this.isAcceptedTextViewEnabled = isAcceptedTextViewEnabled;
     this.isBusy = isBusy;
   }
   getViewType() {
@@ -498,6 +497,7 @@ var _ReviewChangesView = class _ReviewChangesView extends import_obsidian2.ItemV
     ];
     for (const action of actions) {
       const button = actionsRow.createEl("button", { text: action.label, attr: { type: "button" } });
+      button.addEventListener("mousedown", (event) => event.preventDefault());
       button.disabled = this.isUiBusy();
       button.addEventListener("click", () => {
         void this.handleQuickAction(action.id);
@@ -509,15 +509,27 @@ var _ReviewChangesView = class _ReviewChangesView extends import_obsidian2.ItemV
       attr: { type: "button" },
       cls: "review-track-toggle"
     });
+    trackButton.addEventListener("mousedown", (event) => event.preventDefault());
     trackButton.addEventListener("click", () => {
       void this.handleToggleTrackChanges();
     });
     trackButton.disabled = this.isUiBusy();
+    const acceptedButton = controlsRow.createEl("button", {
+      text: this.isAcceptedTextViewEnabled() ? "Accepted View: On" : "Accepted View: Off",
+      attr: { type: "button" },
+      cls: "review-accepted-toggle"
+    });
+    acceptedButton.addEventListener("mousedown", (event) => event.preventDefault());
+    acceptedButton.addEventListener("click", () => {
+      void this.handleToggleAcceptedTextView();
+    });
+    acceptedButton.disabled = this.isUiBusy();
     const acceptAllButton = controlsRow.createEl("button", {
       text: this.acceptAllPending ? "Working..." : "Accept All",
       attr: { type: "button" },
       cls: "review-changes-accept-all"
     });
+    acceptAllButton.addEventListener("mousedown", (event) => event.preventDefault());
     acceptAllButton.disabled = this.acceptAllPending || this.isUiBusy();
     acceptAllButton.addEventListener("click", () => {
       void this.handleAcceptAll();
@@ -545,12 +557,14 @@ var _ReviewChangesView = class _ReviewChangesView extends import_obsidian2.ItemV
         text: isPending ? "Working..." : "Accept",
         attr: { type: "button" }
       });
+      acceptButton.addEventListener("mousedown", (event) => event.preventDefault());
       acceptButton.disabled = isPending || this.isUiBusy();
       acceptButton.addEventListener("click", (event) => {
         event.stopPropagation();
         void this.handleEntryAction(entry, "accept");
       });
       const rejectButton = actions2.createEl("button", { text: "Reject", attr: { type: "button" } });
+      rejectButton.addEventListener("mousedown", (event) => event.preventDefault());
       rejectButton.disabled = isPending || this.isUiBusy();
       rejectButton.addEventListener("click", (event) => {
         event.stopPropagation();
@@ -578,6 +592,16 @@ var _ReviewChangesView = class _ReviewChangesView extends import_obsidian2.ItemV
     this.localBusy = true;
     this.render();
     await this.onToggleTrackChanges();
+    this.localBusy = false;
+    this.render();
+  }
+  async handleToggleAcceptedTextView() {
+    if (this.isUiBusy()) {
+      return;
+    }
+    this.localBusy = true;
+    this.render();
+    await this.onToggleAcceptedTextView();
     this.localBusy = false;
     this.render();
   }
@@ -623,28 +647,6 @@ var ReviewChangesView = _ReviewChangesView;
 // src/live-preview.ts
 var import_state = require("@codemirror/state");
 var import_view = require("@codemirror/view");
-
-// src/display-mode.ts
-var DisplayModeRenderer = class {
-  renderAcceptedTextForToken(token) {
-    switch (token.type) {
-      case "addition":
-        return token.text;
-      case "deletion":
-        return "";
-      case "substitution":
-        return token.newText;
-      case "highlight":
-        return token.text;
-      case "comment":
-        return "";
-      case "anchoredComment":
-        return token.highlightedText;
-    }
-  }
-};
-
-// src/live-preview.ts
 var HiddenDelimiterWidget = class extends import_view.WidgetType {
   toDOM() {
     const element = document.createElement("span");
@@ -688,26 +690,13 @@ var SubstitutionWidget = class extends import_view.WidgetType {
     return wrapper;
   }
 };
-var PlainTextWidget = class extends import_view.WidgetType {
-  constructor(text) {
-    super();
-    this.text = text;
-  }
-  toDOM() {
-    const element = document.createElement("span");
-    element.textContent = this.text;
-    return element;
-  }
-};
 var ReviewLivePreviewExtensionFactory = class _ReviewLivePreviewExtensionFactory {
-  constructor(parser, displayModeRenderer) {
+  constructor(parser) {
     this.hiddenDelimiterWidget = new HiddenDelimiterWidget();
     this.parser = parser;
-    this.displayModeRenderer = displayModeRenderer ?? new DisplayModeRenderer();
   }
   createExtension(isEnabled, isAcceptedTextViewEnabled) {
     const parser = this.parser;
-    const displayModeRenderer = this.displayModeRenderer;
     const hiddenDelimiterWidget = this.hiddenDelimiterWidget;
     const acceptedTextViewEnabled = isAcceptedTextViewEnabled ?? (() => false);
     class LivePreviewDecorations {
@@ -715,7 +704,6 @@ var ReviewLivePreviewExtensionFactory = class _ReviewLivePreviewExtensionFactory
         this.decorations = _ReviewLivePreviewExtensionFactory.buildDecorations(
           view,
           parser,
-          displayModeRenderer,
           isEnabled,
           acceptedTextViewEnabled,
           hiddenDelimiterWidget
@@ -726,7 +714,6 @@ var ReviewLivePreviewExtensionFactory = class _ReviewLivePreviewExtensionFactory
           this.decorations = _ReviewLivePreviewExtensionFactory.buildDecorations(
             update.view,
             parser,
-            displayModeRenderer,
             isEnabled,
             acceptedTextViewEnabled,
             hiddenDelimiterWidget
@@ -738,7 +725,7 @@ var ReviewLivePreviewExtensionFactory = class _ReviewLivePreviewExtensionFactory
       decorations: (value) => value.decorations
     });
   }
-  static buildDecorations(view, parser, displayModeRenderer, isEnabled, isAcceptedTextViewEnabled, hiddenDelimiterWidget) {
+  static buildDecorations(view, parser, isEnabled, isAcceptedTextViewEnabled, hiddenDelimiterWidget) {
     const builder = new import_state.RangeSetBuilder();
     if (!isEnabled()) {
       return builder.finish();
@@ -757,13 +744,16 @@ var ReviewLivePreviewExtensionFactory = class _ReviewLivePreviewExtensionFactory
       if (acceptedTextMode) {
         switch (token.type) {
           case "addition":
-            _ReviewLivePreviewExtensionFactory.addCriticTokenDecorations(
+            _ReviewLivePreviewExtensionFactory.addHiddenRange(
               builder,
               token.from,
+              token.from + 3,
+              hiddenDelimiterWidget
+            );
+            _ReviewLivePreviewExtensionFactory.addHiddenRange(
+              builder,
+              token.to - 3,
               token.to,
-              3,
-              3,
-              "review-live review-live-addition",
               hiddenDelimiterWidget
             );
             break;
@@ -776,22 +766,36 @@ var ReviewLivePreviewExtensionFactory = class _ReviewLivePreviewExtensionFactory
             );
             break;
           case "substitution":
-            builder.add(
-              token.from,
-              token.to,
-              import_view.Decoration.replace({
-                widget: new PlainTextWidget(displayModeRenderer.renderAcceptedTextForToken(token))
-              })
-            );
+            if (token.oldText.includes("\n") || token.newText.includes("\n")) {
+              builder.add(
+                token.from,
+                token.to,
+                import_view.Decoration.mark({
+                  class: "review-live review-live-substitution"
+                })
+              );
+            } else {
+              _ReviewLivePreviewExtensionFactory.addAcceptedSubstitutionDecorations(
+                builder,
+                token.from,
+                token.to,
+                token.oldText.length,
+                token.newText.length,
+                hiddenDelimiterWidget
+              );
+            }
             break;
           case "highlight":
-            _ReviewLivePreviewExtensionFactory.addCriticTokenDecorations(
+            _ReviewLivePreviewExtensionFactory.addHiddenRange(
               builder,
               token.from,
+              token.from + 3,
+              hiddenDelimiterWidget
+            );
+            _ReviewLivePreviewExtensionFactory.addHiddenRange(
+              builder,
+              token.to - 3,
               token.to,
-              3,
-              3,
-              "review-live review-live-highlight",
               hiddenDelimiterWidget
             );
             break;
@@ -805,13 +809,16 @@ var ReviewLivePreviewExtensionFactory = class _ReviewLivePreviewExtensionFactory
             );
             break;
           case "anchoredComment":
-            _ReviewLivePreviewExtensionFactory.addCriticTokenDecorations(
+            _ReviewLivePreviewExtensionFactory.addHiddenRange(
               builder,
               token.highlightRange.from,
+              token.highlightRange.from + 3,
+              hiddenDelimiterWidget
+            );
+            _ReviewLivePreviewExtensionFactory.addHiddenRange(
+              builder,
+              token.highlightRange.to - 3,
               token.highlightRange.to,
-              3,
-              3,
-              "review-live review-live-highlight review-live-anchored",
               hiddenDelimiterWidget
             );
             _ReviewLivePreviewExtensionFactory.addCommentBadge(
@@ -916,13 +923,23 @@ var ReviewLivePreviewExtensionFactory = class _ReviewLivePreviewExtensionFactory
           );
           break;
         case "substitution":
-          builder.add(
-            token.from,
-            token.to,
-            import_view.Decoration.replace({
-              widget: new SubstitutionWidget(token.oldText, token.newText)
-            })
-          );
+          if (token.oldText.includes("\n") || token.newText.includes("\n")) {
+            builder.add(
+              token.from,
+              token.to,
+              import_view.Decoration.mark({
+                class: "review-live review-live-substitution"
+              })
+            );
+          } else {
+            builder.add(
+              token.from,
+              token.to,
+              import_view.Decoration.replace({
+                widget: new SubstitutionWidget(token.oldText, token.newText)
+              })
+            );
+          }
           break;
         case "highlight":
           _ReviewLivePreviewExtensionFactory.addCriticTokenDecorations(
@@ -970,6 +987,7 @@ var ReviewLivePreviewExtensionFactory = class _ReviewLivePreviewExtensionFactory
     const contentFrom = from + openDelimiterLength;
     const contentTo = to - closeDelimiterLength;
     if (contentTo <= contentFrom) {
+      builder.add(from, to, import_view.Decoration.mark({ class: contentClassName }));
       return;
     }
     _ReviewLivePreviewExtensionFactory.addHiddenRange(
@@ -980,6 +998,20 @@ var ReviewLivePreviewExtensionFactory = class _ReviewLivePreviewExtensionFactory
     );
     builder.add(contentFrom, contentTo, import_view.Decoration.mark({ class: contentClassName }));
     _ReviewLivePreviewExtensionFactory.addHiddenRange(builder, contentTo, to, hiddenDelimiterWidget);
+  }
+  static addAcceptedSubstitutionDecorations(builder, from, to, oldTextLength, newTextLength, hiddenDelimiterWidget) {
+    const oldFrom = from + 3;
+    const oldTo = oldFrom + oldTextLength;
+    const middleTo = oldTo + 2;
+    const newTo = middleTo + newTextLength;
+    const closeFrom = to - 3;
+    if (newTo > closeFrom) {
+      return;
+    }
+    _ReviewLivePreviewExtensionFactory.addHiddenRange(builder, from, oldFrom, hiddenDelimiterWidget);
+    _ReviewLivePreviewExtensionFactory.addHiddenRange(builder, oldFrom, oldTo, hiddenDelimiterWidget);
+    _ReviewLivePreviewExtensionFactory.addHiddenRange(builder, oldTo, middleTo, hiddenDelimiterWidget);
+    _ReviewLivePreviewExtensionFactory.addHiddenRange(builder, closeFrom, to, hiddenDelimiterWidget);
   }
   static addCommentBadge(builder, from, to, author, text) {
     if (to <= from) {
@@ -1400,6 +1432,26 @@ var ReviewParser = class {
   }
 };
 
+// src/display-mode.ts
+var DisplayModeRenderer = class {
+  renderAcceptedTextForToken(token) {
+    switch (token.type) {
+      case "addition":
+        return token.text;
+      case "deletion":
+        return "";
+      case "substitution":
+        return token.newText;
+      case "highlight":
+        return token.text;
+      case "comment":
+        return "";
+      case "anchoredComment":
+        return token.highlightedText;
+    }
+  }
+};
+
 // src/reading-view.ts
 var ReviewReadingViewDecorator = class {
   constructor(parser, syntax, displayModeRenderer) {
@@ -1581,7 +1633,7 @@ var ThemePresetService = class {
       return { presets: nextPresets, saved: updated, overwritten: true };
     }
     const created = {
-      id: this.idGenerator.createId(),
+      id: this.createUniqueId(nextPresets),
       name: name.trim(),
       isBuiltIn: false,
       ...payload
@@ -1601,6 +1653,16 @@ var ThemePresetService = class {
   }
   normalizeName(value) {
     return value.trim().toLowerCase();
+  }
+  createUniqueId(existing) {
+    const base = this.idGenerator.createId();
+    let candidate = base;
+    let suffix = 1;
+    while (existing.some((preset) => preset.id === candidate)) {
+      candidate = `${base}-${suffix}`;
+      suffix += 1;
+    }
+    return candidate;
   }
 };
 
@@ -1624,13 +1686,23 @@ var TrackChangesService = class {
     if (from < 0 || to < from || to > content.length) {
       return null;
     }
+    if (this.shouldSkipTrackingForChange(content, from, to, insertedText)) {
+      return null;
+    }
     const selected = content.slice(from, to);
+    if (from !== to && this.isStructuredEdit(selected, insertedText)) {
+      return null;
+    }
     const insideAddition = this.findTokenContentRange(content, from, "addition");
-    const insideSubstitutionNew = this.findSubstitutionNewContentRange(content, from);
+    const insideSubstitutionNew = this.findSubstitutionContentRange(content, from, "new");
+    const insideSubstitutionOld = this.findSubstitutionContentRange(content, from, "old");
     const insideDeletion = this.findTokenContentRange(content, from, "deletion");
     const insideComment = this.findCommentContentRange(content, from);
     if (from === to && insertedText.length > 0) {
       if (this.isInsideTokenDelimiter(content, from)) {
+        return { content, cursor: from, preventDefault: true };
+      }
+      if (insideSubstitutionOld) {
         return { content, cursor: from, preventDefault: true };
       }
       if (insideComment) {
@@ -1659,6 +1731,9 @@ var TrackChangesService = class {
       return { content: next, cursor: Math.min(cursor, from + insertedText.length + 3) };
     }
     if (from !== to && insertedText.length > 0) {
+      if (this.overlapsTokenDelimiters(content, from, to)) {
+        return { content, cursor: from, preventDefault: true };
+      }
       const insideCommentFrom = this.findCommentContentRange(content, from);
       const insideCommentTo = this.findCommentContentRange(content, Math.max(from, to - 1));
       if (insideCommentFrom && insideCommentTo && insideCommentFrom.outerStart === insideCommentTo.outerStart && insideCommentFrom.outerEnd === insideCommentTo.outerEnd) {
@@ -1671,8 +1746,29 @@ var TrackChangesService = class {
         const next2 = this.insertText(content, from, to, insertedText);
         return { content: next2, cursor: from + insertedText.length };
       }
-      if (this.overlapsTokenDelimiters(content, from, to)) {
+      const insideSubstitutionNewFrom = this.findSubstitutionContentRange(content, from, "new");
+      const insideSubstitutionNewTo = this.findSubstitutionContentRange(
+        content,
+        Math.max(from, to - 1),
+        "new"
+      );
+      if (insideSubstitutionNewFrom && insideSubstitutionNewTo && insideSubstitutionNewFrom.outerStart === insideSubstitutionNewTo.outerStart && insideSubstitutionNewFrom.outerEnd === insideSubstitutionNewTo.outerEnd) {
+        const next2 = this.insertText(content, from, to, insertedText);
+        return { content: next2, cursor: from + insertedText.length };
+      }
+      const insideSubstitutionOldFrom = this.findSubstitutionContentRange(content, from, "old");
+      const insideSubstitutionOldTo = this.findSubstitutionContentRange(
+        content,
+        Math.max(from, to - 1),
+        "old"
+      );
+      if (insideSubstitutionOldFrom && insideSubstitutionOldTo && insideSubstitutionOldFrom.outerStart === insideSubstitutionOldTo.outerStart && insideSubstitutionOldFrom.outerEnd === insideSubstitutionOldTo.outerEnd) {
         return { content, cursor: from, preventDefault: true };
+      }
+      if (selected.trim().length === 0) {
+        let next2 = this.insertText(content, from, to, `{++${insertedText}++}`);
+        next2 = this.mergeAdjacentTokens(next2, "{++", "++}");
+        return { content: next2, cursor: from + insertedText.length + 3 };
       }
       const replacement = `{~~${selected}~>${insertedText}~~}`;
       const next = this.insertText(content, from, to, replacement);
@@ -1680,6 +1776,9 @@ var TrackChangesService = class {
       return { content: next, cursor };
     }
     if (from !== to && insertedText.length === 0) {
+      if (this.overlapsTokenDelimiters(content, from, to)) {
+        return { content, cursor: from, preventDefault: true };
+      }
       const insideCommentFrom = this.findCommentContentRange(content, from);
       const insideCommentTo = this.findCommentContentRange(content, Math.max(from, to - 1));
       if (insideCommentFrom && insideCommentTo && insideCommentFrom.outerStart === insideCommentTo.outerStart && insideCommentFrom.outerEnd === insideCommentTo.outerEnd) {
@@ -1689,15 +1788,41 @@ var TrackChangesService = class {
       const insideAdditionFrom = this.findTokenContentRange(content, from, "addition");
       const insideAdditionTo = this.findTokenContentRange(content, Math.max(from, to - 1), "addition");
       if (insideAdditionFrom && insideAdditionTo && insideAdditionFrom.outerStart === insideAdditionTo.outerStart && insideAdditionFrom.outerEnd === insideAdditionTo.outerEnd) {
+        const nextInner = `${content.slice(insideAdditionFrom.start, from)}${content.slice(to, insideAdditionFrom.end)}`;
+        if (nextInner.length === 0) {
+          const next3 = this.insertText(
+            content,
+            insideAdditionFrom.outerStart,
+            insideAdditionFrom.outerEnd,
+            ""
+          );
+          return { content: next3, cursor: insideAdditionFrom.outerStart };
+        }
         const next2 = this.insertText(content, from, to, "");
         return { content: next2, cursor: from };
+      }
+      const insideSubstitutionNewFrom = this.findSubstitutionContentRange(content, from, "new");
+      const insideSubstitutionNewTo = this.findSubstitutionContentRange(
+        content,
+        Math.max(from, to - 1),
+        "new"
+      );
+      if (insideSubstitutionNewFrom && insideSubstitutionNewTo && insideSubstitutionNewFrom.outerStart === insideSubstitutionNewTo.outerStart && insideSubstitutionNewFrom.outerEnd === insideSubstitutionNewTo.outerEnd) {
+        const next2 = this.insertText(content, from, to, "");
+        return { content: next2, cursor: from };
+      }
+      const insideSubstitutionOldFrom = this.findSubstitutionContentRange(content, from, "old");
+      const insideSubstitutionOldTo = this.findSubstitutionContentRange(
+        content,
+        Math.max(from, to - 1),
+        "old"
+      );
+      if (insideSubstitutionOldFrom && insideSubstitutionOldTo && insideSubstitutionOldFrom.outerStart === insideSubstitutionOldTo.outerStart && insideSubstitutionOldFrom.outerEnd === insideSubstitutionOldTo.outerEnd) {
+        return { content, cursor: from, preventDefault: true };
       }
       const insideDeletionFrom = this.findTokenContentRange(content, from, "deletion");
       const insideDeletionTo = this.findTokenContentRange(content, Math.max(from, to - 1), "deletion");
       if (insideDeletionFrom && insideDeletionTo && insideDeletionFrom.outerStart === insideDeletionTo.outerStart && insideDeletionFrom.outerEnd === insideDeletionTo.outerEnd) {
-        return { content, cursor: from, preventDefault: true };
-      }
-      if (this.overlapsTokenDelimiters(content, from, to)) {
         return { content, cursor: from, preventDefault: true };
       }
       let next = this.insertText(content, from, to, `{--${selected}--}`);
@@ -1705,6 +1830,27 @@ var TrackChangesService = class {
       return { content: next, cursor: from };
     }
     return null;
+  }
+  shouldSkipTrackingForChange(sourceContent, from, to, insertedText, nextContent, nextFrom, nextTo) {
+    if (from < 0 || to < from || from > sourceContent.length || to > sourceContent.length) {
+      return true;
+    }
+    if (this.isInMarkdownTableContext(sourceContent, from, to)) {
+      return true;
+    }
+    if (nextContent !== void 0 && nextFrom !== void 0 && nextTo !== void 0) {
+      if (nextFrom < 0 || nextTo < nextFrom || nextFrom > nextContent.length || nextTo > nextContent.length) {
+        return true;
+      }
+      if (this.isInMarkdownTableContext(nextContent, nextFrom, nextTo)) {
+        return true;
+      }
+    }
+    const selected = sourceContent.slice(from, to);
+    if (this.looksLikeTableStructure(selected) || this.looksLikeTableStructure(insertedText)) {
+      return true;
+    }
+    return false;
   }
   findCommentContentRange(content, position) {
     const pattern = /\{>>[\s\S]*?<<\}/g;
@@ -1749,17 +1895,22 @@ var TrackChangesService = class {
     }
     return null;
   }
-  findSubstitutionNewContentRange(content, position) {
+  findSubstitutionContentRange(content, position, side) {
     const pattern = /\{~~([\s\S]*?)~>([\s\S]*?)~~\}/g;
     let match = pattern.exec(content);
     while (match) {
       const outerStart = match.index;
       const oldTextLength = match[1].length;
       const newTextLength = match[2].length;
-      const start = outerStart + 3 + oldTextLength + 2;
-      const end = start + newTextLength;
+      const oldStart = outerStart + 3;
+      const oldEnd = oldStart + oldTextLength;
+      const newStart = oldEnd + 2;
+      const newEnd = newStart + newTextLength;
+      const start = side === "old" ? oldStart : newStart;
+      const end = side === "old" ? oldEnd : newEnd;
       if (position >= start && position <= end) {
-        return { start, end };
+        const outerEnd = outerStart + match[0].length;
+        return { outerStart, outerEnd, start, end };
       }
       match = pattern.exec(content);
     }
@@ -1812,6 +1963,82 @@ var TrackChangesService = class {
     }
     return false;
   }
+  isInMarkdownTableContext(content, from, to) {
+    const lineRange = this.getLineRange(content, from, to);
+    if (!lineRange) {
+      return false;
+    }
+    const currentLine = content.slice(lineRange.start, lineRange.end);
+    if (!currentLine.includes("|")) {
+      return false;
+    }
+    const tableBlockLines = this.collectContiguousPipeLines(content, lineRange);
+    if (tableBlockLines.length < 2) {
+      return false;
+    }
+    const tableSeparator = /^\s*\|?(?:\s*:?-{3,}:?\s*\|)+\s*:?-{3,}:?\s*\|?\s*$/;
+    return tableBlockLines.some((line) => tableSeparator.test(line));
+  }
+  getLineRange(content, from, to) {
+    if (from < 0 || to < from || from > content.length || to > content.length) {
+      return null;
+    }
+    const start = content.lastIndexOf("\n", from - 1) + 1;
+    const endIdx = content.indexOf("\n", to);
+    const end = endIdx === -1 ? content.length : endIdx;
+    return { start, end };
+  }
+  collectContiguousPipeLines(content, anchor) {
+    const lines = [];
+    const anchorLine = content.slice(anchor.start, anchor.end);
+    if (!anchorLine.includes("|")) {
+      return lines;
+    }
+    lines.push(anchorLine);
+    let upwardLineStart = anchor.start;
+    while (upwardLineStart > 0) {
+      const previousLineEnd = upwardLineStart - 1;
+      const previousLineStart = content.lastIndexOf("\n", previousLineEnd - 1) + 1;
+      const previousLine = content.slice(previousLineStart, previousLineEnd);
+      if (!previousLine.includes("|")) {
+        break;
+      }
+      lines.unshift(previousLine);
+      upwardLineStart = previousLineStart;
+    }
+    let downwardLineEnd = anchor.end;
+    while (downwardLineEnd < content.length) {
+      if (content[downwardLineEnd] !== "\n") {
+        break;
+      }
+      const nextLineStart = downwardLineEnd + 1;
+      const nextLineEndIdx = content.indexOf("\n", nextLineStart);
+      const nextLineEnd = nextLineEndIdx === -1 ? content.length : nextLineEndIdx;
+      const nextLine = content.slice(nextLineStart, nextLineEnd);
+      if (!nextLine.includes("|")) {
+        break;
+      }
+      lines.push(nextLine);
+      downwardLineEnd = nextLineEnd;
+    }
+    return lines;
+  }
+  looksLikeTableStructure(text) {
+    if (!text.includes("|")) {
+      return false;
+    }
+    if (text.includes("\n")) {
+      return true;
+    }
+    const trimmed = text.trim();
+    if (!trimmed.startsWith("|") || !trimmed.endsWith("|")) {
+      return false;
+    }
+    return (trimmed.match(/\|/g) ?? []).length >= 2;
+  }
+  isStructuredEdit(selected, insertedText) {
+    return selected.includes("\n") || insertedText.includes("\n") || selected.includes("|") || insertedText.includes("|");
+  }
 };
 var TrackChangesExtensionFactory = class {
   constructor(trackChangesService) {
@@ -1828,32 +2055,76 @@ var TrackChangesExtensionFactory = class {
       let changeCount = 0;
       let from = 0;
       let to = 0;
+      let newFrom = 0;
+      let newTo = 0;
       let insertedText = "";
-      transaction.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
+      transaction.changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
         changeCount += 1;
         from = fromA;
         to = toA;
+        newFrom = fromB;
+        newTo = toB;
         insertedText = inserted.toString();
       });
       if (changeCount !== 1) {
         return transaction;
       }
       const source = transaction.startState.doc.toString();
+      const next = transaction.newDoc.toString();
+      if (this.trackChangesService.shouldSkipTrackingForChange(
+        source,
+        from,
+        to,
+        insertedText,
+        next,
+        newFrom,
+        newTo
+      )) {
+        return transaction;
+      }
       const transformed = this.trackChangesService.applyTrackedEdit(source, from, to, insertedText);
       if (transformed?.preventDefault) {
         return {
-          changes: { from: 0, to: source.length, insert: source },
-          selection: import_state2.EditorSelection.cursor(Math.max(0, transformed.cursor))
+          changes: [],
+          selection: import_state2.EditorSelection.cursor(
+            Math.max(0, Math.min(source.length, transformed.cursor))
+          )
         };
       }
       if (!transformed || transformed.content === source) {
         return transaction;
       }
+      if (transformed.content === transaction.newDoc.toString()) {
+        return transaction;
+      }
+      const minimal = this.computeMinimalReplacement(source, transformed.content);
       return {
-        changes: { from: 0, to: source.length, insert: transformed.content },
-        selection: import_state2.EditorSelection.cursor(Math.max(0, transformed.cursor))
+        changes: minimal,
+        selection: import_state2.EditorSelection.cursor(
+          Math.max(0, Math.min(transformed.content.length, transformed.cursor))
+        )
       };
     });
+  }
+  computeMinimalReplacement(source, target) {
+    let start = 0;
+    const sourceLength = source.length;
+    const targetLength = target.length;
+    const minLength = Math.min(sourceLength, targetLength);
+    while (start < minLength && source.charCodeAt(start) === target.charCodeAt(start)) {
+      start += 1;
+    }
+    let sourceEnd = sourceLength;
+    let targetEnd = targetLength;
+    while (sourceEnd > start && targetEnd > start && source.charCodeAt(sourceEnd - 1) === target.charCodeAt(targetEnd - 1)) {
+      sourceEnd -= 1;
+      targetEnd -= 1;
+    }
+    return {
+      from: start,
+      to: sourceEnd,
+      insert: target.slice(start, targetEnd)
+    };
   }
 };
 
@@ -1920,7 +2191,13 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
             await this.toggleTrackChangesMode();
           }, true);
         },
+        async () => {
+          await this.runCommandExclusive(async () => {
+            await this.toggleAcceptedTextView();
+          }, true);
+        },
         () => this.settings.trackChangesEnabled,
+        () => this.settings.acceptedTextViewEnabled,
         () => this.commandInFlight
       )
     );
@@ -2092,11 +2369,7 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
       id: ReviewCommands.TOGGLE_ACCEPTED_TEXT_VIEW_ID,
       name: ReviewCommands.TOGGLE_ACCEPTED_TEXT_VIEW_NAME,
       callback: runGlobal(async () => {
-        this.settings.acceptedTextViewEnabled = !this.settings.acceptedTextViewEnabled;
-        await this.saveSettings();
-        new import_obsidian4.Notice(
-          this.settings.acceptedTextViewEnabled ? ReviewNotices.ACCEPTED_TEXT_VIEW_ENABLED : ReviewNotices.ACCEPTED_TEXT_VIEW_DISABLED
-        );
+        await this.toggleAcceptedTextView();
       })
     });
     this.addCommand({
@@ -2390,8 +2663,17 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
   async toggleTrackChangesMode() {
     this.settings.trackChangesEnabled = !this.settings.trackChangesEnabled;
     await this.saveSettings();
+    this.nudgeActiveEditorSelection();
     new import_obsidian4.Notice(
       this.settings.trackChangesEnabled ? ReviewNotices.TRACK_CHANGES_ENABLED : ReviewNotices.TRACK_CHANGES_DISABLED
+    );
+  }
+  async toggleAcceptedTextView() {
+    this.settings.acceptedTextViewEnabled = !this.settings.acceptedTextViewEnabled;
+    await this.saveSettings();
+    this.nudgeActiveEditorSelection();
+    new import_obsidian4.Notice(
+      this.settings.acceptedTextViewEnabled ? ReviewNotices.ACCEPTED_TEXT_VIEW_ENABLED : ReviewNotices.ACCEPTED_TEXT_VIEW_DISABLED
     );
   }
   async runCommandExclusive(task, silentIfBusy = false) {
@@ -2402,17 +2684,30 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
       return null;
     }
     this.commandInFlight = true;
-    await Promise.all([this.refreshCommentsPane(), this.refreshChangesPane()]);
     try {
+      await Promise.all([this.refreshCommentsPane(), this.refreshChangesPane()]);
       return await task();
     } finally {
       this.commandInFlight = false;
-      await Promise.all([this.refreshCommentsPane(), this.refreshChangesPane()]);
+      try {
+        await Promise.all([this.refreshCommentsPane(), this.refreshChangesPane()]);
+      } catch (error) {
+        console.error("[review-critic] Pane refresh failed after command.", error);
+      }
     }
   }
   replaceSelectionWithoutTrackChanges(editor, value) {
     this.trackChangesService.suppressNextTransaction();
     editor.replaceSelection(value);
+  }
+  nudgeActiveEditorSelection() {
+    const editor = this.editorContextService.getActiveMarkdownEditor();
+    if (!editor) {
+      return;
+    }
+    const from = editor.getCursor("from");
+    const to = editor.getCursor("to");
+    editor.setSelection(from, to);
   }
   findExactTrackedChangeEntry(content, target) {
     const entries = this.parser.buildTrackedChangeEntries(content);

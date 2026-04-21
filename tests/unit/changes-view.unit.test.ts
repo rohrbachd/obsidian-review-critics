@@ -14,6 +14,8 @@ describe('changes-view', () => {
       async () => true,
       async () => {},
       () => false,
+      () => false,
+      () => false,
       () => false
     );
     await view.onOpen();
@@ -27,6 +29,7 @@ describe('changes-view', () => {
     const onAcceptAll = vi.fn().mockResolvedValue(undefined);
     const onQuickAction = vi.fn().mockResolvedValue(true);
     const onToggleTrack = vi.fn().mockResolvedValue(undefined);
+    const onToggleAccepted = vi.fn().mockResolvedValue(undefined);
     const view = new ReviewChangesView(
       {} as never,
       onNavigate,
@@ -35,7 +38,9 @@ describe('changes-view', () => {
       onAcceptAll,
       onQuickAction,
       onToggleTrack,
+      onToggleAccepted,
       () => true,
+      () => false,
       () => false
     );
 

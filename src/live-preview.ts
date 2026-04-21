@@ -8,7 +8,6 @@ import {
   WidgetType,
 } from '@codemirror/view';
 import { ReviewReadingViewText } from './review-config';
-import { DisplayModeRenderer, type IDisplayModeRenderer } from './display-mode';
 import type { IReviewParser } from './review-types';
 
 class HiddenDelimiterWidget extends WidgetType {
@@ -68,34 +67,16 @@ class SubstitutionWidget extends WidgetType {
   }
 }
 
-class PlainTextWidget extends WidgetType {
-  private readonly text: string;
-
-  constructor(text: string) {
-    super();
-    this.text = text;
-  }
-
-  toDOM(): HTMLElement {
-    const element = document.createElement('span');
-    element.textContent = this.text;
-    return element;
-  }
-}
-
 export class ReviewLivePreviewExtensionFactory {
   private readonly parser: IReviewParser;
-  private readonly displayModeRenderer: IDisplayModeRenderer;
   private readonly hiddenDelimiterWidget = new HiddenDelimiterWidget();
 
-  constructor(parser: IReviewParser, displayModeRenderer?: IDisplayModeRenderer) {
+  constructor(parser: IReviewParser) {
     this.parser = parser;
-    this.displayModeRenderer = displayModeRenderer ?? new DisplayModeRenderer();
   }
 
   createExtension(isEnabled: () => boolean, isAcceptedTextViewEnabled?: () => boolean) {
     const parser = this.parser;
-    const displayModeRenderer = this.displayModeRenderer;
     const hiddenDelimiterWidget = this.hiddenDelimiterWidget;
     const acceptedTextViewEnabled = isAcceptedTextViewEnabled ?? (() => false);
 
@@ -106,7 +87,6 @@ export class ReviewLivePreviewExtensionFactory {
         this.decorations = ReviewLivePreviewExtensionFactory.buildDecorations(
           view,
           parser,
-          displayModeRenderer,
           isEnabled,
           acceptedTextViewEnabled,
           hiddenDelimiterWidget
@@ -120,13 +100,12 @@ export class ReviewLivePreviewExtensionFactory {
           update.selectionSet ||
           update.focusChanged
         ) {
-          this.decorations = ReviewLivePreviewExtensionFactory.buildDecorations(
-            update.view,
-            parser,
-            displayModeRenderer,
-            isEnabled,
-            acceptedTextViewEnabled,
-            hiddenDelimiterWidget
+            this.decorations = ReviewLivePreviewExtensionFactory.buildDecorations(
+              update.view,
+              parser,
+              isEnabled,
+              acceptedTextViewEnabled,
+              hiddenDelimiterWidget
           );
         }
       }
@@ -140,7 +119,6 @@ export class ReviewLivePreviewExtensionFactory {
   private static buildDecorations(
     view: EditorView,
     parser: IReviewParser,
-    displayModeRenderer: IDisplayModeRenderer,
     isEnabled: () => boolean,
     isAcceptedTextViewEnabled: () => boolean,
     hiddenDelimiterWidget: HiddenDelimiterWidget
@@ -167,13 +145,16 @@ export class ReviewLivePreviewExtensionFactory {
       if (acceptedTextMode) {
         switch (token.type) {
           case 'addition':
-            ReviewLivePreviewExtensionFactory.addCriticTokenDecorations(
+            ReviewLivePreviewExtensionFactory.addHiddenRange(
               builder,
               token.from,
+              token.from + 3,
+              hiddenDelimiterWidget
+            );
+            ReviewLivePreviewExtensionFactory.addHiddenRange(
+              builder,
+              token.to - 3,
               token.to,
-              3,
-              3,
-              'review-live review-live-addition',
               hiddenDelimiterWidget
             );
             break;
@@ -186,22 +167,36 @@ export class ReviewLivePreviewExtensionFactory {
             );
             break;
           case 'substitution':
-            builder.add(
-              token.from,
-              token.to,
-              Decoration.replace({
-                widget: new PlainTextWidget(displayModeRenderer.renderAcceptedTextForToken(token)),
-              })
-            );
+            if (token.oldText.includes('\n') || token.newText.includes('\n')) {
+              builder.add(
+                token.from,
+                token.to,
+                Decoration.mark({
+                  class: 'review-live review-live-substitution',
+                })
+              );
+            } else {
+              ReviewLivePreviewExtensionFactory.addAcceptedSubstitutionDecorations(
+                builder,
+                token.from,
+                token.to,
+                token.oldText.length,
+                token.newText.length,
+                hiddenDelimiterWidget
+              );
+            }
             break;
           case 'highlight':
-            ReviewLivePreviewExtensionFactory.addCriticTokenDecorations(
+            ReviewLivePreviewExtensionFactory.addHiddenRange(
               builder,
               token.from,
+              token.from + 3,
+              hiddenDelimiterWidget
+            );
+            ReviewLivePreviewExtensionFactory.addHiddenRange(
+              builder,
+              token.to - 3,
               token.to,
-              3,
-              3,
-              'review-live review-live-highlight',
               hiddenDelimiterWidget
             );
             break;
@@ -215,13 +210,16 @@ export class ReviewLivePreviewExtensionFactory {
             );
             break;
           case 'anchoredComment':
-            ReviewLivePreviewExtensionFactory.addCriticTokenDecorations(
+            ReviewLivePreviewExtensionFactory.addHiddenRange(
               builder,
               token.highlightRange.from,
+              token.highlightRange.from + 3,
+              hiddenDelimiterWidget
+            );
+            ReviewLivePreviewExtensionFactory.addHiddenRange(
+              builder,
+              token.highlightRange.to - 3,
               token.highlightRange.to,
-              3,
-              3,
-              'review-live review-live-highlight review-live-anchored',
               hiddenDelimiterWidget
             );
             ReviewLivePreviewExtensionFactory.addCommentBadge(
@@ -331,13 +329,23 @@ export class ReviewLivePreviewExtensionFactory {
           );
           break;
         case 'substitution':
-          builder.add(
-            token.from,
-            token.to,
-            Decoration.replace({
-              widget: new SubstitutionWidget(token.oldText, token.newText),
-            })
-          );
+          if (token.oldText.includes('\n') || token.newText.includes('\n')) {
+            builder.add(
+              token.from,
+              token.to,
+              Decoration.mark({
+                class: 'review-live review-live-substitution',
+              })
+            );
+          } else {
+            builder.add(
+              token.from,
+              token.to,
+              Decoration.replace({
+                widget: new SubstitutionWidget(token.oldText, token.newText),
+              })
+            );
+          }
           break;
         case 'highlight':
           ReviewLivePreviewExtensionFactory.addCriticTokenDecorations(
@@ -396,6 +404,7 @@ export class ReviewLivePreviewExtensionFactory {
     const contentTo = to - closeDelimiterLength;
 
     if (contentTo <= contentFrom) {
+      builder.add(from, to, Decoration.mark({ class: contentClassName }));
       return;
     }
 
@@ -407,6 +416,30 @@ export class ReviewLivePreviewExtensionFactory {
     );
     builder.add(contentFrom, contentTo, Decoration.mark({ class: contentClassName }));
     ReviewLivePreviewExtensionFactory.addHiddenRange(builder, contentTo, to, hiddenDelimiterWidget);
+  }
+
+  private static addAcceptedSubstitutionDecorations(
+    builder: RangeSetBuilder<Decoration>,
+    from: number,
+    to: number,
+    oldTextLength: number,
+    newTextLength: number,
+    hiddenDelimiterWidget: HiddenDelimiterWidget
+  ): void {
+    const oldFrom = from + 3;
+    const oldTo = oldFrom + oldTextLength;
+    const middleTo = oldTo + 2;
+    const newTo = middleTo + newTextLength;
+    const closeFrom = to - 3;
+
+    if (newTo > closeFrom) {
+      return;
+    }
+
+    ReviewLivePreviewExtensionFactory.addHiddenRange(builder, from, oldFrom, hiddenDelimiterWidget);
+    ReviewLivePreviewExtensionFactory.addHiddenRange(builder, oldFrom, oldTo, hiddenDelimiterWidget);
+    ReviewLivePreviewExtensionFactory.addHiddenRange(builder, oldTo, middleTo, hiddenDelimiterWidget);
+    ReviewLivePreviewExtensionFactory.addHiddenRange(builder, closeFrom, to, hiddenDelimiterWidget);
   }
 
   private static addCommentBadge(

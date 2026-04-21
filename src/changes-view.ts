@@ -12,7 +12,9 @@ export class ReviewChangesView extends ItemView {
   private onAcceptAll: () => Promise<void>;
   private onQuickAction: (action: QuickActionType) => Promise<boolean>;
   private onToggleTrackChanges: () => Promise<void>;
+  private onToggleAcceptedTextView: () => Promise<void>;
   private isTrackChangesEnabled: () => boolean;
+  private isAcceptedTextViewEnabled: () => boolean;
   private isBusy: () => boolean;
   private pendingEntryIds = new Set<string>();
   private acceptAllPending = false;
@@ -26,7 +28,9 @@ export class ReviewChangesView extends ItemView {
     onAcceptAll: () => Promise<void>,
     onQuickAction: (action: QuickActionType) => Promise<boolean>,
     onToggleTrackChanges: () => Promise<void>,
+    onToggleAcceptedTextView: () => Promise<void>,
     isTrackChangesEnabled: () => boolean,
+    isAcceptedTextViewEnabled: () => boolean,
     isBusy: () => boolean
   ) {
     super(leaf);
@@ -36,7 +40,9 @@ export class ReviewChangesView extends ItemView {
     this.onAcceptAll = onAcceptAll;
     this.onQuickAction = onQuickAction;
     this.onToggleTrackChanges = onToggleTrackChanges;
+    this.onToggleAcceptedTextView = onToggleAcceptedTextView;
     this.isTrackChangesEnabled = isTrackChangesEnabled;
+    this.isAcceptedTextViewEnabled = isAcceptedTextViewEnabled;
     this.isBusy = isBusy;
   }
 
@@ -81,6 +87,7 @@ export class ReviewChangesView extends ItemView {
 
     for (const action of actions) {
       const button = actionsRow.createEl('button', { text: action.label, attr: { type: 'button' } });
+      button.addEventListener('mousedown', (event) => event.preventDefault());
       button.disabled = this.isUiBusy();
       button.addEventListener('click', () => {
         void this.handleQuickAction(action.id);
@@ -93,16 +100,29 @@ export class ReviewChangesView extends ItemView {
       attr: { type: 'button' },
       cls: 'review-track-toggle',
     });
+    trackButton.addEventListener('mousedown', (event) => event.preventDefault());
     trackButton.addEventListener('click', () => {
       void this.handleToggleTrackChanges();
     });
     trackButton.disabled = this.isUiBusy();
+
+    const acceptedButton = controlsRow.createEl('button', {
+      text: this.isAcceptedTextViewEnabled() ? 'Accepted View: On' : 'Accepted View: Off',
+      attr: { type: 'button' },
+      cls: 'review-accepted-toggle',
+    });
+    acceptedButton.addEventListener('mousedown', (event) => event.preventDefault());
+    acceptedButton.addEventListener('click', () => {
+      void this.handleToggleAcceptedTextView();
+    });
+    acceptedButton.disabled = this.isUiBusy();
 
     const acceptAllButton = controlsRow.createEl('button', {
       text: this.acceptAllPending ? 'Working...' : 'Accept All',
       attr: { type: 'button' },
       cls: 'review-changes-accept-all',
     });
+    acceptAllButton.addEventListener('mousedown', (event) => event.preventDefault());
     acceptAllButton.disabled = this.acceptAllPending || this.isUiBusy();
     acceptAllButton.addEventListener('click', () => {
       void this.handleAcceptAll();
@@ -134,6 +154,7 @@ export class ReviewChangesView extends ItemView {
         text: isPending ? 'Working...' : 'Accept',
         attr: { type: 'button' },
       });
+      acceptButton.addEventListener('mousedown', (event) => event.preventDefault());
       acceptButton.disabled = isPending || this.isUiBusy();
       acceptButton.addEventListener('click', (event) => {
         event.stopPropagation();
@@ -141,6 +162,7 @@ export class ReviewChangesView extends ItemView {
       });
 
       const rejectButton = actions.createEl('button', { text: 'Reject', attr: { type: 'button' } });
+      rejectButton.addEventListener('mousedown', (event) => event.preventDefault());
       rejectButton.disabled = isPending || this.isUiBusy();
       rejectButton.addEventListener('click', (event) => {
         event.stopPropagation();
@@ -170,6 +192,17 @@ export class ReviewChangesView extends ItemView {
     this.localBusy = true;
     this.render();
     await this.onToggleTrackChanges();
+    this.localBusy = false;
+    this.render();
+  }
+
+  private async handleToggleAcceptedTextView(): Promise<void> {
+    if (this.isUiBusy()) {
+      return;
+    }
+    this.localBusy = true;
+    this.render();
+    await this.onToggleAcceptedTextView();
     this.localBusy = false;
     this.render();
   }

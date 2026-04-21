@@ -38,4 +38,10 @@ describe('change-resolution service', () => {
     expect(service.resolveTrackedChange('{~~o~>n~~}', substitution, 'accept')).toBe('n');
     expect(service.resolveTrackedChange('{~~o~>n~~}', substitution, 'reject')).toBe('o');
   });
+
+  it('rejects tracked change by markup and restores old text correctly', () => {
+    expect(service.rejectTrackedChangeByMarkup('a{++new++}b', '{++new++}')).toBe('ab');
+    expect(service.rejectTrackedChangeByMarkup('a{--old--}b', '{--old--}')).toBe('aoldb');
+    expect(service.rejectTrackedChangeByMarkup('a{~~old~>new~~}b', '{~~old~>new~~}')).toBe('aoldb');
+  });
 });

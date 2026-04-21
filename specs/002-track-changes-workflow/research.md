@@ -62,3 +62,12 @@
 - **Rationale**: Aligns with existing architecture and constitution guidance on explicit source of record.
 - **Alternatives considered**:
   - Separate external persistence for changes: rejected (out of scope and unnecessary).
+
+## Decision 9: Structural Markdown handling and safe bypass
+
+- **Decision**: Adopt a hybrid strategy that tracks inline-safe edits and bypasses structural/syntax-sensitive markdown edits (tables, headings, lists, callouts, code fences, and related block constructs) to prevent corruption.
+- **Rationale**: Decoration-based transforms are reliable for inline edits but not for structural markdown semantics, especially across line boundaries.
+- **Alternatives considered**:
+  - Continue patching all structural edge cases ad hoc: rejected due to repeated regressions.
+  - Full shadow-document editor redesign: deferred due to complexity and risk.
+- **Design record**: [design-decision-markdown-structure-handling-2026-04-21.md](./design-decision-markdown-structure-handling-2026-04-21.md)

@@ -63,7 +63,7 @@ export class ThemePresetService implements IThemePresetService {
     }
 
     const created: ThemePreset = {
-      id: this.idGenerator.createId(),
+      id: this.createUniqueId(nextPresets),
       name: name.trim(),
       isBuiltIn: false,
       ...payload,
@@ -87,5 +87,18 @@ export class ThemePresetService implements IThemePresetService {
 
   private normalizeName(value: string): string {
     return value.trim().toLowerCase();
+  }
+
+  private createUniqueId(existing: ThemePreset[]): string {
+    const base = this.idGenerator.createId();
+    let candidate = base;
+    let suffix = 1;
+
+    while (existing.some((preset) => preset.id === candidate)) {
+      candidate = `${base}-${suffix}`;
+      suffix += 1;
+    }
+
+    return candidate;
   }
 }

@@ -30,4 +30,23 @@ describe('theme preset service', () => {
       'cannot_delete_builtin_theme'
     );
   });
+
+  it('derives unique ids when generated ids collide', () => {
+    const collidingService = new ThemePresetService({
+      createId: () => 'custom-collision',
+    });
+    const defaults = collidingService.getDefaultThemePresets();
+    const payload = {
+      previewColors: defaults[0].previewColors,
+      editingColors: defaults[0].editingColors,
+      previewTextColors: defaults[0].previewTextColors,
+      editingTextColors: defaults[0].editingTextColors,
+    };
+
+    const first = collidingService.upsert(defaults, 'A', payload, false);
+    const second = collidingService.upsert(first.presets, 'B', payload, false);
+
+    expect(first.saved.id).toBe('custom-collision');
+    expect(second.saved.id).toBe('custom-collision-1');
+  });
 });

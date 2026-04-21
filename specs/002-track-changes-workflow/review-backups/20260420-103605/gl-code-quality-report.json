@@ -1,0 +1,54 @@
+﻿[
+    {
+        "description":  "runCommandExclusive can deadlock all commands if pre-task pane refresh throws before try/finally reset.",
+        "check_name":  "ai-review.reliability.command-lock-deadlock",
+        "fingerprint":  "44ab1dcaa3f293092748aeab8283a691be1094726f6969aae59fdda86616b333",
+        "severity":  "critical",
+        "location":  {
+                         "path":  "src/main.ts",
+                         "lines":  {
+                                       "begin":  703,
+                                       "end":  705
+                                   }
+                     }
+    },
+    {
+        "description":  "rejectTrackedChangeByMarkup uses string replace(\u0027$1\u0027) and can fail to restore prior text for deletion/substitution reject paths.",
+        "check_name":  "ai-review.correctness.reject-resolution-capture",
+        "fingerprint":  "b8cda8a123b72e29f8efbea336a5caabe9e8b02f1fffff2bad3ca2e7ed2d8812",
+        "severity":  "major",
+        "location":  {
+                         "path":  "src/change-resolution.ts",
+                         "lines":  {
+                                       "begin":  69,
+                                       "end":  74
+                                   }
+                     }
+    },
+    {
+        "description":  "Critical paths are untested: runCommandExclusive exception handling and rejectTrackedChangeByMarkup behavior.",
+        "check_name":  "ai-review.testing.missing-critical-path-tests",
+        "fingerprint":  "55c2d801281688b0aa85b27ed83be06d06b05874bf3a758d056e46397f870d8e",
+        "severity":  "major",
+        "location":  {
+                         "path":  "tests/unit/main.unit.test.ts",
+                         "lines":  {
+                                       "begin":  4,
+                                       "end":  17
+                                   }
+                     }
+    },
+    {
+        "description":  "Theme preset IDs rely on Date.now only, which can collide under rapid consecutive saves.",
+        "check_name":  "ai-review.reliability.theme-id-collision",
+        "fingerprint":  "d56897f3010008c8f7e3179db748caae0fb859805751b787109e759ae3cef975",
+        "severity":  "minor",
+        "location":  {
+                         "path":  "src/theme-presets.ts",
+                         "lines":  {
+                                       "begin":  9,
+                                       "end":  10
+                                   }
+                     }
+    }
+]

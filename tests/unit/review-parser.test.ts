@@ -32,6 +32,15 @@ describe('review-parser', () => {
     expect(comment).toBeDefined();
   });
 
+  it('parses empty addition tokens', () => {
+    const tokens = parser.parseTokens('before {++++} after');
+    const addition = tokens.find((t) => t.type === 'addition');
+    expect(addition).toBeDefined();
+    if (addition && addition.type === 'addition') {
+      expect(addition.text).toBe('');
+    }
+  });
+
   it('ignores token-like content inside fenced code blocks', () => {
     const input = '```md\n{++x++} {>> [author=A] c <<}\n```';
     const tokens = parser.parseTokens(input);
