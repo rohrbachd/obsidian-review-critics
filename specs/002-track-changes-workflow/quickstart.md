@@ -103,9 +103,13 @@ Run this as a deterministic internal usability check:
 
 ## 6. Validation record
 
-- Date: 2026-04-19
+- Date: 2026-04-21
 - Build/type check: pass
 - Lint: pass
-- Format check: pass
+- Format check: fail (pre-existing repo-wide formatting drift in `.review/*` and archival/spec markdown files)
 - Automated tests: pass (unit/integration/perf)
+- Addendum verification:
+  - SC-011 accepted-text structural projection fixtures: pass (`tests/unit/reading-view.unit.test.ts`, `tests/integration/us2-accepted-text-view.integration.test.ts`, `tests/unit/display-mode.unit.test.ts`)
+  - Mixed-markdown randomized invariants: pass (`tests/integration/us1-randomized-invariants.integration.test.ts`)
+  - Protected-selection + bypass notice semantics: pass (`tests/unit/track-changes.unit.test.ts`, `tests/integration/us4-quick-actions-pane.integration.test.ts`)
 - Manual checklist: pending final human verification in Obsidian UI

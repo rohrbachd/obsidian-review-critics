@@ -16,6 +16,7 @@ export interface ITrackChangesService {
     nextFrom?: number,
     nextTo?: number
   ): boolean;
+  isSelectionSyntaxSensitive(content: string, from: number, to: number): boolean;
 }
 
 export interface TrackEditResult {
@@ -33,6 +34,11 @@ interface TokenContentRange {
 
 export class TrackChangesService implements ITrackChangesService {
   private skipNextTransaction = false;
+  private static readonly BLOCK_FENCE_PATTERN = /^\s*(```+|~~~+|\$\$)\s*$/m;
+  private static readonly FOOTNOTE_DEFINITION_PATTERN = /^\s*\[\^[^\]]+\]:/m;
+  private static readonly BLOCKQUOTE_OR_CALLOUT_PATTERN = /^\s*>\s*/m;
+  private static readonly INLINE_STRUCTURAL_PATTERN =
+    /!?\[[^\]]*]\([^)]+\)|\[\[[^\]]+\]\]|\[\^[^\]]+\]/;
 
   suppressNextTransaction(): void {
     this.skipNextTransaction = true;
@@ -290,7 +296,7 @@ export class TrackChangesService implements ITrackChangesService {
       return true;
     }
 
-    if (this.isInMarkdownTableContext(sourceContent, from, to)) {
+    if (this.isSelectionSyntaxSensitive(sourceContent, from, to)) {
       return true;
     }
 
@@ -304,13 +310,70 @@ export class TrackChangesService implements ITrackChangesService {
         return true;
       }
 
-      if (this.isInMarkdownTableContext(nextContent, nextFrom, nextTo)) {
+      if (this.isSelectionSyntaxSensitive(nextContent, nextFrom, nextTo)) {
         return true;
       }
     }
 
     const selected = sourceContent.slice(from, to);
-    if (this.looksLikeTableStructure(selected) || this.looksLikeTableStructure(insertedText)) {
+    if (this.isMarkdownStrikeThroughToggle(selected, insertedText)) {
+      return true;
+    }
+    if (
+      from === to &&
+      insertedText.includes('\n') &&
+      this.isLeadingStructuralLine(sourceContent, from)
+    ) {
+      return true;
+    }
+
+    if (
+      this.looksLikeTableStructure(selected) ||
+      this.looksLikeTableStructure(insertedText) ||
+      this.containsSyntaxSensitiveMarkdown(selected) ||
+      this.containsSyntaxSensitiveMarkdown(insertedText)
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  isSelectionSyntaxSensitive(content: string, from: number, to: number): boolean {
+    if (from < 0 || to < from || to > content.length) {
+      return true;
+    }
+
+    if (this.isInMarkdownTableContext(content, from, to)) {
+      return true;
+    }
+    if (
+      this.isInFencedCodeOrMathContext(content, from) ||
+      this.isInFencedCodeOrMathContext(content, Math.max(from, to - 1))
+    ) {
+      return true;
+    }
+    if (this.isInsideInlineStructuralRange(content, from) || this.isInsideInlineStructuralRange(content, Math.max(from, to - 1))) {
+      return true;
+    }
+
+    const lineRange = this.getLineRange(content, from, to);
+    if (!lineRange) {
+      return true;
+    }
+
+    const selected = content.slice(from, to);
+    const selectedLines = content.slice(lineRange.start, lineRange.end);
+
+    if (this.containsSyntaxSensitiveMarkdown(selected)) {
+      return true;
+    }
+
+    if (
+      TrackChangesService.BLOCK_FENCE_PATTERN.test(selectedLines) ||
+      TrackChangesService.FOOTNOTE_DEFINITION_PATTERN.test(selectedLines) ||
+      TrackChangesService.BLOCKQUOTE_OR_CALLOUT_PATTERN.test(selectedLines)
+    ) {
       return true;
     }
 
@@ -539,6 +602,134 @@ export class TrackChangesService implements ITrackChangesService {
     return (trimmed.match(/\|/g) ?? []).length >= 2;
   }
 
+  private containsSyntaxSensitiveMarkdown(text: string): boolean {
+    if (!text) {
+      return false;
+    }
+
+    if (
+      TrackChangesService.BLOCK_FENCE_PATTERN.test(text) ||
+      TrackChangesService.FOOTNOTE_DEFINITION_PATTERN.test(text) ||
+      TrackChangesService.BLOCKQUOTE_OR_CALLOUT_PATTERN.test(text)
+    ) {
+      return true;
+    }
+
+    if (TrackChangesService.INLINE_STRUCTURAL_PATTERN.test(text)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private isMarkdownStrikeThroughToggle(selected: string, insertedText: string): boolean {
+    if (!selected && !insertedText) {
+      return false;
+    }
+
+    const strip = (value: string): string =>
+      value.startsWith('~~') && value.endsWith('~~') && value.length >= 4 ? value.slice(2, -2) : value;
+
+    const insertedLooksLikeMarkdownStrike =
+      insertedText.startsWith('~~') &&
+      insertedText.endsWith('~~') &&
+      insertedText.length >= 4 &&
+      !insertedText.includes('{~~') &&
+      !insertedText.includes('~~}') &&
+      strip(insertedText) === selected;
+
+    const selectedLooksLikeMarkdownStrike =
+      selected.startsWith('~~') &&
+      selected.endsWith('~~') &&
+      selected.length >= 4 &&
+      !selected.includes('{~~') &&
+      !selected.includes('~~}') &&
+      strip(selected) === insertedText;
+
+    return insertedLooksLikeMarkdownStrike || selectedLooksLikeMarkdownStrike;
+  }
+
+  private isLeadingStructuralLine(content: string, offset: number): boolean {
+    if (offset < 0 || offset > content.length) {
+      return true;
+    }
+
+    const lineStart = content.lastIndexOf('\n', Math.max(0, offset - 1)) + 1;
+    if (offset !== lineStart) {
+      return false;
+    }
+    const lineEndRaw = content.indexOf('\n', offset);
+    const lineEnd = lineEndRaw === -1 ? content.length : lineEndRaw;
+    const line = content.slice(offset, lineEnd);
+
+    if (!line.trim()) {
+      return false;
+    }
+
+    return (
+      /^\s*#{1,6}\s+/.test(line) ||
+      /^\s*(?:[-*+]|\d+\.)\s+/.test(line) ||
+      /^\s*-\s+\[[ xX]\]\s+/.test(line) ||
+      /^\s*>\s*/.test(line) ||
+      /^\s*\|.*\|/.test(line) ||
+      /^\s*(?:---+|\*\*\*+|___+)\s*$/.test(line) ||
+      /^\s*(```+|~~~+|\$\$)\s*$/.test(line)
+    );
+  }
+
+  private isInsideInlineStructuralRange(content: string, position: number): boolean {
+    if (position < 0 || position > content.length) {
+      return true;
+    }
+
+    const regex = new RegExp(TrackChangesService.INLINE_STRUCTURAL_PATTERN.source, 'g');
+    let match = regex.exec(content);
+    while (match) {
+      const start = match.index;
+      const end = start + match[0].length;
+      if (position >= start && position <= end) {
+        return true;
+      }
+      match = regex.exec(content);
+    }
+
+    return false;
+  }
+
+  private isInFencedCodeOrMathContext(content: string, position: number): boolean {
+    if (position < 0 || position > content.length) {
+      return true;
+    }
+
+    const lines = content.split('\n');
+    let offset = 0;
+    let inBacktickFence = false;
+    let inTildeFence = false;
+    let inMathFence = false;
+
+    for (const line of lines) {
+      const lineStart = offset;
+      const lineEnd = lineStart + line.length;
+
+      const trimmed = line.trim();
+      if (/^```+/.test(trimmed)) {
+        inBacktickFence = !inBacktickFence;
+      } else if (/^~~~+/.test(trimmed)) {
+        inTildeFence = !inTildeFence;
+      } else if (/^\$\$\s*$/.test(trimmed)) {
+        inMathFence = !inMathFence;
+      }
+
+      if (position >= lineStart && position <= lineEnd) {
+        return inBacktickFence || inTildeFence || inMathFence;
+      }
+
+      offset = lineEnd + 1;
+    }
+
+    return inBacktickFence || inTildeFence || inMathFence;
+  }
+
   private isStructuredEdit(selected: string, insertedText: string): boolean {
     return (
       selected.includes('\n') ||
@@ -556,7 +747,10 @@ export class TrackChangesExtensionFactory {
     this.trackChangesService = trackChangesService;
   }
 
-  createTransactionFilter(isEnabled: () => boolean): Extension {
+  createTransactionFilter(
+    isEnabled: () => boolean,
+    onTrackedBypass?: () => void
+  ): Extension {
     return EditorState.transactionFilter.of((transaction) => {
       if (!isEnabled() || !transaction.docChanged) {
         return transaction;
@@ -582,12 +776,17 @@ export class TrackChangesExtensionFactory {
         insertedText = inserted.toString();
       });
 
-      if (changeCount !== 1) {
-        return transaction;
-      }
-
       const source = transaction.startState.doc.toString();
       const next = transaction.newDoc.toString();
+      if (changeCount !== 1) {
+        const minimal = this.computeMinimalReplacement(source, next);
+        from = minimal.from;
+        to = minimal.to;
+        insertedText = minimal.insert;
+        newFrom = minimal.from;
+        newTo = minimal.from + minimal.insert.length;
+      }
+
       if (
         this.trackChangesService.shouldSkipTrackingForChange(
           source,
@@ -599,6 +798,7 @@ export class TrackChangesExtensionFactory {
           newTo
         )
       ) {
+        onTrackedBypass?.();
         return transaction;
       }
       const transformed = this.trackChangesService.applyTrackedEdit(source, from, to, insertedText);

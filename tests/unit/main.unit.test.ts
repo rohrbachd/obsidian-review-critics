@@ -15,6 +15,19 @@ describe('main plugin', () => {
     expect(plugin.settings.themePresets.length).toBeGreaterThan(0);
   });
 
+  it('coerces non-boolean persisted mode flags to defaults', async () => {
+    const plugin = new ReviewPlugin({} as never, {} as never) as any;
+    plugin.loadData = vi.fn().mockResolvedValue({
+      trackChangesEnabled: 'false',
+      acceptedTextViewEnabled: 'false',
+    });
+
+    await plugin.loadSettings();
+
+    expect(plugin.settings.trackChangesEnabled).toBe(false);
+    expect(plugin.settings.acceptedTextViewEnabled).toBe(false);
+  });
+
   it('clears command lock when pre-command refresh throws', async () => {
     const plugin = new ReviewPlugin({} as never, {} as never) as any;
     let firstRefresh = true;

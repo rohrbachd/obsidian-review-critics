@@ -213,29 +213,29 @@
 
 ### Tests for Addendum
 
-- [ ] T058 [P] [US1] Add unit tests for syntax-sensitive edit classification and safe bypass boundaries in `tests/unit/track-changes.unit.test.ts`
-- [ ] T059 [P] [US1] Add integration tests for mixed Markdown fixtures (headings/lists/callouts/fenced code/links/footnotes) with whole-transaction bypass and no cross-region mutation checks in `tests/integration/us1-track-changes.integration.test.ts`
-- [ ] T060 [P] [US2] Add rendering regression tests for active substitution old/new visual split and strike-through scope in `tests/unit/live-preview.unit.test.ts` and `tests/integration/us3-rendering.integration.test.ts`
-- [ ] T061 [P] [US5] Add pane regression tests confirming bypassed syntax-sensitive edits are excluded from changes list in `tests/unit/changes-view.unit.test.ts` and `tests/integration/us5-changes-pane.integration.test.ts`
-- [ ] T062 [P] [US4] Add quick-action tests for protected syntax-sensitive selection no-op + notice behavior in `tests/unit/quick-actions-view.unit.test.ts` and `tests/integration/us4-quick-actions-pane.integration.test.ts`
-- [ ] T063 [P] [US1] Add runtime notice tests ensuring first-bypass-per-session notice semantics in `tests/unit/track-changes.unit.test.ts` and `tests/integration/us1-track-changes.integration.test.ts`
-- [ ] T064 [P] [US2] Add accepted-text structural projection tests for headings/lists/callouts/fenced-code-like tracked content in `tests/unit/reading-view.unit.test.ts` and `tests/integration/us2-accepted-text-view.integration.test.ts`
+- [x] T058 [P] [US1] Add unit tests for syntax-sensitive edit classification and safe bypass boundaries in `tests/unit/track-changes.unit.test.ts`
+- [x] T059 [P] [US1] Add integration tests for mixed Markdown fixtures (headings/lists/callouts/fenced code/links/footnotes) with whole-transaction bypass and no cross-region mutation checks in `tests/integration/us1-track-changes.integration.test.ts`
+- [x] T060 [P] [US2] Add rendering regression tests for active substitution old/new visual split and strike-through scope in `tests/unit/live-preview.unit.test.ts` and `tests/integration/us3-rendering.integration.test.ts`
+- [x] T061 [P] [US5] Add pane regression tests confirming bypassed syntax-sensitive edits are excluded from changes list in `tests/unit/changes-view.unit.test.ts` and `tests/integration/us5-changes-pane.integration.test.ts`
+- [x] T062 [P] [US4] Add quick-action tests for protected syntax-sensitive selection no-op + notice behavior in `tests/unit/quick-actions-view.unit.test.ts` and `tests/integration/us4-quick-actions-pane.integration.test.ts`
+- [x] T063 [P] [US1] Add runtime notice tests ensuring first-bypass-per-session notice semantics in `tests/unit/track-changes.unit.test.ts` and `tests/integration/us1-track-changes.integration.test.ts`
+- [x] T064 [P] [US2] Add accepted-text structural projection tests for headings/lists/callouts/fenced-code-like tracked content in `tests/unit/reading-view.unit.test.ts` and `tests/integration/us2-accepted-text-view.integration.test.ts`
 
 ### Implementation for Addendum
 
-- [ ] T065 [US1] Implement syntax-sensitive edit classifier and safe bypass policy while preserving stable table behavior in `src/track-changes.ts`
-- [ ] T066 [US1] Implement first-bypass-per-session non-blocking notice behavior in `src/main.ts` and `src/track-changes.ts`
-- [ ] T067 [US5] Enforce changes-pane listing scope to tracked additions/deletions/substitutions only (exclude bypassed edits) in `src/review-parser.ts` and `src/changes-view.ts`
-- [ ] T068 [US4] Implement protected-selection quick-action no-op and notice handling in `src/review-commands.ts` and `src/main.ts`
-- [ ] T069 [US2] Refine substitution live-preview decorations for active-token rendering parity in `src/live-preview.ts` and `styles.css`
-- [ ] T070 [US2] Implement accepted-text structural markdown projection rendering while preserving source markup in `src/reading-view.ts`, `src/live-preview.ts`, and `src/display-mode.ts`
-- [ ] T071 Run full quality gates and update manual validation record for addendum scenarios in `specs/002-track-changes-workflow/quickstart.md`
-- [ ] T072 [US2] Verify accepted-text projection implementation against SC-011 fixtures and record outcomes in `specs/002-track-changes-workflow/quickstart.md`
+- [x] T065 [US1] Implement syntax-sensitive edit classifier and safe bypass policy while preserving stable table behavior in `src/track-changes.ts`
+- [x] T066 [US1] Implement first-bypass-per-session non-blocking notice behavior in `src/main.ts` and `src/track-changes.ts`
+- [x] T067 [US5] Enforce changes-pane listing scope to tracked additions/deletions/substitutions only (exclude bypassed edits) in `src/review-parser.ts` and `src/changes-view.ts`
+- [x] T068 [US4] Implement protected-selection quick-action no-op and notice handling in `src/review-commands.ts` and `src/main.ts`
+- [x] T069 [US2] Refine substitution live-preview decorations for active-token rendering parity in `src/live-preview.ts` and `styles.css`
+- [x] T070 [US2] Implement accepted-text structural markdown projection rendering while preserving source markup in `src/reading-view.ts`, `src/live-preview.ts`, and `src/display-mode.ts`
+- [x] T071 Run full quality gates and update manual validation record for addendum scenarios in `specs/002-track-changes-workflow/quickstart.md`
+- [x] T072 [US2] Verify accepted-text projection implementation against SC-011 fixtures and record outcomes in `specs/002-track-changes-workflow/quickstart.md`
 
 ### Validation and Documentation for Addendum
 
-- [ ] T073 [P] [US1] Add randomized edit-sequence invariant tests for mixed markdown safety (no out-of-range positions, no unsorted decoration ranges, no cross-region mutation) in `tests/integration/us1-randomized-invariants.integration.test.ts`
-- [ ] T074 Update README with addendum-only behavior deltas (structural markdown safety, bypass UX notice semantics, protected-selection quick-action behavior, and notice-key contract) in `README.md`
+- [x] T073 [P] [US1] Add randomized edit-sequence invariant tests for mixed markdown safety (no out-of-range positions, no unsorted decoration ranges, no cross-region mutation) in `tests/integration/us1-randomized-invariants.integration.test.ts`
+- [x] T074 Update README with addendum-only behavior deltas (structural markdown safety, bypass UX notice semantics, protected-selection quick-action behavior, and notice-key contract) in `README.md`
 
 **Checkpoint**: Structural markdown safety behavior, protected quick-action behavior, one-time bypass notice semantics, changes-pane exclusion semantics, and accepted-text structural projection are validated without regressing current table handling.
 

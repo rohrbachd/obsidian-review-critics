@@ -42,6 +42,7 @@ import type {
 export default class ReviewPlugin extends Plugin {
   settings!: ReviewPluginSettings;
   private commandInFlight = false;
+  private bypassNoticeShownThisSession = false;
 
   private readonly parser = new ReviewParser();
   private readonly markupBuilder = new ReviewMarkupBuilder();
@@ -136,7 +137,10 @@ export default class ReviewPlugin extends Plugin {
       )
     );
     this.registerEditorExtension(
-      this.trackChangesFactory.createTransactionFilter(() => this.settings.trackChangesEnabled)
+      this.trackChangesFactory.createTransactionFilter(
+        () => this.settings.trackChangesEnabled === true,
+        () => this.showBypassNoticeOncePerSession()
+      )
     );
 
     this.addCommands();
@@ -653,6 +657,21 @@ export default class ReviewPlugin extends Plugin {
       return true;
     }
 
+    if (action !== 'comment') {
+      const bounds = this.editorContextService.getEditorSelectionBounds(editor);
+      if (
+        bounds &&
+        this.trackChangesService.isSelectionSyntaxSensitive(
+          editor.getValue(),
+          bounds.from,
+          bounds.to
+        )
+      ) {
+        new Notice(ReviewNotices.QUICK_ACTION_PROTECTED_SELECTION);
+        return true;
+      }
+    }
+
     switch (action) {
       case 'add':
         this.replaceSelectionWithoutTrackChanges(editor, `{++${selection}++}`);
@@ -699,6 +718,14 @@ export default class ReviewPlugin extends Plugin {
         ? ReviewNotices.ACCEPTED_TEXT_VIEW_ENABLED
         : ReviewNotices.ACCEPTED_TEXT_VIEW_DISABLED
     );
+  }
+
+  private showBypassNoticeOncePerSession(): void {
+    if (this.bypassNoticeShownThisSession) {
+      return;
+    }
+    this.bypassNoticeShownThisSession = true;
+    new Notice(ReviewNotices.TRACK_CHANGES_PROTECTED_BYPASS);
   }
 
   private async runCommandExclusive<T>(
@@ -885,9 +912,18 @@ export default class ReviewPlugin extends Plugin {
     this.settings = {
       ...defaults,
       ...loadedSettings,
-      trackChangesEnabled: loadedSettings?.trackChangesEnabled ?? defaults.trackChangesEnabled,
+      trackChangesEnabled:
+        loadedSettings?.trackChangesEnabled === true
+          ? true
+          : loadedSettings?.trackChangesEnabled === false
+            ? false
+            : defaults.trackChangesEnabled,
       acceptedTextViewEnabled:
-        loadedSettings?.acceptedTextViewEnabled ?? defaults.acceptedTextViewEnabled,
+        loadedSettings?.acceptedTextViewEnabled === true
+          ? true
+          : loadedSettings?.acceptedTextViewEnabled === false
+            ? false
+            : defaults.acceptedTextViewEnabled,
       themePresets: mergedPresets,
       activeThemePresetId: mergedActivePresetId,
       previewColors: { ...defaultColors, ...(loadedSettings?.previewColors || {}) },

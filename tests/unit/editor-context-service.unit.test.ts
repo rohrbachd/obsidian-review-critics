@@ -4,8 +4,8 @@ import { EditorContextService } from '../../src/review-commands';
 
 describe('editor-context-service', () => {
   it('falls back to most recent markdown leaf when active view is not markdown', () => {
-    const editor = { id: 'editor' };
-    const markdownView = new MarkdownView();
+    const editor = { id: 'editor' } as never;
+    const markdownView = new MarkdownView({} as never);
     markdownView.editor = editor;
 
     const service = new EditorContextService({
@@ -18,8 +18,8 @@ describe('editor-context-service', () => {
   });
 
   it('falls back to first markdown leaf when no active or recent markdown leaf exists', () => {
-    const editor = { id: 'editor' };
-    const markdownView = new MarkdownView();
+    const editor = { id: 'editor' } as never;
+    const markdownView = new MarkdownView({} as never);
     markdownView.editor = editor;
 
     const service = new EditorContextService({

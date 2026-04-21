@@ -95,6 +95,8 @@ ReviewSettingsText.THEME_DELETE_LABEL = "Delete Theme";
 ReviewSettingsText.THEME_DELETE_BUTTON_LABEL = "Delete Selected Theme";
 var ReviewNotices = class {
 };
+ReviewNotices.TRACK_CHANGES_PROTECTED_BYPASS = "review.trackChanges.protectedBypass: Structural markdown edit kept as-is (not auto-tracked).";
+ReviewNotices.QUICK_ACTION_PROTECTED_SELECTION = "review.quickAction.protectedSelection: Selection includes protected markdown; quick action not applied.";
 ReviewNotices.SELECT_TEXT_FIRST = "Select some text first.";
 ReviewNotices.SELECT_TEXT_FOR_SUBSTITUTION = "Select text to mark as substitution.";
 ReviewNotices.COULD_NOT_OPEN_COMMENTS_PANE = "Could not open comments pane.";
@@ -647,6 +649,43 @@ var ReviewChangesView = _ReviewChangesView;
 // src/live-preview.ts
 var import_state = require("@codemirror/state");
 var import_view = require("@codemirror/view");
+var INLINE_BOLD_ITALIC_PATTERN = /^\*\*\*([\s\S]+)\*\*\*$/;
+var INLINE_BOLD_PATTERN = /^\*\*([\s\S]+)\*\*$/;
+var INLINE_ITALIC_PATTERN = /^\*([\s\S]+)\*$/;
+var INLINE_STRIKE_PATTERN = /^~~([\s\S]+)~~$/;
+function appendInlineMarkdownFormatting(container, rawText) {
+  const boldItalicMatch = rawText.match(INLINE_BOLD_ITALIC_PATTERN);
+  if (boldItalicMatch) {
+    const strong = document.createElement("strong");
+    const emphasis = document.createElement("em");
+    emphasis.textContent = boldItalicMatch[1];
+    strong.appendChild(emphasis);
+    container.appendChild(strong);
+    return;
+  }
+  const boldMatch = rawText.match(INLINE_BOLD_PATTERN);
+  if (boldMatch) {
+    const strong = document.createElement("strong");
+    strong.textContent = boldMatch[1];
+    container.appendChild(strong);
+    return;
+  }
+  const italicMatch = rawText.match(INLINE_ITALIC_PATTERN);
+  if (italicMatch) {
+    const emphasis = document.createElement("em");
+    emphasis.textContent = italicMatch[1];
+    container.appendChild(emphasis);
+    return;
+  }
+  const strikeMatch = rawText.match(INLINE_STRIKE_PATTERN);
+  if (strikeMatch) {
+    const strike = document.createElement("del");
+    strike.textContent = strikeMatch[1];
+    container.appendChild(strike);
+    return;
+  }
+  container.textContent = rawText;
+}
 var HiddenDelimiterWidget = class extends import_view.WidgetType {
   toDOM() {
     const element = document.createElement("span");
@@ -685,7 +724,7 @@ var SubstitutionWidget = class extends import_view.WidgetType {
     arrow.textContent = ReviewReadingViewText.SUBSTITUTION_ARROW;
     const newSpan = document.createElement("span");
     newSpan.className = "review-live-substitution-new";
-    newSpan.textContent = this.newText;
+    appendInlineMarkdownFormatting(newSpan, this.newText);
     wrapper.append(oldSpan, arrow, newSpan);
     return wrapper;
   }
@@ -854,12 +893,12 @@ var ReviewLivePreviewExtensionFactory = class _ReviewLivePreviewExtensionFactory
             );
             break;
           case "substitution":
-            builder.add(
+            _ReviewLivePreviewExtensionFactory.addActiveSubstitutionDecorations(
+              builder,
               token.from,
               token.to,
-              import_view.Decoration.mark({
-                class: "review-live review-live-active-token review-live-substitution"
-              })
+              token.oldText.length,
+              token.newText.length
             );
             break;
           case "highlight":
@@ -901,6 +940,19 @@ var ReviewLivePreviewExtensionFactory = class _ReviewLivePreviewExtensionFactory
       }
       switch (token.type) {
         case "addition":
+          if (_ReviewLivePreviewExtensionFactory.isLineStartToken(view.state.doc.toString(), token.from)) {
+            const headingMatch = token.text.match(/^(#{1,6})\s+([\s\S]*)$/);
+            if (headingMatch) {
+              _ReviewLivePreviewExtensionFactory.addHeadingAdditionDecorations(
+                builder,
+                token.from,
+                token.to,
+                headingMatch[1].length,
+                hiddenDelimiterWidget
+              );
+              break;
+            }
+          }
           _ReviewLivePreviewExtensionFactory.addCriticTokenDecorations(
             builder,
             token.from,
@@ -1011,7 +1063,72 @@ var ReviewLivePreviewExtensionFactory = class _ReviewLivePreviewExtensionFactory
     _ReviewLivePreviewExtensionFactory.addHiddenRange(builder, from, oldFrom, hiddenDelimiterWidget);
     _ReviewLivePreviewExtensionFactory.addHiddenRange(builder, oldFrom, oldTo, hiddenDelimiterWidget);
     _ReviewLivePreviewExtensionFactory.addHiddenRange(builder, oldTo, middleTo, hiddenDelimiterWidget);
+    if (newTo > middleTo) {
+      builder.add(
+        middleTo,
+        newTo,
+        import_view.Decoration.mark({
+          class: "review-live-substitution-accepted-new"
+        })
+      );
+    }
     _ReviewLivePreviewExtensionFactory.addHiddenRange(builder, closeFrom, to, hiddenDelimiterWidget);
+  }
+  static addActiveSubstitutionDecorations(builder, from, to, oldTextLength, newTextLength) {
+    const oldFrom = from + 3;
+    const oldTo = oldFrom + oldTextLength;
+    const middleTo = oldTo + 2;
+    const newTo = middleTo + newTextLength;
+    const closeFrom = to - 3;
+    if (newTo > closeFrom) {
+      builder.add(
+        from,
+        to,
+        import_view.Decoration.mark({
+          class: "review-live review-live-active-token review-live-substitution"
+        })
+      );
+      return;
+    }
+    builder.add(
+      from,
+      oldFrom,
+      import_view.Decoration.mark({
+        class: "review-live review-live-active-token review-live-substitution-delimiter"
+      })
+    );
+    if (oldTo > oldFrom) {
+      builder.add(
+        oldFrom,
+        oldTo,
+        import_view.Decoration.mark({
+          class: "review-live review-live-active-token review-live-substitution-old"
+        })
+      );
+    }
+    builder.add(
+      oldTo,
+      middleTo,
+      import_view.Decoration.mark({
+        class: "review-live review-live-active-token review-live-substitution-delimiter"
+      })
+    );
+    if (newTo > middleTo) {
+      builder.add(
+        middleTo,
+        newTo,
+        import_view.Decoration.mark({
+          class: "review-live review-live-active-token review-live-substitution-new"
+        })
+      );
+    }
+    builder.add(
+      closeFrom,
+      to,
+      import_view.Decoration.mark({
+        class: "review-live review-live-active-token review-live-substitution-delimiter"
+      })
+    );
   }
   static addCommentBadge(builder, from, to, author, text) {
     if (to <= from) {
@@ -1044,6 +1161,28 @@ var ReviewLivePreviewExtensionFactory = class _ReviewLivePreviewExtensionFactory
         widget: hiddenDelimiterWidget
       })
     );
+  }
+  static isLineStartToken(content, from) {
+    return from === 0 || content[from - 1] === "\n";
+  }
+  static addHeadingAdditionDecorations(builder, from, to, headingLevel, hiddenDelimiterWidget) {
+    const contentFrom = from + 3;
+    const contentTo = to - 3;
+    const markerEnd = contentFrom + headingLevel + 1;
+    if (contentTo <= markerEnd) {
+      builder.add(contentFrom, contentTo, import_view.Decoration.mark({ class: "review-live review-live-addition" }));
+      return;
+    }
+    _ReviewLivePreviewExtensionFactory.addHiddenRange(builder, from, contentFrom, hiddenDelimiterWidget);
+    _ReviewLivePreviewExtensionFactory.addHiddenRange(builder, contentFrom, markerEnd, hiddenDelimiterWidget);
+    builder.add(
+      markerEnd,
+      contentTo,
+      import_view.Decoration.mark({
+        class: `review-live review-live-addition review-live-struct-heading review-live-struct-heading-${headingLevel}`
+      })
+    );
+    _ReviewLivePreviewExtensionFactory.addHiddenRange(builder, contentTo, to, hiddenDelimiterWidget);
   }
 };
 
@@ -1450,9 +1589,24 @@ var DisplayModeRenderer = class {
         return token.highlightedText;
     }
   }
+  resolveAcceptedText(content, parser) {
+    const tokens = parser.parseTokens(content).filter(
+      (token) => token.type === "addition" || token.type === "deletion" || token.type === "substitution"
+    ).sort((a, b) => b.from - a.from);
+    let output = content;
+    for (const token of tokens) {
+      const replacement = this.renderAcceptedTextForToken(token);
+      output = `${output.slice(0, token.from)}${replacement}${output.slice(token.to)}`;
+    }
+    return output;
+  }
 };
 
 // src/reading-view.ts
+var INLINE_BOLD_ITALIC_PATTERN2 = /^\*\*\*([\s\S]+)\*\*\*$/;
+var INLINE_BOLD_PATTERN2 = /^\*\*([\s\S]+)\*\*$/;
+var INLINE_ITALIC_PATTERN2 = /^\*([\s\S]+)\*$/;
+var INLINE_STRIKE_PATTERN2 = /^~~([\s\S]+)~~$/;
 var ReviewReadingViewDecorator = class {
   constructor(parser, syntax, displayModeRenderer) {
     this.parser = parser;
@@ -1513,6 +1667,17 @@ var ReviewReadingViewDecorator = class {
           fragment.append(this.displayModeRenderer.renderAcceptedTextForToken(token));
           return;
         }
+        const headingMatch = token.text.match(/^(#{1,6})\s+([\s\S]*)$/);
+        if (headingMatch) {
+          const heading = document.createElement(`h${Math.min(6, headingMatch[1].length)}`);
+          heading.className = `review-token review-token-addition review-token-struct-heading review-token-struct-heading-${headingMatch[1].length}`;
+          heading.textContent = headingMatch[2];
+          heading.style.backgroundColor = "var(--review-preview-addition)";
+          heading.style.color = "var(--review-preview-text-addition)";
+          heading.style.display = "inline-block";
+          fragment.append(heading);
+          return;
+        }
         const span = document.createElement("span");
         span.className = "review-token review-token-addition";
         span.textContent = token.text;
@@ -1551,9 +1716,8 @@ var ReviewReadingViewDecorator = class {
         arrowElement.textContent = ReviewReadingViewText.SUBSTITUTION_ARROW;
         const newElement = document.createElement("span");
         newElement.className = "review-sub-new";
-        newElement.textContent = token.newText;
+        this.appendInlineMarkdownFormatting(newElement, token.newText);
         newElement.style.color = "var(--review-preview-text-addition)";
-        newElement.style.fontWeight = "600";
         wrapper.append(oldElement, arrowElement, newElement);
         fragment.append(wrapper);
         return;
@@ -1596,6 +1760,39 @@ var ReviewReadingViewDecorator = class {
       return normalizedText;
     }
     return `${author}${ReviewReadingViewText.AUTHOR_SEPARATOR}${normalizedText}`;
+  }
+  appendInlineMarkdownFormatting(container, rawText) {
+    const boldItalicMatch = rawText.match(INLINE_BOLD_ITALIC_PATTERN2);
+    if (boldItalicMatch) {
+      const strong = document.createElement("strong");
+      const emphasis = document.createElement("em");
+      emphasis.textContent = boldItalicMatch[1];
+      strong.appendChild(emphasis);
+      container.appendChild(strong);
+      return;
+    }
+    const boldMatch = rawText.match(INLINE_BOLD_PATTERN2);
+    if (boldMatch) {
+      const strong = document.createElement("strong");
+      strong.textContent = boldMatch[1];
+      container.appendChild(strong);
+      return;
+    }
+    const italicMatch = rawText.match(INLINE_ITALIC_PATTERN2);
+    if (italicMatch) {
+      const emphasis = document.createElement("em");
+      emphasis.textContent = italicMatch[1];
+      container.appendChild(emphasis);
+      return;
+    }
+    const strikeMatch = rawText.match(INLINE_STRIKE_PATTERN2);
+    if (strikeMatch) {
+      const strike = document.createElement("del");
+      strike.textContent = strikeMatch[1];
+      container.appendChild(strike);
+      return;
+    }
+    container.textContent = rawText;
   }
 };
 
@@ -1668,7 +1865,7 @@ var ThemePresetService = class {
 
 // src/track-changes.ts
 var import_state2 = require("@codemirror/state");
-var TrackChangesService = class {
+var _TrackChangesService = class _TrackChangesService {
   constructor() {
     this.skipNextTransaction = false;
   }
@@ -1835,19 +2032,52 @@ var TrackChangesService = class {
     if (from < 0 || to < from || from > sourceContent.length || to > sourceContent.length) {
       return true;
     }
-    if (this.isInMarkdownTableContext(sourceContent, from, to)) {
+    if (this.isSelectionSyntaxSensitive(sourceContent, from, to)) {
       return true;
     }
     if (nextContent !== void 0 && nextFrom !== void 0 && nextTo !== void 0) {
       if (nextFrom < 0 || nextTo < nextFrom || nextFrom > nextContent.length || nextTo > nextContent.length) {
         return true;
       }
-      if (this.isInMarkdownTableContext(nextContent, nextFrom, nextTo)) {
+      if (this.isSelectionSyntaxSensitive(nextContent, nextFrom, nextTo)) {
         return true;
       }
     }
     const selected = sourceContent.slice(from, to);
-    if (this.looksLikeTableStructure(selected) || this.looksLikeTableStructure(insertedText)) {
+    if (this.isMarkdownStrikeThroughToggle(selected, insertedText)) {
+      return true;
+    }
+    if (from === to && insertedText.includes("\n") && this.isLeadingStructuralLine(sourceContent, from)) {
+      return true;
+    }
+    if (this.looksLikeTableStructure(selected) || this.looksLikeTableStructure(insertedText) || this.containsSyntaxSensitiveMarkdown(selected) || this.containsSyntaxSensitiveMarkdown(insertedText)) {
+      return true;
+    }
+    return false;
+  }
+  isSelectionSyntaxSensitive(content, from, to) {
+    if (from < 0 || to < from || to > content.length) {
+      return true;
+    }
+    if (this.isInMarkdownTableContext(content, from, to)) {
+      return true;
+    }
+    if (this.isInFencedCodeOrMathContext(content, from) || this.isInFencedCodeOrMathContext(content, Math.max(from, to - 1))) {
+      return true;
+    }
+    if (this.isInsideInlineStructuralRange(content, from) || this.isInsideInlineStructuralRange(content, Math.max(from, to - 1))) {
+      return true;
+    }
+    const lineRange = this.getLineRange(content, from, to);
+    if (!lineRange) {
+      return true;
+    }
+    const selected = content.slice(from, to);
+    const selectedLines = content.slice(lineRange.start, lineRange.end);
+    if (this.containsSyntaxSensitiveMarkdown(selected)) {
+      return true;
+    }
+    if (_TrackChangesService.BLOCK_FENCE_PATTERN.test(selectedLines) || _TrackChangesService.FOOTNOTE_DEFINITION_PATTERN.test(selectedLines) || _TrackChangesService.BLOCKQUOTE_OR_CALLOUT_PATTERN.test(selectedLines)) {
       return true;
     }
     return false;
@@ -2036,15 +2266,100 @@ var TrackChangesService = class {
     }
     return (trimmed.match(/\|/g) ?? []).length >= 2;
   }
+  containsSyntaxSensitiveMarkdown(text) {
+    if (!text) {
+      return false;
+    }
+    if (_TrackChangesService.BLOCK_FENCE_PATTERN.test(text) || _TrackChangesService.FOOTNOTE_DEFINITION_PATTERN.test(text) || _TrackChangesService.BLOCKQUOTE_OR_CALLOUT_PATTERN.test(text)) {
+      return true;
+    }
+    if (_TrackChangesService.INLINE_STRUCTURAL_PATTERN.test(text)) {
+      return true;
+    }
+    return false;
+  }
+  isMarkdownStrikeThroughToggle(selected, insertedText) {
+    if (!selected && !insertedText) {
+      return false;
+    }
+    const strip = (value) => value.startsWith("~~") && value.endsWith("~~") && value.length >= 4 ? value.slice(2, -2) : value;
+    const insertedLooksLikeMarkdownStrike = insertedText.startsWith("~~") && insertedText.endsWith("~~") && insertedText.length >= 4 && !insertedText.includes("{~~") && !insertedText.includes("~~}") && strip(insertedText) === selected;
+    const selectedLooksLikeMarkdownStrike = selected.startsWith("~~") && selected.endsWith("~~") && selected.length >= 4 && !selected.includes("{~~") && !selected.includes("~~}") && strip(selected) === insertedText;
+    return insertedLooksLikeMarkdownStrike || selectedLooksLikeMarkdownStrike;
+  }
+  isLeadingStructuralLine(content, offset) {
+    if (offset < 0 || offset > content.length) {
+      return true;
+    }
+    const lineStart = content.lastIndexOf("\n", Math.max(0, offset - 1)) + 1;
+    if (offset !== lineStart) {
+      return false;
+    }
+    const lineEndRaw = content.indexOf("\n", offset);
+    const lineEnd = lineEndRaw === -1 ? content.length : lineEndRaw;
+    const line = content.slice(offset, lineEnd);
+    if (!line.trim()) {
+      return false;
+    }
+    return /^\s*#{1,6}\s+/.test(line) || /^\s*(?:[-*+]|\d+\.)\s+/.test(line) || /^\s*-\s+\[[ xX]\]\s+/.test(line) || /^\s*>\s*/.test(line) || /^\s*\|.*\|/.test(line) || /^\s*(?:---+|\*\*\*+|___+)\s*$/.test(line) || /^\s*(```+|~~~+|\$\$)\s*$/.test(line);
+  }
+  isInsideInlineStructuralRange(content, position) {
+    if (position < 0 || position > content.length) {
+      return true;
+    }
+    const regex = new RegExp(_TrackChangesService.INLINE_STRUCTURAL_PATTERN.source, "g");
+    let match = regex.exec(content);
+    while (match) {
+      const start = match.index;
+      const end = start + match[0].length;
+      if (position >= start && position <= end) {
+        return true;
+      }
+      match = regex.exec(content);
+    }
+    return false;
+  }
+  isInFencedCodeOrMathContext(content, position) {
+    if (position < 0 || position > content.length) {
+      return true;
+    }
+    const lines = content.split("\n");
+    let offset = 0;
+    let inBacktickFence = false;
+    let inTildeFence = false;
+    let inMathFence = false;
+    for (const line of lines) {
+      const lineStart = offset;
+      const lineEnd = lineStart + line.length;
+      const trimmed = line.trim();
+      if (/^```+/.test(trimmed)) {
+        inBacktickFence = !inBacktickFence;
+      } else if (/^~~~+/.test(trimmed)) {
+        inTildeFence = !inTildeFence;
+      } else if (/^\$\$\s*$/.test(trimmed)) {
+        inMathFence = !inMathFence;
+      }
+      if (position >= lineStart && position <= lineEnd) {
+        return inBacktickFence || inTildeFence || inMathFence;
+      }
+      offset = lineEnd + 1;
+    }
+    return inBacktickFence || inTildeFence || inMathFence;
+  }
   isStructuredEdit(selected, insertedText) {
     return selected.includes("\n") || insertedText.includes("\n") || selected.includes("|") || insertedText.includes("|");
   }
 };
+_TrackChangesService.BLOCK_FENCE_PATTERN = /^\s*(```+|~~~+|\$\$)\s*$/m;
+_TrackChangesService.FOOTNOTE_DEFINITION_PATTERN = /^\s*\[\^[^\]]+\]:/m;
+_TrackChangesService.BLOCKQUOTE_OR_CALLOUT_PATTERN = /^\s*>\s*/m;
+_TrackChangesService.INLINE_STRUCTURAL_PATTERN = /!?\[[^\]]*]\([^)]+\)|\[\[[^\]]+\]\]|\[\^[^\]]+\]/;
+var TrackChangesService = _TrackChangesService;
 var TrackChangesExtensionFactory = class {
   constructor(trackChangesService) {
     this.trackChangesService = trackChangesService;
   }
-  createTransactionFilter(isEnabled) {
+  createTransactionFilter(isEnabled, onTrackedBypass) {
     return import_state2.EditorState.transactionFilter.of((transaction) => {
       if (!isEnabled() || !transaction.docChanged) {
         return transaction;
@@ -2066,11 +2381,16 @@ var TrackChangesExtensionFactory = class {
         newTo = toB;
         insertedText = inserted.toString();
       });
-      if (changeCount !== 1) {
-        return transaction;
-      }
       const source = transaction.startState.doc.toString();
       const next = transaction.newDoc.toString();
+      if (changeCount !== 1) {
+        const minimal2 = this.computeMinimalReplacement(source, next);
+        from = minimal2.from;
+        to = minimal2.to;
+        insertedText = minimal2.insert;
+        newFrom = minimal2.from;
+        newTo = minimal2.from + minimal2.insert.length;
+      }
       if (this.trackChangesService.shouldSkipTrackingForChange(
         source,
         from,
@@ -2080,6 +2400,7 @@ var TrackChangesExtensionFactory = class {
         newFrom,
         newTo
       )) {
+        onTrackedBypass?.();
         return transaction;
       }
       const transformed = this.trackChangesService.applyTrackedEdit(source, from, to, insertedText);
@@ -2133,6 +2454,7 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
   constructor() {
     super(...arguments);
     this.commandInFlight = false;
+    this.bypassNoticeShownThisSession = false;
     this.parser = new ReviewParser();
     this.markupBuilder = new ReviewMarkupBuilder();
     this.readingViewDecorator = new ReviewReadingViewDecorator(this.parser);
@@ -2220,7 +2542,10 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
       )
     );
     this.registerEditorExtension(
-      this.trackChangesFactory.createTransactionFilter(() => this.settings.trackChangesEnabled)
+      this.trackChangesFactory.createTransactionFilter(
+        () => this.settings.trackChangesEnabled === true,
+        () => this.showBypassNoticeOncePerSession()
+      )
     );
     this.addCommands();
     this.registerEvents();
@@ -2636,6 +2961,17 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
     if (!selection) {
       return true;
     }
+    if (action !== "comment") {
+      const bounds = this.editorContextService.getEditorSelectionBounds(editor);
+      if (bounds && this.trackChangesService.isSelectionSyntaxSensitive(
+        editor.getValue(),
+        bounds.from,
+        bounds.to
+      )) {
+        new import_obsidian4.Notice(ReviewNotices.QUICK_ACTION_PROTECTED_SELECTION);
+        return true;
+      }
+    }
     switch (action) {
       case "add":
         this.replaceSelectionWithoutTrackChanges(editor, `{++${selection}++}`);
@@ -2675,6 +3011,13 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
     new import_obsidian4.Notice(
       this.settings.acceptedTextViewEnabled ? ReviewNotices.ACCEPTED_TEXT_VIEW_ENABLED : ReviewNotices.ACCEPTED_TEXT_VIEW_DISABLED
     );
+  }
+  showBypassNoticeOncePerSession() {
+    if (this.bypassNoticeShownThisSession) {
+      return;
+    }
+    this.bypassNoticeShownThisSession = true;
+    new import_obsidian4.Notice(ReviewNotices.TRACK_CHANGES_PROTECTED_BYPASS);
   }
   async runCommandExclusive(task, silentIfBusy = false) {
     if (this.commandInFlight) {
@@ -2826,8 +3169,8 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
     this.settings = {
       ...defaults,
       ...loadedSettings,
-      trackChangesEnabled: loadedSettings?.trackChangesEnabled ?? defaults.trackChangesEnabled,
-      acceptedTextViewEnabled: loadedSettings?.acceptedTextViewEnabled ?? defaults.acceptedTextViewEnabled,
+      trackChangesEnabled: loadedSettings?.trackChangesEnabled === true ? true : loadedSettings?.trackChangesEnabled === false ? false : defaults.trackChangesEnabled,
+      acceptedTextViewEnabled: loadedSettings?.acceptedTextViewEnabled === true ? true : loadedSettings?.acceptedTextViewEnabled === false ? false : defaults.acceptedTextViewEnabled,
       themePresets: mergedPresets,
       activeThemePresetId: mergedActivePresetId,
       previewColors: { ...defaultColors, ...loadedSettings?.previewColors || {} },

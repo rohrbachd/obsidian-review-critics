@@ -17,4 +17,18 @@ describe('us1 track changes integration', () => {
     expect(deleted?.content).toContain('{--two--}');
     expect(substituted?.content).toContain('{~~one~>1~~}');
   });
+
+  it('tracks normal heading text edits (not protected syntax)', () => {
+    const source = '# Heading';
+    const result = service.applyTrackedEdit(source, source.length, source.length, '!');
+    expect(result?.content).toContain('{++!++}');
+  });
+
+  it('bypasses full transaction when mixed selection contains protected syntax', () => {
+    const source = 'safe text [x](https://example.com)';
+    const from = 0;
+    const to = source.length;
+    const result = service.applyTrackedEdit(source, from, to, 'replacement');
+    expect(result).toBeNull();
+  });
 });

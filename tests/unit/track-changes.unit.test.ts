@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { TrackChangesService } from '../../src/track-changes';
+import { EditorState } from '@codemirror/state';
+import { TrackChangesExtensionFactory, TrackChangesService } from '../../src/track-changes';
 
 describe('track-changes', () => {
   const service = new TrackChangesService();
@@ -172,5 +173,92 @@ describe('track-changes', () => {
     );
 
     expect(shouldSkip).toBe(true);
+  });
+
+  it('classifies syntax-sensitive protected markdown selections', () => {
+    const fenced = '```ts\nconst x = 1;\n```';
+    expect(service.isSelectionSyntaxSensitive(fenced, 7, 12)).toBe(true);
+
+    const math = '$$\na+b\n$$';
+    expect(service.isSelectionSyntaxSensitive(math, 3, 4)).toBe(true);
+
+    const link = 'text [x](https://example.com) end';
+    const from = link.indexOf('[x]');
+    const to = from + '[x](https://example.com)'.length;
+    expect(service.isSelectionSyntaxSensitive(link, from, to)).toBe(true);
+
+    const footnote = 'line with ref [^1]\n\n[^1]: detail';
+    const footnoteFrom = footnote.indexOf('[^1]');
+    expect(service.isSelectionSyntaxSensitive(footnote, footnoteFrom, footnoteFrom + 4)).toBe(true);
+  });
+
+  it('does not classify normal heading/text selections as syntax-sensitive', () => {
+    const heading = '# Heading';
+    expect(service.isSelectionSyntaxSensitive(heading, 2, heading.length)).toBe(false);
+
+    const plain = 'normal inline text';
+    expect(service.isSelectionSyntaxSensitive(plain, 0, plain.length)).toBe(false);
+  });
+
+  it('bypasses tracked newline insertion immediately before a heading line', () => {
+    const source = '## My synthesis in one sentence';
+    const result = service.applyTrackedEdit(source, 0, 0, '\n');
+    expect(result).toBeNull();
+  });
+
+  it('bypasses callout/hinweisblock insertions in track changes mode', () => {
+    const source = '';
+    const inserted = '> [!NOTE] Title\n> line 1\n> line 2';
+    const result = service.applyTrackedEdit(source, 0, 0, inserted);
+    expect(result).toBeNull();
+  });
+
+  it('emits bypass callback when transaction is skipped for protected syntax', () => {
+    let bypassCount = 0;
+    const factory = new TrackChangesExtensionFactory(service);
+    const state = EditorState.create({
+      doc: 'see [link](https://example.com)',
+      extensions: [factory.createTransactionFilter(() => true, () => void (bypassCount += 1))],
+    });
+
+    state.update({
+      changes: { from: 6, to: 10, insert: 'ref' },
+    });
+
+    expect(bypassCount).toBe(1);
+  });
+
+  it('tracks formatting-like multi-change edits as substitution', () => {
+    const factory = new TrackChangesExtensionFactory(service);
+    const state = EditorState.create({
+      doc: 'bold',
+      extensions: [factory.createTransactionFilter(() => true)],
+    });
+
+    const transaction = state.update({
+      changes: [
+        { from: 0, to: 0, insert: '**' },
+        { from: 4, to: 4, insert: '**' },
+      ],
+    });
+
+    expect(transaction.newDoc.toString()).toBe('{~~bold~>**bold**~~}');
+  });
+
+  it('exempts markdown strikethrough formatting toggles from tracked substitution', () => {
+    const factory = new TrackChangesExtensionFactory(service);
+    const state = EditorState.create({
+      doc: 'bold',
+      extensions: [factory.createTransactionFilter(() => true)],
+    });
+
+    const transaction = state.update({
+      changes: [
+        { from: 0, to: 0, insert: '~~' },
+        { from: 4, to: 4, insert: '~~' },
+      ],
+    });
+
+    expect(transaction.newDoc.toString()).toBe('~~bold~~');
   });
 });

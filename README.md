@@ -22,6 +22,10 @@ It is designed for drafting, peer review, and content polishing workflows where 
 - Customize token colors and default author name in plugin settings
 - Guard review actions against duplicate clicks (accept/reject/resolve run as single in-flight commands)
 - Prevent accidental markup corruption in Track Changes mode by blocking edits to token delimiters
+- Protect syntax-sensitive markdown edits (tables/headings/lists/callouts/code fences/links/footnotes) with safe bypass in Track Changes mode
+- Show one non-blocking bypass notice per session (`review.trackChanges.protectedBypass`)
+- Block quick actions on protected syntax-sensitive selections with explicit notice (`review.quickAction.protectedSelection`)
+- Preserve substitution old/new visual split with strike-through limited to original text
 
 ## How Features Work
 
@@ -45,6 +49,11 @@ It is designed for drafting, peer review, and content polishing workflows where 
   - Edits that touch markup delimiters (`{++`, `++}`, `{--`, `--}`, `{~~`, `~>`, `~~}`, `{>>`, `<<}`) are blocked to protect token integrity.
 - Reading View rendering: tokens are rendered with clear visual styling (for review readability).
 - Live Preview rendering: tokens remain editable while still being visually distinct.
+- Structural markdown safety in Track Changes mode:
+  - If a change touches syntax-sensitive markdown, the plugin preserves content and bypasses unsafe tracked-token injection.
+  - Bypassed syntax-sensitive edits are intentionally excluded from the Changes pane.
+  - Quick actions (`Add`, `Delete`, `Highlight`, `Replace`) are protected no-op on syntax-sensitive selections and show a non-blocking notice.
+  - The first protected bypass in a session shows one notice; repeated bypasses stay non-blocking and silent.
 
 ## Commands
 
@@ -175,6 +184,7 @@ npm run release:auto -- patch
 ## Project Docs
 
 - PRD: [docs/obsidian-review-plugin-prd.md](docs/obsidian-review-plugin-prd.md)
+- Track Changes behavior contract (as-built rules/invariants): [docs/track-changes-behavior-contract.md](docs/track-changes-behavior-contract.md)
 - Obsidian integration/testing: [docs/obsidian-integration-testing.md](docs/obsidian-integration-testing.md)
 - Feature usage: [docs/obsidian-feature-usage.md](docs/obsidian-feature-usage.md)
 - Publication prep: [docs/Obsidian Publication Guide.md](docs/Obsidian Publication Guide.md)

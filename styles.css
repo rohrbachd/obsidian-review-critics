@@ -88,6 +88,18 @@
   color: var(--review-edit-text-addition);
 }
 
+.review-live-struct-heading {
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.review-live-struct-heading-1 { font-size: 2em; }
+.review-live-struct-heading-2 { font-size: 1.55em; }
+.review-live-struct-heading-3 { font-size: 1.3em; }
+.review-live-struct-heading-4 { font-size: 1.15em; }
+.review-live-struct-heading-5 { font-size: 1.05em; }
+.review-live-struct-heading-6 { font-size: 1em; }
+
 .review-live-deletion {
   background: color-mix(in srgb, var(--review-edit-deletion) 45%, transparent);
   color: var(--review-edit-text-deletion);
@@ -119,14 +131,24 @@
 .review-live-substitution-new {
   background: color-mix(in srgb, var(--review-edit-addition) 35%, transparent);
   color: var(--review-edit-text-addition);
-  font-weight: 600;
+  text-decoration: none !important;
+}
+
+.review-live-substitution-accepted-new {
+  text-decoration: none !important;
+}
+
+.review-live-substitution-delimiter {
+  opacity: 0.75;
   text-decoration: none !important;
 }
 
 .review-live-substitution-old,
 .review-live-substitution-new,
+.review-live-substitution-accepted-new,
 .review-live-substitution-old *,
-.review-live-substitution-new * {
+.review-live-substitution-new *,
+.review-live-substitution-accepted-new * {
   text-decoration: none !important;
 }
 

@@ -17,4 +17,15 @@ describe('us2 accepted text view integration', () => {
     expect(root.textContent).toContain('new');
     expect(root.querySelector('.review-comment-badge')).toBeTruthy();
   });
+
+  it('keeps resolved structural markdown text visible in accepted-text mode', () => {
+    const root = document.createElement('div');
+    root.textContent = '{++## Technologies++}\n{++- Kubernetes++}\n{~~draft~>```ts```~~}';
+
+    decorator.decorate(root, {} as never, true, true);
+
+    expect(root.textContent).toContain('## Technologies');
+    expect(root.textContent).toContain('- Kubernetes');
+    expect(root.textContent).toContain('```ts```');
+  });
 });

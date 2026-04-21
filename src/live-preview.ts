@@ -10,6 +10,49 @@ import {
 import { ReviewReadingViewText } from './review-config';
 import type { IReviewParser } from './review-types';
 
+const INLINE_BOLD_ITALIC_PATTERN = /^\*\*\*([\s\S]+)\*\*\*$/;
+const INLINE_BOLD_PATTERN = /^\*\*([\s\S]+)\*\*$/;
+const INLINE_ITALIC_PATTERN = /^\*([\s\S]+)\*$/;
+const INLINE_STRIKE_PATTERN = /^~~([\s\S]+)~~$/;
+
+function appendInlineMarkdownFormatting(container: HTMLElement, rawText: string): void {
+  const boldItalicMatch = rawText.match(INLINE_BOLD_ITALIC_PATTERN);
+  if (boldItalicMatch) {
+    const strong = document.createElement('strong');
+    const emphasis = document.createElement('em');
+    emphasis.textContent = boldItalicMatch[1];
+    strong.appendChild(emphasis);
+    container.appendChild(strong);
+    return;
+  }
+
+  const boldMatch = rawText.match(INLINE_BOLD_PATTERN);
+  if (boldMatch) {
+    const strong = document.createElement('strong');
+    strong.textContent = boldMatch[1];
+    container.appendChild(strong);
+    return;
+  }
+
+  const italicMatch = rawText.match(INLINE_ITALIC_PATTERN);
+  if (italicMatch) {
+    const emphasis = document.createElement('em');
+    emphasis.textContent = italicMatch[1];
+    container.appendChild(emphasis);
+    return;
+  }
+
+  const strikeMatch = rawText.match(INLINE_STRIKE_PATTERN);
+  if (strikeMatch) {
+    const strike = document.createElement('del');
+    strike.textContent = strikeMatch[1];
+    container.appendChild(strike);
+    return;
+  }
+
+  container.textContent = rawText;
+}
+
 class HiddenDelimiterWidget extends WidgetType {
   toDOM(): HTMLElement {
     const element = document.createElement('span');
@@ -60,7 +103,7 @@ class SubstitutionWidget extends WidgetType {
 
     const newSpan = document.createElement('span');
     newSpan.className = 'review-live-substitution-new';
-    newSpan.textContent = this.newText;
+    appendInlineMarkdownFormatting(newSpan, this.newText);
 
     wrapper.append(oldSpan, arrow, newSpan);
     return wrapper;
@@ -257,12 +300,12 @@ export class ReviewLivePreviewExtensionFactory {
             );
             break;
           case 'substitution':
-            builder.add(
+            ReviewLivePreviewExtensionFactory.addActiveSubstitutionDecorations(
+              builder,
               token.from,
               token.to,
-              Decoration.mark({
-                class: 'review-live review-live-active-token review-live-substitution',
-              })
+              token.oldText.length,
+              token.newText.length
             );
             break;
           case 'highlight':
@@ -307,6 +350,21 @@ export class ReviewLivePreviewExtensionFactory {
 
       switch (token.type) {
         case 'addition':
+          if (
+            ReviewLivePreviewExtensionFactory.isLineStartToken(view.state.doc.toString(), token.from)
+          ) {
+            const headingMatch = token.text.match(/^(#{1,6})\s+([\s\S]*)$/);
+            if (headingMatch) {
+              ReviewLivePreviewExtensionFactory.addHeadingAdditionDecorations(
+                builder,
+                token.from,
+                token.to,
+                headingMatch[1].length,
+                hiddenDelimiterWidget
+              );
+              break;
+            }
+          }
           ReviewLivePreviewExtensionFactory.addCriticTokenDecorations(
             builder,
             token.from,
@@ -439,7 +497,81 @@ export class ReviewLivePreviewExtensionFactory {
     ReviewLivePreviewExtensionFactory.addHiddenRange(builder, from, oldFrom, hiddenDelimiterWidget);
     ReviewLivePreviewExtensionFactory.addHiddenRange(builder, oldFrom, oldTo, hiddenDelimiterWidget);
     ReviewLivePreviewExtensionFactory.addHiddenRange(builder, oldTo, middleTo, hiddenDelimiterWidget);
+    if (newTo > middleTo) {
+      builder.add(
+        middleTo,
+        newTo,
+        Decoration.mark({
+          class: 'review-live-substitution-accepted-new',
+        })
+      );
+    }
     ReviewLivePreviewExtensionFactory.addHiddenRange(builder, closeFrom, to, hiddenDelimiterWidget);
+  }
+
+  private static addActiveSubstitutionDecorations(
+    builder: RangeSetBuilder<Decoration>,
+    from: number,
+    to: number,
+    oldTextLength: number,
+    newTextLength: number
+  ): void {
+    const oldFrom = from + 3;
+    const oldTo = oldFrom + oldTextLength;
+    const middleTo = oldTo + 2;
+    const newTo = middleTo + newTextLength;
+    const closeFrom = to - 3;
+
+    if (newTo > closeFrom) {
+      builder.add(
+        from,
+        to,
+        Decoration.mark({
+          class: 'review-live review-live-active-token review-live-substitution',
+        })
+      );
+      return;
+    }
+
+    builder.add(
+      from,
+      oldFrom,
+      Decoration.mark({
+        class: 'review-live review-live-active-token review-live-substitution-delimiter',
+      })
+    );
+    if (oldTo > oldFrom) {
+      builder.add(
+        oldFrom,
+        oldTo,
+        Decoration.mark({
+          class: 'review-live review-live-active-token review-live-substitution-old',
+        })
+      );
+    }
+    builder.add(
+      oldTo,
+      middleTo,
+      Decoration.mark({
+        class: 'review-live review-live-active-token review-live-substitution-delimiter',
+      })
+    );
+    if (newTo > middleTo) {
+      builder.add(
+        middleTo,
+        newTo,
+        Decoration.mark({
+          class: 'review-live review-live-active-token review-live-substitution-new',
+        })
+      );
+    }
+    builder.add(
+      closeFrom,
+      to,
+      Decoration.mark({
+        class: 'review-live review-live-active-token review-live-substitution-delimiter',
+      })
+    );
   }
 
   private static addCommentBadge(
@@ -489,5 +621,37 @@ export class ReviewLivePreviewExtensionFactory {
         widget: hiddenDelimiterWidget,
       })
     );
+  }
+
+  private static isLineStartToken(content: string, from: number): boolean {
+    return from === 0 || content[from - 1] === '\n';
+  }
+
+  private static addHeadingAdditionDecorations(
+    builder: RangeSetBuilder<Decoration>,
+    from: number,
+    to: number,
+    headingLevel: number,
+    hiddenDelimiterWidget: HiddenDelimiterWidget
+  ): void {
+    const contentFrom = from + 3;
+    const contentTo = to - 3;
+    const markerEnd = contentFrom + headingLevel + 1;
+
+    if (contentTo <= markerEnd) {
+      builder.add(contentFrom, contentTo, Decoration.mark({ class: 'review-live review-live-addition' }));
+      return;
+    }
+
+    ReviewLivePreviewExtensionFactory.addHiddenRange(builder, from, contentFrom, hiddenDelimiterWidget);
+    ReviewLivePreviewExtensionFactory.addHiddenRange(builder, contentFrom, markerEnd, hiddenDelimiterWidget);
+    builder.add(
+      markerEnd,
+      contentTo,
+      Decoration.mark({
+        class: `review-live review-live-addition review-live-struct-heading review-live-struct-heading-${headingLevel}`,
+      })
+    );
+    ReviewLivePreviewExtensionFactory.addHiddenRange(builder, contentTo, to, hiddenDelimiterWidget);
   }
 }

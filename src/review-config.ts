@@ -86,6 +86,10 @@ export class ReviewSettingsText {
 }
 
 export class ReviewNotices {
+  static readonly TRACK_CHANGES_PROTECTED_BYPASS =
+    'review.trackChanges.protectedBypass: Structural markdown edit kept as-is (not auto-tracked).';
+  static readonly QUICK_ACTION_PROTECTED_SELECTION =
+    'review.quickAction.protectedSelection: Selection includes protected markdown; quick action not applied.';
   static readonly SELECT_TEXT_FIRST = 'Select some text first.';
   static readonly SELECT_TEXT_FOR_SUBSTITUTION = 'Select text to mark as substitution.';
   static readonly COULD_NOT_OPEN_COMMENTS_PANE = 'Could not open comments pane.';

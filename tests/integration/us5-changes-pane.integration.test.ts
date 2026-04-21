@@ -15,4 +15,10 @@ describe('us5 changes pane integration', () => {
     expect(entries[0].line).toBe(2);
     expect(elapsed).toBeLessThan(5000);
   });
+
+  it('does not include bypassed structural markdown edits when no tracked tokens exist', () => {
+    const input = '# Heading\n- item\n> [!NOTE] Callout\n| A | B |\n| --- | --- |\n| x | y |';
+    const entries = parser.buildTrackedChangeEntries(input);
+    expect(entries).toHaveLength(0);
+  });
 });
