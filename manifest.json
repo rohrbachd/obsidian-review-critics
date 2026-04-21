@@ -3,7 +3,7 @@
   "name": "Review & Critic",
   "version": "1.0.0",
   "minAppVersion": "1.5.0",
-  "description": "Review and CriticMarkup-style comments for Obsidian.",
+  "description": "Review and CriticMarkup-style comments for markdown notes.",
   "author": "Daniel Rohrbach",
   "isDesktopOnly": false
 }
