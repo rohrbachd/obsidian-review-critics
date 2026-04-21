@@ -104,8 +104,11 @@ function assertTagDoesNotExist(tag) {
 }
 
 function main() {
+  const args = process.argv.slice(2);
+  const skipBuild = args.includes('--skip-build');
+  const skipBranchPush = args.includes('--skip-branch-push');
+  const versionArg = args.find((arg) => !arg.startsWith('--'));
   const manifestVersion = readManifestVersion();
-  const versionArg = process.argv[2];
   const releaseVersion = versionArg || manifestVersion;
 
   if (releaseVersion !== manifestVersion) {
@@ -121,8 +124,12 @@ function main() {
   assertCleanWorkingTree();
   assertTagDoesNotExist(releaseVersion);
 
-  console.log(`[release-publish] Building ${releaseVersion}...`);
-  run(process.execPath, ['esbuild.config.mjs', 'production']);
+  if (!skipBuild) {
+    console.log(`[release-publish] Building ${releaseVersion}...`);
+    run(process.execPath, ['esbuild.config.mjs', 'production']);
+  } else {
+    console.log('[release-publish] Skipping build (--skip-build).');
+  }
 
   console.log(`[release-publish] Validating release assets and version mapping...`);
   run(process.execPath, ['scripts/check-obsidian-release.mjs', releaseVersion]);
@@ -134,8 +141,12 @@ function main() {
     fail('Could not determine current branch.');
   }
 
-  console.log(`[release-publish] Pushing branch "${branch}" to origin...`);
-  run('git', ['push', 'origin', branch]);
+  if (!skipBranchPush) {
+    console.log(`[release-publish] Pushing branch "${branch}" to origin...`);
+    run('git', ['push', 'origin', branch]);
+  } else {
+    console.log('[release-publish] Skipping branch push (--skip-branch-push).');
+  }
 
   console.log(`[release-publish] Creating and pushing tag "${releaseVersion}"...`);
   run('git', ['tag', '-a', releaseVersion, '-m', `Release ${releaseVersion}`]);

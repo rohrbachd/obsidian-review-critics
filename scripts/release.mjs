@@ -216,7 +216,10 @@ function main() {
   console.log(
     `[release-auto] Version target: base=${baseVersion}, manifest(before)=${currentManifestVersion}, next=${nextVersion} (${releaseType})`
   );
-  run('git', ['add', 'manifest.json', 'versions.json', 'package.json']);
+  console.log(`[release-auto] Building ${nextVersion} before commit...`);
+  run(process.execPath, ['esbuild.config.mjs', 'production']);
+
+  run('git', ['add', 'manifest.json', 'versions.json', 'package.json', 'main.js', 'styles.css']);
 
   const stagedDiff = runMaybe('git', [
     'diff',
@@ -226,6 +229,8 @@ function main() {
     'manifest.json',
     'versions.json',
     'package.json',
+    'main.js',
+    'styles.css',
   ]);
 
   if (stagedDiff.error) {
@@ -241,7 +246,7 @@ function main() {
   }
 
   console.log(`[release-auto] Publishing ${nextVersion}...`);
-  run(process.execPath, ['scripts/publish-github-release.mjs', nextVersion]);
+  run(process.execPath, ['scripts/publish-github-release.mjs', nextVersion, '--skip-build']);
 
   console.log(`[release-auto] Done: ${nextVersion}`);
 }

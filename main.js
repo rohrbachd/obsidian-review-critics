@@ -498,7 +498,10 @@ var _ReviewChangesView = class _ReviewChangesView extends import_obsidian2.ItemV
       { id: "comment", label: "Comment" }
     ];
     for (const action of actions) {
-      const button = actionsRow.createEl("button", { text: action.label, attr: { type: "button" } });
+      const button = actionsRow.createEl("button", {
+        text: action.label,
+        attr: { type: "button" }
+      });
       button.addEventListener("mousedown", (event) => event.preventDefault());
       button.disabled = this.isUiBusy();
       button.addEventListener("click", () => {
@@ -940,7 +943,10 @@ var ReviewLivePreviewExtensionFactory = class _ReviewLivePreviewExtensionFactory
       }
       switch (token.type) {
         case "addition":
-          if (_ReviewLivePreviewExtensionFactory.isLineStartToken(view.state.doc.toString(), token.from)) {
+          if (_ReviewLivePreviewExtensionFactory.isLineStartToken(
+            view.state.doc.toString(),
+            token.from
+          )) {
             const headingMatch = token.text.match(/^(#{1,6})\s+([\s\S]*)$/);
             if (headingMatch) {
               _ReviewLivePreviewExtensionFactory.addHeadingAdditionDecorations(
@@ -1061,8 +1067,18 @@ var ReviewLivePreviewExtensionFactory = class _ReviewLivePreviewExtensionFactory
       return;
     }
     _ReviewLivePreviewExtensionFactory.addHiddenRange(builder, from, oldFrom, hiddenDelimiterWidget);
-    _ReviewLivePreviewExtensionFactory.addHiddenRange(builder, oldFrom, oldTo, hiddenDelimiterWidget);
-    _ReviewLivePreviewExtensionFactory.addHiddenRange(builder, oldTo, middleTo, hiddenDelimiterWidget);
+    _ReviewLivePreviewExtensionFactory.addHiddenRange(
+      builder,
+      oldFrom,
+      oldTo,
+      hiddenDelimiterWidget
+    );
+    _ReviewLivePreviewExtensionFactory.addHiddenRange(
+      builder,
+      oldTo,
+      middleTo,
+      hiddenDelimiterWidget
+    );
     if (newTo > middleTo) {
       builder.add(
         middleTo,
@@ -1170,11 +1186,25 @@ var ReviewLivePreviewExtensionFactory = class _ReviewLivePreviewExtensionFactory
     const contentTo = to - 3;
     const markerEnd = contentFrom + headingLevel + 1;
     if (contentTo <= markerEnd) {
-      builder.add(contentFrom, contentTo, import_view.Decoration.mark({ class: "review-live review-live-addition" }));
+      builder.add(
+        contentFrom,
+        contentTo,
+        import_view.Decoration.mark({ class: "review-live review-live-addition" })
+      );
       return;
     }
-    _ReviewLivePreviewExtensionFactory.addHiddenRange(builder, from, contentFrom, hiddenDelimiterWidget);
-    _ReviewLivePreviewExtensionFactory.addHiddenRange(builder, contentFrom, markerEnd, hiddenDelimiterWidget);
+    _ReviewLivePreviewExtensionFactory.addHiddenRange(
+      builder,
+      from,
+      contentFrom,
+      hiddenDelimiterWidget
+    );
+    _ReviewLivePreviewExtensionFactory.addHiddenRange(
+      builder,
+      contentFrom,
+      markerEnd,
+      hiddenDelimiterWidget
+    );
     builder.add(
       markerEnd,
       contentTo,
@@ -1918,7 +1948,12 @@ var _TrackChangesService = class _TrackChangesService {
         const left = content.slice(insideDeletion.start, from);
         const right = content.slice(from, insideDeletion.end);
         const replacement = `${this.wrapIfNotEmpty(left, "{--", "--}")}{++${insertedText}++}${this.wrapIfNotEmpty(right, "{--", "--}")}`;
-        const next2 = this.insertText(content, insideDeletion.outerStart, insideDeletion.outerEnd, replacement);
+        const next2 = this.insertText(
+          content,
+          insideDeletion.outerStart,
+          insideDeletion.outerEnd,
+          replacement
+        );
         const cursorInsideNewAddition = insideDeletion.outerStart + this.wrapIfNotEmpty(left, "{--", "--}").length + 3 + insertedText.length;
         return { content: next2, cursor: cursorInsideNewAddition };
       }
@@ -1938,7 +1973,11 @@ var _TrackChangesService = class _TrackChangesService {
         return { content: next2, cursor: from + insertedText.length };
       }
       const insideAdditionFrom = this.findTokenContentRange(content, from, "addition");
-      const insideAdditionTo = this.findTokenContentRange(content, Math.max(from, to - 1), "addition");
+      const insideAdditionTo = this.findTokenContentRange(
+        content,
+        Math.max(from, to - 1),
+        "addition"
+      );
       if (insideAdditionFrom && insideAdditionTo && insideAdditionFrom.outerStart === insideAdditionTo.outerStart && insideAdditionFrom.outerEnd === insideAdditionTo.outerEnd) {
         const next2 = this.insertText(content, from, to, insertedText);
         return { content: next2, cursor: from + insertedText.length };
@@ -1983,7 +2022,11 @@ var _TrackChangesService = class _TrackChangesService {
         return { content: next2, cursor: from };
       }
       const insideAdditionFrom = this.findTokenContentRange(content, from, "addition");
-      const insideAdditionTo = this.findTokenContentRange(content, Math.max(from, to - 1), "addition");
+      const insideAdditionTo = this.findTokenContentRange(
+        content,
+        Math.max(from, to - 1),
+        "addition"
+      );
       if (insideAdditionFrom && insideAdditionTo && insideAdditionFrom.outerStart === insideAdditionTo.outerStart && insideAdditionFrom.outerEnd === insideAdditionTo.outerEnd) {
         const nextInner = `${content.slice(insideAdditionFrom.start, from)}${content.slice(to, insideAdditionFrom.end)}`;
         if (nextInner.length === 0) {
@@ -2018,7 +2061,11 @@ var _TrackChangesService = class _TrackChangesService {
         return { content, cursor: from, preventDefault: true };
       }
       const insideDeletionFrom = this.findTokenContentRange(content, from, "deletion");
-      const insideDeletionTo = this.findTokenContentRange(content, Math.max(from, to - 1), "deletion");
+      const insideDeletionTo = this.findTokenContentRange(
+        content,
+        Math.max(from, to - 1),
+        "deletion"
+      );
       if (insideDeletionFrom && insideDeletionTo && insideDeletionFrom.outerStart === insideDeletionTo.outerStart && insideDeletionFrom.outerEnd === insideDeletionTo.outerEnd) {
         return { content, cursor: from, preventDefault: true };
       }
