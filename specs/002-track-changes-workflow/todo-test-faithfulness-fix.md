@@ -5,6 +5,7 @@
 Current automated tests are broad but not fully faithful end-to-end. Most "integration" tests exercise parser/services in isolation with mocked Obsidian runtime, so critical UI/runtime paths are not validated in a real vault session.
 
 Related docs:
+
 - `specs/002-track-changes-workflow/spec.md`
 - `specs/002-track-changes-workflow/tasks.md`
 - `docs/obsidian-integration-testing.md`
@@ -94,6 +95,7 @@ Raise test fidelity so acceptance scenarios for Spec 002 are validated through r
 - [ ] TF-205 Selection spanning multiple tokens/paragraphs during replace/delete.
 
 Suggested files:
+
 - `tests/integration/us1-track-changes.integration.test.ts`
 - `tests/integration/us5-changes-pane.integration.test.ts`
 - `tests/e2e/us1-edge-cases.e2e.test.ts` (new)

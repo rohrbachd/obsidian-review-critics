@@ -3,14 +3,17 @@
 This document defines the **implemented behavior contract** for Track Changes, change resolution, accepted view, quick actions, and theme preset handling in this plugin.
 
 Purpose:
+
 - Capture hard-won behavioral rules and edge-case decisions in one stable place.
 - Provide a shared reference for future fixes/refactors.
 - Act as implementation requirements for regression testing.
 
 Scope:
+
 - Runtime behavior currently implemented in `src/track-changes.ts`, `src/main.ts`, `src/change-resolution.ts`, `src/changes-view.ts`, `src/comments-view.ts`, `src/live-preview.ts`, `src/reading-view.ts`, and related tests.
 
 Non-goal:
+
 - This is not a product PRD; it is an as-built engineering contract.
 
 ## 1) Core Invariants
@@ -81,7 +84,7 @@ All rules below apply when Track Changes mode is ON.
 When any of the following are detected, auto-tracking is skipped and the underlying editor change proceeds as-is:
 
 1. Markdown table context.
-2. Fenced code or math context (``` / ~~~ / `$$` fences).
+2. Fenced code or math context (```/ ~~~ /`$$` fences).
 3. Block quote or callout lines (`>` including `[!NOTE]` style callouts).
 4. Footnote definition lines (`[^id]:`).
 5. Inline structural markdown ranges:
@@ -93,6 +96,7 @@ When any of the following are detected, auto-tracking is skipped and the underly
 8. Structured multi-line/table-like replacement operations (newline/pipe sensitive edits).
 
 User notice behavior:
+
 1. Track Changes bypass notice is shown at most once per session:
    - `review.trackChanges.protectedBypass`
 2. Quick actions on protected selections show:
@@ -103,11 +107,13 @@ User notice behavior:
 Quick actions: `Add`, `Delete`, `Highlight`, `Replace`, `Comment`.
 
 No selection behavior:
+
 1. Add inserts empty addition and places cursor inside.
 2. Comment inserts empty comment (with configured author if available).
 3. Delete/Highlight/Replace leave content unchanged.
 
 Selection behavior:
+
 1. Add/Delete/Highlight/Replace apply corresponding wrappers.
 2. Comment inserts anchored comment markup.
 3. If selection is syntax-sensitive and action is Add/Delete/Highlight/Replace:
@@ -119,18 +125,21 @@ Selection behavior:
 Accepted View must be projection-only (no source mutation).
 
 Projection rules:
+
 1. Addition -> visible text.
 2. Deletion -> hidden.
 3. Substitution -> replacement side only.
 4. Comments remain visible.
 
 UI behavior:
+
 1. Toggle preserves source markup.
 2. Exiting accepted view restores markup-aware display.
 
 ## 7) Substitution Rendering Contract
 
 In markup-aware rendering:
+
 1. Old and new sides are visually distinct.
 2. Strike-through applies only to old side.
 3. New side is not globally forced bold.
@@ -143,6 +152,7 @@ In markup-aware rendering:
 ## 8) Change Resolution Contract
 
 Single change resolve mapping:
+
 1. Addition:
    - Accept -> keep text.
    - Reject -> remove text.
@@ -154,9 +164,11 @@ Single change resolve mapping:
    - Reject -> keep original text.
 
 Accept All:
+
 1. Resolve all additions/deletions/substitutions in current note as accepted.
 
 Comment resolve:
+
 1. Standalone comment resolve removes comment token.
 2. Anchored comment resolve removes comment part and keeps highlighted text readable.
 
@@ -180,6 +192,7 @@ Comment resolve:
 ## 11) Test Coverage Mapping (Primary)
 
 Primary suites enforcing this contract:
+
 1. `tests/unit/track-changes.unit.test.ts`
 2. `tests/integration/us1-track-changes.integration.test.ts`
 3. `tests/integration/us1-randomized-invariants.integration.test.ts`
@@ -194,6 +207,7 @@ Primary suites enforcing this contract:
 ## 12) Maintenance Rule
 
 Any behavior change in Track Changes, Accepted View, rendering, quick actions, resolve workflows, or presets must:
+
 1. Update this contract.
 2. Update the corresponding spec/tasks artifacts in `specs/002-track-changes-workflow/` when scope/requirements change.
 3. Add or update tests before merge.

@@ -5,7 +5,12 @@ import { ReviewCommentsView } from '../../src/comments-view';
 describe('comments-view resolve controls', () => {
   it('shows resolve button for actionable entries', async () => {
     const onResolve = vi.fn().mockResolvedValue(undefined);
-    const view = new ReviewCommentsView({} as never, async () => {}, onResolve, () => false);
+    const view = new ReviewCommentsView(
+      {} as never,
+      async () => {},
+      onResolve,
+      () => false
+    );
 
     view.setEntries([
       {
@@ -29,7 +34,12 @@ describe('comments-view resolve controls', () => {
       release = resolve;
     });
     const onResolve = vi.fn().mockImplementation(() => pending);
-    const view = new ReviewCommentsView({} as never, async () => {}, onResolve, () => false);
+    const view = new ReviewCommentsView(
+      {} as never,
+      async () => {},
+      onResolve,
+      () => false
+    );
 
     view.setEntries([
       {

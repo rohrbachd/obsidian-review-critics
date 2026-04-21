@@ -143,12 +143,12 @@ export class ReviewLivePreviewExtensionFactory {
           update.selectionSet ||
           update.focusChanged
         ) {
-            this.decorations = ReviewLivePreviewExtensionFactory.buildDecorations(
-              update.view,
-              parser,
-              isEnabled,
-              acceptedTextViewEnabled,
-              hiddenDelimiterWidget
+          this.decorations = ReviewLivePreviewExtensionFactory.buildDecorations(
+            update.view,
+            parser,
+            isEnabled,
+            acceptedTextViewEnabled,
+            hiddenDelimiterWidget
           );
         }
       }
@@ -351,7 +351,10 @@ export class ReviewLivePreviewExtensionFactory {
       switch (token.type) {
         case 'addition':
           if (
-            ReviewLivePreviewExtensionFactory.isLineStartToken(view.state.doc.toString(), token.from)
+            ReviewLivePreviewExtensionFactory.isLineStartToken(
+              view.state.doc.toString(),
+              token.from
+            )
           ) {
             const headingMatch = token.text.match(/^(#{1,6})\s+([\s\S]*)$/);
             if (headingMatch) {
@@ -495,8 +498,18 @@ export class ReviewLivePreviewExtensionFactory {
     }
 
     ReviewLivePreviewExtensionFactory.addHiddenRange(builder, from, oldFrom, hiddenDelimiterWidget);
-    ReviewLivePreviewExtensionFactory.addHiddenRange(builder, oldFrom, oldTo, hiddenDelimiterWidget);
-    ReviewLivePreviewExtensionFactory.addHiddenRange(builder, oldTo, middleTo, hiddenDelimiterWidget);
+    ReviewLivePreviewExtensionFactory.addHiddenRange(
+      builder,
+      oldFrom,
+      oldTo,
+      hiddenDelimiterWidget
+    );
+    ReviewLivePreviewExtensionFactory.addHiddenRange(
+      builder,
+      oldTo,
+      middleTo,
+      hiddenDelimiterWidget
+    );
     if (newTo > middleTo) {
       builder.add(
         middleTo,
@@ -639,12 +652,26 @@ export class ReviewLivePreviewExtensionFactory {
     const markerEnd = contentFrom + headingLevel + 1;
 
     if (contentTo <= markerEnd) {
-      builder.add(contentFrom, contentTo, Decoration.mark({ class: 'review-live review-live-addition' }));
+      builder.add(
+        contentFrom,
+        contentTo,
+        Decoration.mark({ class: 'review-live review-live-addition' })
+      );
       return;
     }
 
-    ReviewLivePreviewExtensionFactory.addHiddenRange(builder, from, contentFrom, hiddenDelimiterWidget);
-    ReviewLivePreviewExtensionFactory.addHiddenRange(builder, contentFrom, markerEnd, hiddenDelimiterWidget);
+    ReviewLivePreviewExtensionFactory.addHiddenRange(
+      builder,
+      from,
+      contentFrom,
+      hiddenDelimiterWidget
+    );
+    ReviewLivePreviewExtensionFactory.addHiddenRange(
+      builder,
+      contentFrom,
+      markerEnd,
+      hiddenDelimiterWidget
+    );
     builder.add(
       markerEnd,
       contentTo,

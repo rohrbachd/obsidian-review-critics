@@ -1,53 +1,53 @@
 ﻿{
-    "mode":  "full-scan",
-    "base_ref":  "origin/main",
-    "head_ref":  "774f23a720055a41c0f39b61f7fd8dc8d8994206",
-    "changed_files":  11,
-    "findings":  {
-                     "blocker":  0,
-                     "critical":  1,
-                     "major":  2,
-                     "minor":  1,
-                     "info":  0
-                 },
-    "risk_score":  7,
-    "recommendation":  "request-changes",
-    "hotspots":  [
-                     {
-                         "path":  "src/main.ts",
-                         "score":  9,
-                         "blocker":  0,
-                         "critical":  1,
-                         "major":  0,
-                         "minor":  0,
-                         "info":  0
-                     },
-                     {
-                         "path":  "src/change-resolution.ts",
-                         "score":  7,
-                         "blocker":  0,
-                         "critical":  0,
-                         "major":  1,
-                         "minor":  0,
-                         "info":  0
-                     },
-                     {
-                         "path":  "tests/unit/main.unit.test.ts",
-                         "score":  5,
-                         "blocker":  0,
-                         "critical":  0,
-                         "major":  1,
-                         "minor":  0,
-                         "info":  0
-                     },
-                     {
-                         "path":  "src/theme-presets.ts",
-                         "score":  3,
-                         "blocker":  0,
-                         "critical":  0,
-                         "major":  0,
-                         "minor":  1,
-                         "info":  0
-                     }
-                 ]
+  "mode": "full-scan",
+  "base_ref": "origin/main",
+  "head_ref": "774f23a720055a41c0f39b61f7fd8dc8d8994206",
+  "changed_files": 11,
+  "findings": {
+    "blocker": 0,
+    "critical": 1,
+    "major": 2,
+    "minor": 1,
+    "info": 0
+  },
+  "risk_score": 7,
+  "recommendation": "request-changes",
+  "hotspots": [
+    {
+      "path": "src/main.ts",
+      "score": 9,
+      "blocker": 0,
+      "critical": 1,
+      "major": 0,
+      "minor": 0,
+      "info": 0
+    },
+    {
+      "path": "src/change-resolution.ts",
+      "score": 7,
+      "blocker": 0,
+      "critical": 0,
+      "major": 1,
+      "minor": 0,
+      "info": 0
+    },
+    {
+      "path": "tests/unit/main.unit.test.ts",
+      "score": 5,
+      "blocker": 0,
+      "critical": 0,
+      "major": 1,
+      "minor": 0,
+      "info": 0
+    },
+    {
+      "path": "src/theme-presets.ts",
+      "score": 3,
+      "blocker": 0,
+      "critical": 0,
+      "major": 0,
+      "minor": 1,
+      "info": 0
+    }
+  ]
 }

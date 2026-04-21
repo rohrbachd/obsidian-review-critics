@@ -775,12 +775,16 @@ export default class ReviewPlugin extends Plugin {
     const entries = this.parser.buildTrackedChangeEntries(content);
     return (
       entries.find(
-        (entry) => entry.type === target.type && entry.from === target.from && entry.to === target.to
+        (entry) =>
+          entry.type === target.type && entry.from === target.from && entry.to === target.to
       ) ?? null
     );
   }
 
-  private findExactCommentEntry(content: string, target: CommentPaneEntry): CommentPaneEntry | null {
+  private findExactCommentEntry(
+    content: string,
+    target: CommentPaneEntry
+  ): CommentPaneEntry | null {
     const entries = this.parser.buildCommentEntries(content);
     return (
       entries.find((entry) => {

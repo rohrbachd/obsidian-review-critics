@@ -94,12 +94,7 @@ describe('track-changes', () => {
   it('does not track edits inside comment tokens', () => {
     const source = '{==Things==}{>> [author=Daniel Rohrbach] Need changes <<}';
     const insertAt = source.indexOf('Need');
-    const result = service.applyTrackedEdit(
-      source,
-      insertAt,
-      insertAt,
-      'x'
-    );
+    const result = service.applyTrackedEdit(source, insertAt, insertAt, 'x');
     expect(result?.content).toBe('{==Things==}{>> [author=Daniel Rohrbach] xNeed changes <<}');
   });
 
@@ -218,7 +213,12 @@ describe('track-changes', () => {
     const factory = new TrackChangesExtensionFactory(service);
     const state = EditorState.create({
       doc: 'see [link](https://example.com)',
-      extensions: [factory.createTransactionFilter(() => true, () => void (bypassCount += 1))],
+      extensions: [
+        factory.createTransactionFilter(
+          () => true,
+          () => void (bypassCount += 1)
+        ),
+      ],
     });
 
     state.update({

@@ -86,7 +86,10 @@ export class ReviewChangesView extends ItemView {
     ];
 
     for (const action of actions) {
-      const button = actionsRow.createEl('button', { text: action.label, attr: { type: 'button' } });
+      const button = actionsRow.createEl('button', {
+        text: action.label,
+        attr: { type: 'button' },
+      });
       button.addEventListener('mousedown', (event) => event.preventDefault());
       button.disabled = this.isUiBusy();
       button.addEventListener('click', () => {

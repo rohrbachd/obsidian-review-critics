@@ -26,9 +26,11 @@ The plugin currently relies on CodeMirror decorations. Decorations can style/hid
 ### Option A: Keep current inline-only approach and patch issues one-by-one
 
 Pros:
+
 - Minimal short-term coding.
 
 Cons:
+
 - High regression risk.
 - Repeated edge-case failures across block constructs.
 - Does not address structural mismatch root cause.
@@ -36,19 +38,23 @@ Cons:
 ### Option B: Stability-first hybrid model (chosen)
 
 Pros:
+
 - Preserves current reliable inline behavior.
 - Avoids structural corruption and range mapping failures.
 - Scales by explicit compatibility matrix.
 
 Cons:
+
 - Some Markdown formatting/structure edits remain intentionally untracked in Track Changes mode.
 
 ### Option C: Full model redesign with shadow document + mapped editable projection
 
 Pros:
+
 - Could eventually render all accepted/track views with perfect Markdown semantics.
 
 Cons:
+
 - Large complexity, high risk, effectively a new editor layer.
 - Not suitable as immediate stabilization step.
 
@@ -62,6 +68,7 @@ Adopt **Option B (stability-first hybrid model)**.
 - Reject alternate syntax proposals like `{~~old~~>++new++}` for now.
 
 Reason:
+
 - Current parser, resolver, pane logic, and test fixtures are built around standard CriticMarkup.
 - Syntax change would introduce broad compatibility and migration risk without solving structural Markdown constraints.
 

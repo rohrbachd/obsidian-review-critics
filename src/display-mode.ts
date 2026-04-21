@@ -27,7 +27,9 @@ export class DisplayModeRenderer implements IDisplayModeRenderer {
     const tokens = parser
       .parseTokens(content)
       .filter(
-        (token): token is Extract<ReviewToken, { type: 'addition' | 'deletion' | 'substitution' }> =>
+        (
+          token
+        ): token is Extract<ReviewToken, { type: 'addition' | 'deletion' | 'substitution' }> =>
           token.type === 'addition' || token.type === 'deletion' || token.type === 'substitution'
       )
       .sort((a, b) => b.from - a.from);

@@ -105,9 +105,17 @@ export class TrackChangesService implements ITrackChangesService {
         const left = content.slice(insideDeletion.start, from);
         const right = content.slice(from, insideDeletion.end);
         const replacement = `${this.wrapIfNotEmpty(left, '{--', '--}')}{++${insertedText}++}${this.wrapIfNotEmpty(right, '{--', '--}')}`;
-        const next = this.insertText(content, insideDeletion.outerStart, insideDeletion.outerEnd, replacement);
+        const next = this.insertText(
+          content,
+          insideDeletion.outerStart,
+          insideDeletion.outerEnd,
+          replacement
+        );
         const cursorInsideNewAddition =
-          insideDeletion.outerStart + this.wrapIfNotEmpty(left, '{--', '--}').length + 3 + insertedText.length;
+          insideDeletion.outerStart +
+          this.wrapIfNotEmpty(left, '{--', '--}').length +
+          3 +
+          insertedText.length;
         return { content: next, cursor: cursorInsideNewAddition };
       }
 
@@ -135,7 +143,11 @@ export class TrackChangesService implements ITrackChangesService {
       }
 
       const insideAdditionFrom = this.findTokenContentRange(content, from, 'addition');
-      const insideAdditionTo = this.findTokenContentRange(content, Math.max(from, to - 1), 'addition');
+      const insideAdditionTo = this.findTokenContentRange(
+        content,
+        Math.max(from, to - 1),
+        'addition'
+      );
       if (
         insideAdditionFrom &&
         insideAdditionTo &&
@@ -207,7 +219,11 @@ export class TrackChangesService implements ITrackChangesService {
       }
 
       const insideAdditionFrom = this.findTokenContentRange(content, from, 'addition');
-      const insideAdditionTo = this.findTokenContentRange(content, Math.max(from, to - 1), 'addition');
+      const insideAdditionTo = this.findTokenContentRange(
+        content,
+        Math.max(from, to - 1),
+        'addition'
+      );
       if (
         insideAdditionFrom &&
         insideAdditionTo &&
@@ -260,7 +276,11 @@ export class TrackChangesService implements ITrackChangesService {
       }
 
       const insideDeletionFrom = this.findTokenContentRange(content, from, 'deletion');
-      const insideDeletionTo = this.findTokenContentRange(content, Math.max(from, to - 1), 'deletion');
+      const insideDeletionTo = this.findTokenContentRange(
+        content,
+        Math.max(from, to - 1),
+        'deletion'
+      );
       if (
         insideDeletionFrom &&
         insideDeletionTo &&
@@ -287,12 +307,7 @@ export class TrackChangesService implements ITrackChangesService {
     nextFrom?: number,
     nextTo?: number
   ): boolean {
-    if (
-      from < 0 ||
-      to < from ||
-      from > sourceContent.length ||
-      to > sourceContent.length
-    ) {
+    if (from < 0 || to < from || from > sourceContent.length || to > sourceContent.length) {
       return true;
     }
 
@@ -353,7 +368,10 @@ export class TrackChangesService implements ITrackChangesService {
     ) {
       return true;
     }
-    if (this.isInsideInlineStructuralRange(content, from) || this.isInsideInlineStructuralRange(content, Math.max(from, to - 1))) {
+    if (
+      this.isInsideInlineStructuralRange(content, from) ||
+      this.isInsideInlineStructuralRange(content, Math.max(from, to - 1))
+    ) {
       return true;
     }
 
@@ -380,10 +398,7 @@ export class TrackChangesService implements ITrackChangesService {
     return false;
   }
 
-  private findCommentContentRange(
-    content: string,
-    position: number
-  ): TokenContentRange | null {
+  private findCommentContentRange(content: string, position: number): TokenContentRange | null {
     const pattern = /\{>>[\s\S]*?<<\}/g;
     let match = pattern.exec(content);
     while (match) {
@@ -533,7 +548,11 @@ export class TrackChangesService implements ITrackChangesService {
     return tableBlockLines.some((line) => tableSeparator.test(line));
   }
 
-  private getLineRange(content: string, from: number, to: number): { start: number; end: number } | null {
+  private getLineRange(
+    content: string,
+    from: number,
+    to: number
+  ): { start: number; end: number } | null {
     if (from < 0 || to < from || from > content.length || to > content.length) {
       return null;
     }
@@ -544,7 +563,10 @@ export class TrackChangesService implements ITrackChangesService {
     return { start, end };
   }
 
-  private collectContiguousPipeLines(content: string, anchor: { start: number; end: number }): string[] {
+  private collectContiguousPipeLines(
+    content: string,
+    anchor: { start: number; end: number }
+  ): string[] {
     const lines: string[] = [];
 
     const anchorLine = content.slice(anchor.start, anchor.end);
@@ -628,7 +650,9 @@ export class TrackChangesService implements ITrackChangesService {
     }
 
     const strip = (value: string): string =>
-      value.startsWith('~~') && value.endsWith('~~') && value.length >= 4 ? value.slice(2, -2) : value;
+      value.startsWith('~~') && value.endsWith('~~') && value.length >= 4
+        ? value.slice(2, -2)
+        : value;
 
     const insertedLooksLikeMarkdownStrike =
       insertedText.startsWith('~~') &&
@@ -747,10 +771,7 @@ export class TrackChangesExtensionFactory {
     this.trackChangesService = trackChangesService;
   }
 
-  createTransactionFilter(
-    isEnabled: () => boolean,
-    onTrackedBypass?: () => void
-  ): Extension {
+  createTransactionFilter(isEnabled: () => boolean, onTrackedBypass?: () => void): Extension {
     return EditorState.transactionFilter.of((transaction) => {
       if (!isEnabled() || !transaction.docChanged) {
         return transaction;
