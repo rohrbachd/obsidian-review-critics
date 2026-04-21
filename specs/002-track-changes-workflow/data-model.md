@@ -3,6 +3,7 @@
 ## Delta vs Canonical
 
 Reference canonical baseline: [docs/data-model.md](../../docs/data-model.md)
+Decision baseline: [design-decision-markdown-structure-handling-2026-04-21.md](./design-decision-markdown-structure-handling-2026-04-21.md)
 
 ### New entities
 
@@ -15,6 +16,7 @@ Reference canonical baseline: [docs/data-model.md](../../docs/data-model.md)
 
 - `ReviewPluginSettings` (adds track/display/theme fields)
 - `CommentPaneEntry` (adds optional actionability metadata)
+- `TrackedChangeEntry` (behavioral scope now explicitly excludes syntax-sensitive bypassed edits)
 
 ### No removals
 
@@ -23,6 +25,10 @@ Reference canonical baseline: [docs/data-model.md](../../docs/data-model.md)
 ## Entity: TrackedChangeEntry
 
 Represents one pending tracked edit in the active note for pane listing and resolution.
+
+Behavioral note:
+
+- Syntax-sensitive markdown edits protected by safe bypass do not emit `TrackedChangeEntry` items unless explicitly represented as safe tracked tokens.
 
 - Fields:
   - `id`: stable identifier for current parse cycle
@@ -51,6 +57,7 @@ Represents a quick-action invocation from pane/toolbar UI against active editor 
 - Validation rules:
   - `selectionText` required when `hasSelection=true`
   - for `delete | highlight | replace`, no-selection path is no-op
+  - when selection overlaps syntax-sensitive markdown, `add | delete | highlight | replace` path is protected no-op with non-blocking notice
 
 ## Entity: ThemePreset
 
@@ -109,11 +116,15 @@ Optional actionability metadata for comments pane actions:
 
 - `trackChangesEnabled: false -> true` via command/toggle
 - `trackChangesEnabled: true -> false` via command/toggle
+- For each edit while enabled:
+  - `trackability: inline-safe -> tracked transform`
+  - `trackability: syntax-sensitive -> safe bypass (content preserved, no unsafe token injection)`
 
 ### Display mode state
 
 - `acceptedTextViewEnabled: false -> true` via command/toggle
 - `acceptedTextViewEnabled: true -> false` via command/toggle
+- when enabled, structural markdown contained in resolved tracked tokens is rendered through accepted-text markdown projection while source markup remains unchanged
 
 ### Theme lifecycle
 
@@ -126,3 +137,4 @@ Optional actionability metadata for comments pane actions:
 
 - Markdown note content: authoritative for tracked review markup and comment markup.
 - Plugin settings store: authoritative for mode flags and theme presets.
+- session-level bypass notice suppression state is ephemeral runtime state and is not persisted.

@@ -2,6 +2,7 @@
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning  
 **Created**: 2026-04-19  
+**Last Updated**: 2026-04-21  
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -21,6 +22,7 @@
 - [x] Edge cases are identified
 - [x] Scope is clearly bounded
 - [x] Dependencies and assumptions identified
+- [x] Structural markdown safety scope and bypass policy are explicitly documented
 - [x] Durability requirements (if any) explicitly define the system of record and allowed storage media
 - [x] Durability requirements (if any) define startup behavior when persistent dependencies are unavailable
 - [x] Durability requirements (if any) include migration/bootstrap and verification expectations
@@ -37,3 +39,4 @@
 - The authoritative stores are explicitly defined: Markdown note content for review markup and plugin settings for mode/theme preferences.
 - Startup behavior is covered by persisted settings expectations; no external persistent dependency is introduced.
 - The spec resolves PRD open questions with documented assumptions so planning can proceed without clarification blockers.
+- Structural markdown safety decisions are incorporated into `spec.md` and traced to [design-decision-markdown-structure-handling-2026-04-21.md](../design-decision-markdown-structure-handling-2026-04-21.md).

@@ -5,6 +5,7 @@
 **Status**: Draft  
 **Input**: User description: "Create phase 2 track changes workflow specification from docs/obsidian-review-plugin-prd-phase-2.md. Reference document: docs/obsidian-review-plugin-prd-phase-2.md. Include Track Changes Mode, accepted-text view, accept/reject changes, changes pane, comment cleanup actions, and saved color theme presets."  
 **Glossary**: [docs/obsidian-review-plugin-prd-phase-2.md](../../docs/obsidian-review-plugin-prd-phase-2.md)
+**Design Decision Record**: [design-decision-markdown-structure-handling-2026-04-21.md](./design-decision-markdown-structure-handling-2026-04-21.md)
 
 ## Constitution Alignment (mandatory)
 
@@ -26,6 +27,17 @@ No constitution exceptions are requested.
 - Q: How should consecutive deletion operations be grouped? -> A: Consecutive deletion of adjacent original text merges into one deletion.
 - Q: Should accepted-text display hide comments? -> A: Accepted-text display hides editorial change markup but keeps comments visible.
 - Q: How should duplicate theme names be handled? -> A: Theme names are unique case-insensitively; duplicate save attempts ask the user to overwrite the existing theme or choose another name.
+
+### Session 2026-04-21
+
+- Q: Should substitution syntax be changed from canonical CriticMarkup to a custom hybrid form? -> A: Keep canonical CriticMarkup substitution syntax and improve rendering behavior instead of changing syntax.
+- Q: How should structural Markdown edits (tables, headings, lists, code fences, callouts, separators, links, footnotes, block math) be handled in Track Changes mode? -> A: Use a stability-first strategy where structural/syntax-sensitive edits are protected and may bypass automatic tracked transformation to prevent content corruption.
+- Q: How should formatting-toggle actions and syntax-heavy edits be handled when safe tracked representation is uncertain? -> A: Prefer safe bypass over unsafe transformation; preserve user content and editor stability first.
+- Q: Should bypassed structural edits appear in the Changes pane? -> A: No. Do not show bypassed structural edits in the Changes pane.
+- Q: What runtime feedback should be shown for bypassed structural edits? -> A: Show one non-blocking notice per session when the first bypass occurs.
+- Q: How should mixed selections be handled when they include both inline-safe and syntax-sensitive content? -> A: If any part is syntax-sensitive, bypass tracking for the entire transaction.
+- Q: How should quick actions behave on syntax-sensitive selections? -> A: Do not modify content and show a clear non-blocking notice that the selection is protected.
+- Q: How should accepted-text mode display structural content represented in CriticMarkup tokens? -> A: Render a resolved accepted-text projection through Markdown so structural formatting appears correctly while source markup remains unchanged.
 
 ## User Scenarios and Testing (mandatory)
 
@@ -52,6 +64,9 @@ As an editor, I want Track Changes Mode to automatically mark inserted, deleted,
 5. **Given** Track Changes Mode is on and the cursor remains inside the same addition, **When** the user continues typing, **Then** the existing addition is extended instead of creating a second addition.
 6. **Given** Track Changes Mode is on and newly inserted text is adjacent to an existing addition with no original text between them, **When** the insertion completes, **Then** the adjacent additions are merged into one addition.
 7. **Given** Track Changes Mode is on and the user continues deleting adjacent original text, **When** each deletion completes, **Then** the deleted text is represented as one merged deletion rather than multiple adjacent deletion tokens.
+8. **Given** Track Changes Mode is on and the user edits structural Markdown syntax, **When** the edit is classified as syntax-sensitive, **Then** the system preserves content and bypasses unsafe automatic tracked transformation.
+9. **Given** a substitution is displayed in markup-aware mode, **When** the cursor enters the substitution token, **Then** old and new parts remain visually distinguishable and strike-through applies only to the original side.
+10. **Given** Track Changes Mode is on and one edit selection includes both inline-safe and syntax-sensitive content, **When** the edit is applied, **Then** tracked transformation is bypassed for the full transaction.
 
 ---
 
@@ -68,6 +83,7 @@ As an author, I want to view the note as if tracked changes were accepted so tha
 1. **Given** a note contains additions, deletions, and substitutions, **When** accepted-text display is enabled, **Then** additions appear as normal text, deletions are hidden, and substitutions show only replacement text.
 2. **Given** accepted-text display is enabled, **When** the user switches back to markup-aware display, **Then** the review markup is again visible and no source content has been accepted or rejected automatically.
 3. **Given** a note contains comments, **When** accepted-text display is enabled, **Then** comments remain visible as unresolved review feedback.
+4. **Given** accepted-text display is enabled and tracked tokens contain structural Markdown content, **When** the note is rendered, **Then** the accepted-text projection is rendered through Markdown so headings/lists/callouts/code-like structures appear with normal structural formatting while source markup remains unchanged.
 
 ---
 
@@ -106,6 +122,7 @@ As an author, I want a pane with quick-action buttons for addition, deletion, hi
 5. **Given** no text is selected, **When** the user presses the Highlight or replacement action, **Then** no markup is inserted and no file content is changed.
 6. **Given** the editor cursor is active in a note, **When** the user presses the Comment button, **Then** an empty comment is inserted at the cursor using the configured author when available.
 7. **Given** no Markdown editor is active, **When** the user presses a quick-action button, **Then** the system shows a clear message and does not modify any file.
+8. **Given** text is selected and the selection includes syntax-sensitive Markdown, **When** the user presses Add/Delete/Highlight/Replace quick actions, **Then** no content is modified and a clear non-blocking notice explains the protected selection.
 
 ---
 
@@ -122,6 +139,7 @@ As an author, I want a pane listing all pending changes in the current note so t
 1. **Given** the active note contains tracked changes, **When** the changes pane is opened, **Then** each change is listed with type, affected text, location, and available resolution actions.
 2. **Given** a listed change, **When** the user selects it, **Then** focus moves to the corresponding location in the note.
 3. **Given** the active note has no tracked changes, **When** the changes pane is opened, **Then** a clear empty state is shown.
+4. **Given** the user made only syntax-sensitive edits that were safely bypassed, **When** the changes pane is opened, **Then** those bypassed edits are not listed and the standard empty-state behavior remains.
 
 ---
 
@@ -164,6 +182,11 @@ As a user, I want to save named color themes and switch between them so that I c
 - The user pastes multiline content with and without an active selection.
 - The user deletes text inside headings, lists, blockquotes, links, emphasis, or inline code.
 - The user attempts tracked edits inside fenced code blocks.
+- The user performs edits in tables that include existing tracked markup in neighboring cells.
+- The user edits heading markers (`#`) and blank-line boundaries around headings while Track Changes Mode is enabled.
+- The user inserts or removes fenced code, callouts, horizontal separators, block math, links, or footnotes while Track Changes Mode is enabled.
+- The user invokes formatting toggles (bold/italic/strikethrough/inline code) around existing tracked tokens.
+- Accepted-text display is enabled for tracked tokens whose resolved text contains structural Markdown syntax.
 - Existing markup is malformed before a tracked edit occurs.
 - Undo or redo is used immediately after an automatic tracked edit or an accept-all action.
 - The active file changes while a changes pane or comments pane is open.
@@ -226,6 +249,19 @@ As a user, I want to save named color themes and switch between them so that I c
 - **FR-048**: Rejecting a substitution MUST keep only the original text.
 - **FR-049**: Reject-all changes is explicitly deferred from this feature.
 - **FR-050**: The feature MUST NOT introduce telemetry, external accounts, or network transfer for tracked changes, comments, or theme presets.
+- **FR-051**: Substitutions MUST continue using canonical CriticMarkup substitution syntax and MUST remain compatible with existing parser, pane, and resolution workflows.
+- **FR-052**: In markup-aware display, substitution tokens MUST visually distinguish original and replacement parts, including while the cursor is inside the token, and strike-through MUST apply only to the original part.
+- **FR-053**: Track Changes Mode MUST classify syntax-sensitive Markdown edits and prioritize content safety by bypassing automatic tracked transformation when no safe representation is available.
+- **FR-054**: Syntax-sensitive edit classes MUST include at minimum tables, headings, lists, blockquotes/callouts, fenced code blocks, block math blocks, horizontal separators, link/image syntax, wiki links, and footnote syntax.
+- **FR-055**: Bypassed syntax-sensitive edits MUST preserve the user’s edited content and MUST NOT introduce malformed review markup, nested token corruption, or unintended changes outside the edited region.
+- **FR-056**: Existing table protection behavior MUST remain in effect as a non-regression requirement.
+- **FR-057**: The system MUST provide clear user-facing documentation that structural/syntax-sensitive Markdown edits are protected and may not be auto-tracked.
+- **FR-058**: If a tracked transform decision is uncertain between unsafe transform and safe bypass, the system MUST choose safe bypass.
+- **FR-059**: The changes pane MUST list only tracked additions, deletions, and substitutions and MUST NOT include informational or resolvable entries for bypassed syntax-sensitive edits.
+- **FR-060**: When the first syntax-sensitive edit bypass occurs in a session, the system MUST show one non-blocking notice (message key `review.trackChanges.protectedBypass`, user text equivalent to "Structural markdown edit kept as-is (not auto-tracked)."), and MUST suppress repeated notices for subsequent bypasses in the same session.
+- **FR-061**: For any single edit transaction that overlaps both inline-safe and syntax-sensitive content, the system MUST apply safe bypass to the entire transaction instead of partial tracked transformation.
+- **FR-062**: When Add/Delete/Highlight/Replace quick actions target a selection that includes syntax-sensitive Markdown, the system MUST leave file content unchanged and MUST show a clear non-blocking notice (message key `review.quickAction.protectedSelection`, user text equivalent to "Selection includes protected markdown; quick action not applied.").
+- **FR-063**: Accepted-text display MUST render a resolved Markdown projection for tracked tokens so structural Markdown content is displayed with normal structural formatting while the underlying source markup remains authoritative and unchanged.
 
 ### Key Entities
 
@@ -243,13 +279,16 @@ As a user, I want to save named color themes and switch between them so that I c
 ### Measurable Outcomes
 
 - **SC-001**: In a timed internal validation run using a predefined checklist and fixture note, a tester can enable Track Changes Mode and create an addition, deletion, and substitution in under 2 minutes.
-- **SC-002**: For common notes under 10,000 words, users can type with Track Changes Mode enabled without perceivable editing delay in normal use.
+- **SC-002**: For common notes under 10,000 words, p95 tracked-edit processing latency (single-cursor insert/delete transaction, measured in automated perf harness) MUST be <= 50 ms with Track Changes Mode enabled.
 - **SC-003**: Users can accept all tracked changes in a note containing 50 changes in under 10 seconds.
 - **SC-004**: Users can locate and navigate to any tracked change in the active note from the changes pane in under 5 seconds.
 - **SC-005**: Users can apply addition, deletion, highlight, replacement, and comment quick actions from the pane without opening the command palette in 100% of manual quick-action test scenarios.
 - **SC-006**: Accepted-text display accurately represents accepted output for additions, deletions, and substitutions while keeping comments visible in 100% of defined acceptance test fixtures.
 - **SC-007**: Theme presets survive restart, restore selected colors, and handle duplicate-name overwrite prompts in 100% of persistence and naming tests.
 - **SC-008**: No test fixture for tracked editing, accept-all, quick actions, or comment cleanup results in silent content loss outside the intended change resolution.
+- **SC-009**: In manual and automated mixed-markdown fixtures containing tables, headings, lists, code fences, callouts, separators, links, and footnotes, 100% of edits complete without editor range errors or cross-region content corruption.
+- **SC-010**: In substitution visualization checks, reviewers can consistently distinguish original versus replacement text in both inactive and active cursor states across all defined fixtures.
+- **SC-011**: In accepted-text fixture checks containing headings, lists, callouts, and fenced-code-like tracked content, 100% of reviewed render states show structurally correct Markdown rendering without mutating source markup.
 
 ## Assumptions
 
@@ -260,3 +299,5 @@ As a user, I want to save named color themes and switch between them so that I c
 - Resolving an anchored comment removes the comment markup and preserves the reviewed text in readable form.
 - Built-in theme presets are protected from deletion; custom presets can be deleted.
 - All review content remains local to the user's notes and plugin settings.
+- Structural/syntax-sensitive Markdown edits are treated as safety-protected operations and may bypass automatic tracked transformation when needed.
+- The design baseline and compatibility matrix for this behavior are defined in [design-decision-markdown-structure-handling-2026-04-21.md](./design-decision-markdown-structure-handling-2026-04-21.md).

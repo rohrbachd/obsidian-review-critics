@@ -40,6 +40,9 @@ paths:
   /notes/{noteId}/display-mode:
     patch:
       summary: Toggle accepted-text display mode
+      description: |
+        Accepted-text mode resolves editorial tokens for reading. Structural markdown inside
+        resolved token output is rendered as markdown projection while source markup remains unchanged.
       operationId: setDisplayMode
       parameters:
         - name: noteId
@@ -68,6 +71,9 @@ paths:
   /notes/{noteId}/changes:
     get:
       summary: List tracked changes for active note
+      description: |
+        Returns only resolvable tracked additions, deletions, and substitutions.
+        Syntax-sensitive edits that were safely bypassed are not included.
       operationId: listTrackedChanges
       parameters:
         - name: noteId
@@ -135,6 +141,9 @@ paths:
   /notes/{noteId}/quick-actions:
     post:
       summary: Apply quick action in active editor context
+      description: |
+        For syntax-sensitive selections, add/delete/highlight/replace are protected no-op operations
+        and return a non-blocking notice message.
       operationId: applyQuickAction
       parameters:
         - name: noteId
@@ -151,6 +160,10 @@ paths:
       responses:
         '200':
           description: Action applied or no-op
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuickActionResult'
   /notes/{noteId}/comments/{commentId}/resolve:
     post:
       summary: Resolve/remove comment markup
@@ -307,6 +320,16 @@ components:
         - action
         - hasSelection
         - cursorOffset
+    QuickActionResult:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [applied, noop, protected_noop]
+        message:
+          type: string
+      required:
+        - status
     ThemeColorSet:
       type: object
       properties:

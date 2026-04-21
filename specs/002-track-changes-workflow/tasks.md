@@ -51,7 +51,7 @@
 
 - [x] T011 [P] [US1] Add unit tests for tracked transform rules and safety fallbacks in `tests/unit/track-changes.unit.test.ts`
 - [x] T012 [P] [US1] Add integration tests for insert/delete/replace and merge behavior in `tests/integration/us1-track-changes.integration.test.ts`
-- [x] T013 [P] [US1] Add perf test for typing latency with track mode enabled in `tests/perf/us1-track-typing-latency.perf.test.ts`
+- [x] T013 [P] [US1] Add perf test for typing latency with track mode enabled that asserts SC-002 p95 tracked-edit latency <= 50 ms in `tests/perf/us1-track-typing-latency.perf.test.ts`
 
 ### Implementation for User Story 1
 
@@ -199,11 +199,45 @@
 
 **Purpose**: Stabilization, documentation, and full regression/quality validation.
 
-- [x] T053 [P] Update feature documentation and user-facing behavior notes in `README.md` and `docs/obsidian-review-plugin-prd-phase-2.md`
+- [x] T053 [P] Update baseline Phase 2 feature documentation and user-facing behavior notes (US1-US7 scope before addendum) in `README.md` and `docs/obsidian-review-plugin-prd-phase-2.md`
 - [x] T054 [P] Add regression coverage updates for existing rendering/comment behavior in `tests/unit/live-preview.unit.test.ts`, `tests/unit/comments-view.unit.test.ts`, and `tests/integration/us3-rendering.integration.test.ts`
 - [x] T055 Run full quality gates and address failures via project scripts in `package.json` (`npm run check`, `npm run lint`, `npm run format:check`, `npm test`)
 - [x] T056 Run and record manual validation checklist completion, including SC-001 timed protocol steps, in `specs/002-track-changes-workflow/quickstart.md`
 - [x] T057 [P] Add a no-network-usage guard test for Phase 2 modules (no telemetry/external transfer) in `tests/unit/no-network-usage.unit.test.ts`
+
+---
+
+## Phase 11: Structural Markdown Safety and Substitution Rendering Addendum (2026-04-21)
+
+**Purpose**: Incorporate the decision record [design-decision-markdown-structure-handling-2026-04-21.md](./design-decision-markdown-structure-handling-2026-04-21.md) into this existing feature branch without creating a new branch.
+
+### Tests for Addendum
+
+- [ ] T058 [P] [US1] Add unit tests for syntax-sensitive edit classification and safe bypass boundaries in `tests/unit/track-changes.unit.test.ts`
+- [ ] T059 [P] [US1] Add integration tests for mixed Markdown fixtures (headings/lists/callouts/fenced code/links/footnotes) with whole-transaction bypass and no cross-region mutation checks in `tests/integration/us1-track-changes.integration.test.ts`
+- [ ] T060 [P] [US2] Add rendering regression tests for active substitution old/new visual split and strike-through scope in `tests/unit/live-preview.unit.test.ts` and `tests/integration/us3-rendering.integration.test.ts`
+- [ ] T061 [P] [US5] Add pane regression tests confirming bypassed syntax-sensitive edits are excluded from changes list in `tests/unit/changes-view.unit.test.ts` and `tests/integration/us5-changes-pane.integration.test.ts`
+- [ ] T062 [P] [US4] Add quick-action tests for protected syntax-sensitive selection no-op + notice behavior in `tests/unit/quick-actions-view.unit.test.ts` and `tests/integration/us4-quick-actions-pane.integration.test.ts`
+- [ ] T063 [P] [US1] Add runtime notice tests ensuring first-bypass-per-session notice semantics in `tests/unit/track-changes.unit.test.ts` and `tests/integration/us1-track-changes.integration.test.ts`
+- [ ] T064 [P] [US2] Add accepted-text structural projection tests for headings/lists/callouts/fenced-code-like tracked content in `tests/unit/reading-view.unit.test.ts` and `tests/integration/us2-accepted-text-view.integration.test.ts`
+
+### Implementation for Addendum
+
+- [ ] T065 [US1] Implement syntax-sensitive edit classifier and safe bypass policy while preserving stable table behavior in `src/track-changes.ts`
+- [ ] T066 [US1] Implement first-bypass-per-session non-blocking notice behavior in `src/main.ts` and `src/track-changes.ts`
+- [ ] T067 [US5] Enforce changes-pane listing scope to tracked additions/deletions/substitutions only (exclude bypassed edits) in `src/review-parser.ts` and `src/changes-view.ts`
+- [ ] T068 [US4] Implement protected-selection quick-action no-op and notice handling in `src/review-commands.ts` and `src/main.ts`
+- [ ] T069 [US2] Refine substitution live-preview decorations for active-token rendering parity in `src/live-preview.ts` and `styles.css`
+- [ ] T070 [US2] Implement accepted-text structural markdown projection rendering while preserving source markup in `src/reading-view.ts`, `src/live-preview.ts`, and `src/display-mode.ts`
+- [ ] T071 Run full quality gates and update manual validation record for addendum scenarios in `specs/002-track-changes-workflow/quickstart.md`
+- [ ] T072 [US2] Verify accepted-text projection implementation against SC-011 fixtures and record outcomes in `specs/002-track-changes-workflow/quickstart.md`
+
+### Validation and Documentation for Addendum
+
+- [ ] T073 [P] [US1] Add randomized edit-sequence invariant tests for mixed markdown safety (no out-of-range positions, no unsorted decoration ranges, no cross-region mutation) in `tests/integration/us1-randomized-invariants.integration.test.ts`
+- [ ] T074 Update README with addendum-only behavior deltas (structural markdown safety, bypass UX notice semantics, protected-selection quick-action behavior, and notice-key contract) in `README.md`
+
+**Checkpoint**: Structural markdown safety behavior, protected quick-action behavior, one-time bypass notice semantics, changes-pane exclusion semantics, and accepted-text structural projection are validated without regressing current table handling.
 
 ---
 
@@ -215,6 +249,7 @@
 - **Phase 2 (Foundational)**: Depends on Phase 1. Blocks all user stories.
 - **User Story Phases (3-9)**: Depend on Phase 2 completion.
 - **Polish (Phase 10)**: Depends on completion of all targeted user stories.
+- **Addendum (Phase 11)**: Depends on stabilized baseline from Phases 3-10; may be delivered incrementally by story slices (US1/US2/US4/US5).
 
 ### User Story Dependencies
 
@@ -296,6 +331,16 @@ Run in parallel:
 Run in parallel:
 - T047 [US7] tests/unit/theme-presets.unit.test.ts
 - T048 [US7] tests/integration/us7-theme-presets.integration.test.ts
+```
+
+### Addendum (Phase 11)
+
+```text
+Run in parallel:
+- T058 [US1] tests/unit/track-changes.unit.test.ts
+- T061 [US5] tests/unit/changes-view.unit.test.ts + tests/integration/us5-changes-pane.integration.test.ts
+- T062 [US4] tests/unit/quick-actions-view.unit.test.ts + tests/integration/us4-quick-actions-pane.integration.test.ts
+- T064 [US2] tests/unit/reading-view.unit.test.ts + tests/integration/us2-accepted-text-view.integration.test.ts
 ```
 
 ---

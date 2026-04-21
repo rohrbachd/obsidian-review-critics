@@ -1,5 +1,7 @@
 # Quickstart: Track Changes Workflow (Phase 2)
 
+Decision baseline: [design-decision-markdown-structure-handling-2026-04-21.md](./design-decision-markdown-structure-handling-2026-04-21.md)
+
 ## Prerequisites
 
 - Node.js 22.x
@@ -61,6 +63,24 @@ Validate in this order:
     - delete custom preset
     - built-in preset cannot be deleted
     - restart Obsidian and confirm persistence
+13. Structural/syntax-sensitive markdown safety checks in Track Changes mode:
+    - table edits remain stable and do not produce unintended tracked transforms
+    - heading/list/callout/fenced-code/separator/link/footnote edits do not corrupt unrelated content
+    - when safe tracked representation is unavailable, edits are preserved via safe bypass
+    - bypassed structural edits are not listed in the changes pane
+    - first bypass in session shows one non-blocking notice; subsequent bypasses do not repeatedly notify
+    - mixed selections (inline + syntax-sensitive) bypass tracked transformation for the full transaction
+14. Quick-action safety checks on protected selections:
+    - Add/Delete/Highlight/Replace on syntax-sensitive selections are no-op
+    - user receives clear non-blocking protected-selection notice
+    - content remains unchanged
+15. Substitution rendering checks:
+    - in markup-aware mode, old and new substitution parts remain visually distinct
+    - while cursor is inside substitution, strike-through applies only to old side
+    - no range/decoration runtime errors are produced during substitution edits
+16. Accepted-text structural projection checks:
+    - tracked content that resolves to headings/lists/callouts/code-like blocks renders with normal markdown structure
+    - source markup in note remains unchanged while toggling accepted-text mode
 
 ### SC-001 timed protocol
 
@@ -79,6 +99,7 @@ Run this as a deterministic internal usability check:
 - Existing live preview decoration still works.
 - Existing comment parsing and navigation still work.
 - No performance regression during normal typing in common notes.
+- Structural/syntax-sensitive edits remain non-corrupting under Track Changes mode.
 
 ## 6. Validation record
 

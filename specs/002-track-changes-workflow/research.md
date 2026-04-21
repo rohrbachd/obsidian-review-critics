@@ -45,7 +45,7 @@
 - **Decision**: Include single-change accept and reject; include accept-all; defer reject-all.
 - **Rationale**: Satisfies explicit user goal while limiting high-risk bulk transform complexity.
 - **Alternatives considered**:
-  - Accept-only: rejected because “not accept” behavior is required.
+  - Accept-only: rejected because reject behavior is required.
   - Include reject-all now: deferred for risk and scope control.
 
 ## Decision 7: Theme preset duplicate handling
@@ -71,3 +71,47 @@
   - Continue patching all structural edge cases ad hoc: rejected due to repeated regressions.
   - Full shadow-document editor redesign: deferred due to complexity and risk.
 - **Design record**: [design-decision-markdown-structure-handling-2026-04-21.md](./design-decision-markdown-structure-handling-2026-04-21.md)
+
+## Decision 10: Bypassed edits in changes pane
+
+- **Decision**: Do not surface bypassed syntax-sensitive edits in the changes pane.
+- **Rationale**: The pane is reserved for resolvable tracked tokens (addition/deletion/substitution); including bypassed edits would misrepresent them as actionable tracked changes.
+- **Alternatives considered**:
+  - Show informational bypass entries: rejected to keep pane semantics focused and avoid user confusion.
+  - Show bypass entries as resolvable items: rejected as behaviorally incorrect.
+
+## Decision 11: Runtime feedback for bypass behavior
+
+- **Decision**: Show one non-blocking notice per session when the first bypass occurs.
+- **Rationale**: Users receive clear feedback without repeated interruption during normal editing.
+- **Alternatives considered**:
+  - No notice: rejected due to hidden behavior changes.
+  - Notice on every bypass: rejected due to excessive noise.
+  - Persistent warning banner: rejected due to UI clutter.
+
+## Decision 12: Mixed selection transform policy
+
+- **Decision**: If any part of a single edit transaction is syntax-sensitive, bypass tracked transformation for the full transaction.
+- **Rationale**: Partial transform within one transaction is high-risk and can cause inconsistent or corrupt output.
+- **Alternatives considered**:
+  - Partial subrange transforms: rejected due to complexity and instability.
+  - Block and force reselection: rejected due to poor editing flow.
+  - Attempt transform then fallback on failure: rejected because failure may occur too late.
+
+## Decision 13: Quick actions on protected selections
+
+- **Decision**: Add/Delete/Highlight/Replace quick actions on syntax-sensitive selections are safe no-op and display a non-blocking protected-selection notice.
+- **Rationale**: Aligns command behavior with safety-first policy and avoids structural corruption.
+- **Alternatives considered**:
+  - Always apply quick-action markup: rejected due to corruption risk.
+  - Partial subrange quick-action application: rejected due to unpredictable outcomes.
+  - Confirmation dialog before apply: rejected as still unsafe if applied.
+
+## Decision 14: Accepted-text structural rendering
+
+- **Decision**: In accepted-text mode, render a resolved projection through Markdown so structural formatting appears correctly while leaving source markup unchanged.
+- **Rationale**: Users need a true final-text reading experience for headings/lists/callouts/code-like blocks without mutating stored review markup.
+- **Alternatives considered**:
+  - Keep plain token-resolved text only: rejected due to incorrect structural display.
+  - Disable accepted-text mode for structural content: rejected due to inconsistent UX.
+  - Separate optional structural-render toggle: deferred to avoid feature fragmentation.

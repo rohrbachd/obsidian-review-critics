@@ -1,35 +1,35 @@
 # Implementation Plan: Track Changes Workflow
 
-**Branch**: `002-track-changes-workflow` | **Date**: 2026-04-19 | **Spec**: [spec.md](./spec.md)  
+**Branch**: `002-track-changes-workflow` | **Date**: 2026-04-21 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/002-track-changes-workflow/spec.md`
 
 ## Summary
 
-Implement Phase 2 review workflow capabilities in the existing Obsidian plugin: tracked editing for insert/delete/replace, accepted-text display mode, single-change accept/reject plus accept-all, quick review action buttons, changes pane actions, comments pane cleanup actions, and persisted named color theme presets. The implementation will extend existing parser, command, pane, and settings modules while preserving Markdown as the system of record for review markup and plugin settings as the system of record for user preferences.
+Implement and stabilize the Phase 2 review workflow with safety-first track-changes behavior for syntax-sensitive Markdown content. The plan extends the existing feature with clarified rules from the updated spec: bypassed structural edits are not listed in the changes pane, first bypass triggers one non-blocking session notice, mixed inline/structural edits bypass whole-transaction transforms, quick actions on protected selections are safe no-op with notice, and accepted-text mode renders structural resolved projection while keeping source markup unchanged.
 
 ## Technical Context
 
 **Language/Version**: TypeScript 5.x (strict mode), Node.js 22 toolchain  
-**Primary Dependencies**: Obsidian API, CodeMirror 6 (`@codemirror/view`, `@codemirror/state`), esbuild  
-**Storage**: Obsidian Markdown files for review markup; plugin data store for settings/theme presets  
-**Testing**: Vitest (`tests/unit`, `tests/integration`, `tests/perf`)  
-**Target Platform**: Obsidian Desktop (primary), no regression for current non-desktop flag behavior  
-**Project Type**: Single-plugin TypeScript project  
-**Performance Goals**: No perceivable typing lag in common notes (<10k words); accept-all within user-facing target from spec  
-**Constraints**: Local-first only, no network dependencies, deterministic text transforms, preserve undo/redo behavior  
-**Scale/Scope**: Current-note scope for changes/comments panes; no whole-vault index in this phase
+**Primary Dependencies**: Obsidian API, CodeMirror 6 (`@codemirror/state`, `@codemirror/view`), esbuild  
+**Storage**: Markdown note files for review source-of-record; plugin settings store for mode/theme preferences  
+**Testing**: Vitest (unit/integration/perf)  
+**Target Platform**: Obsidian Desktop (primary)  
+**Project Type**: Single plugin project  
+**Performance Goals**: For common notes under 10,000 words, p95 tracked-edit processing latency (single-cursor insert/delete transaction in automated perf harness) <= 50 ms; no editor range/deco runtime errors in mixed-markdown scenarios; accept-all behavior remains within existing success criteria  
+**Constraints**: Safety-first transform policy; no silent content corruption; deterministic behavior; local-only (no network/telemetry)  
+**Scale/Scope**: Current note scope; markdown constructs include inline and syntax-sensitive structural content (tables, headings/lists, callouts, code/math blocks, separators, links/footnotes)
 
 ## Constitution Check
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-- **I. Clear Scope and Requirements**: PASS. Scope, exclusions, FRs, and measurable outcomes are explicit in spec.
-- **II. Maintainable Architecture**: PASS with constraint. Plan keeps parser/transforms, panes, and settings concerns separated; no module boundary violations required.
-- **III. Quality and Testing**: PASS with required additions. New tracked-transform and pane-action behavior requires new unit + integration tests before completion.
-- **IV. Security and Privacy**: PASS. No new secrets, auth surfaces, or external transfer introduced.
-- **V. Automation and Documentation**: PASS. Existing CI already runs build/lint/format/tests; docs artifacts for this feature are generated in this plan.
+- **I. Clear Scope and Requirements**: PASS. Updated spec includes explicit clarifications and measurable acceptance criteria for structural bypass and accepted-text projection behavior.
+- **II. Maintainable Architecture**: PASS. Plan preserves module boundaries (`track-changes`, `live-preview`, `reading-view`, `changes-view`) and adds policy rules instead of ad-hoc per-case hacks.
+- **III. Quality and Testing**: PASS with required regressions. Added rules require explicit unit/integration coverage for protected selections, one-time notice, mixed-selection bypass, and structural accepted-text rendering.
+- **IV. Security and Privacy**: PASS. No external services or secret handling changes; local-only behavior retained.
+- **V. Automation and Documentation**: PASS. Existing quality gates remain; docs/spec artifacts updated in-place.
 
-No exceptions requested.
+No constitution exceptions are requested.
 
 ## Project Structure
 
@@ -51,13 +51,13 @@ specs/002-track-changes-workflow/
 ```text
 src/
 |-- main.ts
-|-- review-config.ts
-|-- review-types.ts
-|-- review-parser.ts
-|-- review-commands.ts
+|-- track-changes.ts
 |-- live-preview.ts
 |-- reading-view.ts
-`-- comments-view.ts
+|-- changes-view.ts
+|-- review-parser.ts
+|-- review-types.ts
+`-- review-config.ts
 
 tests/
 |-- unit/
@@ -65,35 +65,46 @@ tests/
 `-- perf/
 ```
 
-**Structure Decision**: Keep single-project structure and extend existing modules. Add new focused helpers/types within `src/` for tracked-transform and theme preset handling if complexity exceeds current file cohesion.
+**Structure Decision**: Keep the single-plugin structure and extend existing modules with explicit policy boundaries: track-transform policy in `track-changes.ts`, presentation semantics in `live-preview.ts` and `reading-view.ts`, and pane-list semantics in `changes-view.ts`.
 
-## Phase 0: Research Plan
+## Phase 0: Outline & Research
 
-Research topics resolved in `research.md`:
+Research updates required from clarified spec changes:
 
-1. Track-changes editing strategy in CodeMirror/Obsidian (transaction interception and safe transforms).
-2. Rules for grouping/merging additions and deletions.
-3. Accept/reject transform semantics for each token type.
-4. Pane interaction model for quick actions and changes resolution.
-5. Theme preset uniqueness/overwrite UX and persistence behavior.
+1. Changes-pane semantics for bypassed structural edits (explicitly excluded from pane listing).
+2. Bypass feedback policy (single non-blocking notice per session).
+3. Mixed selection policy (if any syntax-sensitive overlap exists, bypass full transaction).
+4. Quick-action protected-selection handling (safe no-op with notice).
+5. Accepted-text structural projection behavior and rendering safety constraints.
 
-## Phase 1: Design Outputs
+Output: updated `research.md` with decisions/rationale/alternatives for each item.
 
-Produce:
+## Phase 1: Design & Contracts
 
-1. `data-model.md` with new feature entities and **Delta vs Canonical** section.
-2. `contracts/openapi.yaml` capturing user-facing command/action contracts for pane and resolution operations.
-3. `quickstart.md` with implementation and validation workflow.
-4. Canonical update to `docs/data-model.md` for new/changed entities.
-5. Agent context update via `.specify/scripts/powershell/update-agent-context.ps1 -AgentType codex`.
+Design artifacts to synchronize with new clarified behavior:
+
+1. Update `data-model.md` (Delta vs Canonical) with behavioral constraints for `TrackedChangeEntry` and `QuickActionRequest` outcomes.
+2. Update `contracts/openapi.yaml` to reflect:
+   - changes listing excludes bypassed structural edits,
+   - quick-action protected-selection no-op outcome,
+   - accepted-text display semantics for structural projection.
+3. Update `quickstart.md` with manual validation checks for:
+   - single-session bypass notice,
+   - quick-action protected selection no-op,
+   - mixed selection whole-transaction bypass,
+   - accepted-text structural rendering correctness.
+4. Run agent context updater script:
+   - `.specify/scripts/powershell/update-agent-context.ps1 -AgentType codex`
+
+If no new canonical entities/fields are introduced, `docs/data-model.md` remains unchanged.
 
 ## Post-Design Constitution Re-Check
 
-- **I. Scope**: PASS. Design artifacts map directly to P1-P7 stories.
-- **II. Architecture**: PASS. Entities and contracts isolate concerns; no hidden global state required.
-- **III. Testing**: PASS with follow-up. Tasks phase must include transform correctness and pane behavior tests as release blockers.
-- **IV. Security/Privacy**: PASS. No data egress or external dependency introduced.
-- **V. Automation/Docs**: PASS. Plan includes required docs and works with current CI pipeline.
+- **I. Scope**: PASS. Clarifications are now reflected in design artifacts and testable workflows.
+- **II. Architecture**: PASS. Safety policies are centralized and avoid cross-module leakage.
+- **III. Quality**: PASS pending implementation of added regression tests.
+- **IV. Security/Privacy**: PASS. No added external surfaces.
+- **V. Automation/Docs**: PASS. Updated docs and contracts are included in this plan cycle.
 
 ## Complexity Tracking
 
