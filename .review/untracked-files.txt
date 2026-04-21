@@ -1,0 +1,7 @@
+﻿.review/ai-review.md
+.review/gl-code-quality-report.json
+.review/review-meta.json
+specs/002-track-changes-workflow/review-backups/20260420-103605/README.txt
+specs/002-track-changes-workflow/review-backups/20260420-103605/ai-review.md
+specs/002-track-changes-workflow/review-backups/20260420-103605/gl-code-quality-report.json
+specs/002-track-changes-workflow/review-backups/20260420-103605/review-meta.json

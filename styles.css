@@ -88,6 +88,30 @@
   color: var(--review-edit-text-addition);
 }
 
+.review-live-struct-heading {
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.review-live-struct-heading-1 {
+  font-size: 2em;
+}
+.review-live-struct-heading-2 {
+  font-size: 1.55em;
+}
+.review-live-struct-heading-3 {
+  font-size: 1.3em;
+}
+.review-live-struct-heading-4 {
+  font-size: 1.15em;
+}
+.review-live-struct-heading-5 {
+  font-size: 1.05em;
+}
+.review-live-struct-heading-6 {
+  font-size: 1em;
+}
+
 .review-live-deletion {
   background: color-mix(in srgb, var(--review-edit-deletion) 45%, transparent);
   color: var(--review-edit-text-deletion);
@@ -119,14 +143,24 @@
 .review-live-substitution-new {
   background: color-mix(in srgb, var(--review-edit-addition) 35%, transparent);
   color: var(--review-edit-text-addition);
-  font-weight: 600;
+  text-decoration: none !important;
+}
+
+.review-live-substitution-accepted-new {
+  text-decoration: none !important;
+}
+
+.review-live-substitution-delimiter {
+  opacity: 0.75;
   text-decoration: none !important;
 }
 
 .review-live-substitution-old,
 .review-live-substitution-new,
+.review-live-substitution-accepted-new,
 .review-live-substitution-old *,
-.review-live-substitution-new * {
+.review-live-substitution-new *,
+.review-live-substitution-accepted-new * {
   text-decoration: none !important;
 }
 
@@ -251,4 +285,80 @@
 .review-settings-prd-link {
   font-size: 0.9rem;
   color: var(--text-muted);
+}
+
+.review-changes-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.review-quick-actions-row,
+.review-changes-controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.review-pane-separator {
+  margin: 0.6rem 0 0.7rem;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.review-track-toggle {
+  font-weight: 600;
+}
+
+.review-changes-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.review-quick-actions-row,
+.review-changes-controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.review-track-toggle {
+  font-weight: 600;
+}
+
+.review-pane-separator {
+  margin: 0.5rem 0 0.75rem;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.review-changes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.review-changes-item {
+  appearance: none;
+  display: block;
+  text-align: left;
+  width: 100%;
+  min-height: 0;
+  height: auto;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  white-space: normal;
+  line-height: 1.35;
+}
+
+.review-changes-item:hover {
+  border-color: var(--interactive-accent);
+}
+
+.review-changes-item-actions {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0.35rem 0 0.6rem;
 }

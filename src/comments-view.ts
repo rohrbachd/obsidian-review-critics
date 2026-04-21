@@ -7,10 +7,21 @@ export class ReviewCommentsView extends ItemView {
 
   private entries: CommentPaneEntry[] = [];
   private onNavigate: (entry: CommentPaneEntry) => Promise<void>;
+  private onResolve: (entry: CommentPaneEntry) => Promise<void>;
+  private isBusy: () => boolean;
+  private pendingEntryIds = new Set<string>();
+  private localBusy = false;
 
-  constructor(leaf: WorkspaceLeaf, onNavigate: (entry: CommentPaneEntry) => Promise<void>) {
+  constructor(
+    leaf: WorkspaceLeaf,
+    onNavigate: (entry: CommentPaneEntry) => Promise<void>,
+    onResolve: (entry: CommentPaneEntry) => Promise<void>,
+    isBusy: () => boolean
+  ) {
     super(leaf);
     this.onNavigate = onNavigate;
+    this.onResolve = onResolve;
+    this.isBusy = isBusy;
   }
 
   getViewType(): string {
@@ -60,6 +71,7 @@ export class ReviewCommentsView extends ItemView {
         cls: 'review-comments-item',
         attr: { type: 'button' },
       });
+      item.disabled = this.isUiBusy();
 
       const heading = item.createEl('div', { cls: 'review-comments-item-heading' });
       heading.createSpan({
@@ -86,6 +98,41 @@ export class ReviewCommentsView extends ItemView {
       item.addEventListener('click', () => {
         void this.onNavigate(entry);
       });
+
+      if (entry.canResolve) {
+        const actions = item.createEl('div', { cls: 'review-comments-item-actions' });
+        const resolveButton = actions.createEl('button', {
+          cls: 'review-comments-resolve-button',
+          attr: { type: 'button' },
+          text: this.pendingEntryIds.has(entry.id) ? 'Working...' : 'Resolve',
+        });
+        resolveButton.disabled = this.pendingEntryIds.has(entry.id) || this.isUiBusy();
+        resolveButton.addEventListener('click', (event) => {
+          event.stopPropagation();
+          void this.handleResolve(entry);
+        });
+      }
     });
+  }
+
+  private async handleResolve(entry: CommentPaneEntry): Promise<void> {
+    if (this.pendingEntryIds.has(entry.id) || this.isUiBusy()) {
+      return;
+    }
+
+    this.pendingEntryIds.add(entry.id);
+    this.localBusy = true;
+    this.render();
+    try {
+      await this.onResolve(entry);
+    } finally {
+      this.pendingEntryIds.delete(entry.id);
+      this.localBusy = false;
+      this.render();
+    }
+  }
+
+  private isUiBusy(): boolean {
+    return this.localBusy || this.isBusy();
   }
 }

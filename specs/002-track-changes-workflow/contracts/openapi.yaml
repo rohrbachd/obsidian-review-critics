@@ -1,0 +1,382 @@
+openapi: 3.1.0
+info:
+  title: Review Critic Phase 2 Action Contract
+  version: 0.1.0
+  description: |
+    Contract for user-facing actions introduced in Track Changes Workflow Phase 2.
+    These operations map to plugin commands and pane actions.
+servers:
+  - url: https://local.plugin.invalid
+    description: Logical local command endpoint namespace
+paths:
+  /notes/{noteId}/track-mode:
+    patch:
+      summary: Toggle or set Track Changes mode
+      operationId: setTrackChangesMode
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+              required:
+                - enabled
+      responses:
+        '200':
+          description: Mode updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackModeState'
+  /notes/{noteId}/display-mode:
+    patch:
+      summary: Toggle accepted-text display mode
+      description: |
+        Accepted-text mode resolves editorial tokens for reading. Structural markdown inside
+        resolved token output is rendered as markdown projection while source markup remains unchanged.
+      operationId: setDisplayMode
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                acceptedTextViewEnabled:
+                  type: boolean
+              required:
+                - acceptedTextViewEnabled
+      responses:
+        '200':
+          description: Display mode updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisplayModeState'
+  /notes/{noteId}/changes:
+    get:
+      summary: List tracked changes for active note
+      description: |
+        Returns only resolvable tracked additions, deletions, and substitutions.
+        Syntax-sensitive edits that were safely bypassed are not included.
+      operationId: listTrackedChanges
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tracked changes listed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  changes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TrackedChangeEntry'
+                required:
+                  - changes
+  /notes/{noteId}/changes/{changeId}/resolve:
+    post:
+      summary: Accept or reject one tracked change
+      operationId: resolveTrackedChange
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: changeId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [accept, reject]
+              required:
+                - action
+      responses:
+        '200':
+          description: Change resolved
+  /notes/{noteId}/changes/accept-all:
+    post:
+      summary: Accept all tracked changes in note
+      operationId: acceptAllTrackedChanges
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: All changes accepted
+  /notes/{noteId}/quick-actions:
+    post:
+      summary: Apply quick action in active editor context
+      description: |
+        For syntax-sensitive selections, add/delete/highlight/replace are protected no-op operations
+        and return a non-blocking notice message.
+      operationId: applyQuickAction
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuickActionRequest'
+      responses:
+        '200':
+          description: Action applied or no-op
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuickActionResult'
+  /notes/{noteId}/comments/{commentId}/resolve:
+    post:
+      summary: Resolve/remove comment markup
+      operationId: resolveComment
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Comment resolved
+  /settings/themes:
+    get:
+      summary: List theme presets
+      operationId: listThemePresets
+      responses:
+        '200':
+          description: Theme preset list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  presets:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ThemePreset'
+                required:
+                  - presets
+    post:
+      summary: Save theme preset
+      operationId: saveThemePreset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                overwrite:
+                  type: boolean
+                  default: false
+                preset:
+                  $ref: '#/components/schemas/ThemePresetPayload'
+              required:
+                - name
+                - preset
+      responses:
+        '201':
+          description: Preset created
+        '200':
+          description: Preset overwritten
+        '409':
+          description: Duplicate name, overwrite confirmation required
+  /settings/themes/{presetId}/activate:
+    post:
+      summary: Activate selected theme preset
+      operationId: activateThemePreset
+      parameters:
+        - name: presetId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Theme activated
+  /settings/themes/{presetId}:
+    delete:
+      summary: Delete custom theme preset
+      operationId: deleteThemePreset
+      parameters:
+        - name: presetId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Preset deleted
+        '409':
+          description: Built-in preset cannot be deleted
+components:
+  schemas:
+    TrackModeState:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+      required:
+        - enabled
+    DisplayModeState:
+      type: object
+      properties:
+        acceptedTextViewEnabled:
+          type: boolean
+      required:
+        - acceptedTextViewEnabled
+    TrackedChangeEntry:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [addition, deletion, substitution]
+        from:
+          type: integer
+          minimum: 0
+        to:
+          type: integer
+          minimum: 1
+        line:
+          type: integer
+          minimum: 1
+        heading:
+          type: string
+        text:
+          type: string
+        oldText:
+          type: string
+        newText:
+          type: string
+      required:
+        - id
+        - type
+        - from
+        - to
+        - line
+        - heading
+    QuickActionRequest:
+      type: object
+      properties:
+        action:
+          type: string
+          enum: [add, delete, highlight, replace, comment]
+        hasSelection:
+          type: boolean
+        selectionText:
+          type: string
+        cursorOffset:
+          type: integer
+          minimum: 0
+      required:
+        - action
+        - hasSelection
+        - cursorOffset
+    QuickActionResult:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [applied, noop, protected_noop]
+        message:
+          type: string
+      required:
+        - status
+    ThemeColorSet:
+      type: object
+      properties:
+        insert:
+          type: string
+        addition:
+          type: string
+        deletion:
+          type: string
+        comment:
+          type: string
+        highlight:
+          type: string
+      required:
+        - insert
+        - addition
+        - deletion
+        - comment
+        - highlight
+    ThemePresetPayload:
+      type: object
+      properties:
+        previewColors:
+          $ref: '#/components/schemas/ThemeColorSet'
+        editingColors:
+          $ref: '#/components/schemas/ThemeColorSet'
+        previewTextColors:
+          $ref: '#/components/schemas/ThemeColorSet'
+        editingTextColors:
+          $ref: '#/components/schemas/ThemeColorSet'
+      required:
+        - previewColors
+        - editingColors
+        - previewTextColors
+        - editingTextColors
+    ThemePreset:
+      allOf:
+        - $ref: '#/components/schemas/ThemePresetPayload'
+        - type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            isBuiltIn:
+              type: boolean
+          required:
+            - id
+            - name
+            - isBuiltIn

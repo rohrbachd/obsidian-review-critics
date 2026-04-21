@@ -1,18 +1,35 @@
 import { type MarkdownPostProcessorContext } from 'obsidian';
 import { ReviewReadingViewText } from './review-config';
+import { DisplayModeRenderer, type IDisplayModeRenderer } from './display-mode';
 import { ReviewSyntaxCatalog } from './review-constants';
 import type { IReviewParser, ReviewToken } from './review-types';
+
+const INLINE_BOLD_ITALIC_PATTERN = /^\*\*\*([\s\S]+)\*\*\*$/;
+const INLINE_BOLD_PATTERN = /^\*\*([\s\S]+)\*\*$/;
+const INLINE_ITALIC_PATTERN = /^\*([\s\S]+)\*$/;
+const INLINE_STRIKE_PATTERN = /^~~([\s\S]+)~~$/;
 
 export class ReviewReadingViewDecorator {
   private readonly parser: IReviewParser;
   private readonly syntax: ReviewSyntaxCatalog;
+  private readonly displayModeRenderer: IDisplayModeRenderer;
 
-  constructor(parser: IReviewParser, syntax?: ReviewSyntaxCatalog) {
+  constructor(
+    parser: IReviewParser,
+    syntax?: ReviewSyntaxCatalog,
+    displayModeRenderer?: IDisplayModeRenderer
+  ) {
     this.parser = parser;
     this.syntax = syntax ?? new ReviewSyntaxCatalog();
+    this.displayModeRenderer = displayModeRenderer ?? new DisplayModeRenderer();
   }
 
-  decorate(root: HTMLElement, _context: MarkdownPostProcessorContext, enabled: boolean): void {
+  decorate(
+    root: HTMLElement,
+    _context: MarkdownPostProcessorContext,
+    enabled: boolean,
+    acceptedTextViewEnabled = false
+  ): void {
     if (!enabled) {
       return;
     }
@@ -34,7 +51,7 @@ export class ReviewReadingViewDecorator {
         continue;
       }
 
-      const renderedFragment = this.renderInlineMarkup(sourceText);
+      const renderedFragment = this.renderInlineMarkup(sourceText, acceptedTextViewEnabled);
       if (!renderedFragment) {
         continue;
       }
@@ -43,7 +60,10 @@ export class ReviewReadingViewDecorator {
     }
   }
 
-  private renderInlineMarkup(input: string): DocumentFragment | null {
+  private renderInlineMarkup(
+    input: string,
+    acceptedTextViewEnabled: boolean
+  ): DocumentFragment | null {
     const tokens = this.parser
       .parseTokens(input)
       .filter((token) => token.from >= 0 && token.to <= input.length);
@@ -64,7 +84,7 @@ export class ReviewReadingViewDecorator {
         fragment.append(input.slice(cursor, token.from));
       }
 
-      this.appendTokenElement(fragment, token);
+      this.appendTokenElement(fragment, token, acceptedTextViewEnabled);
       cursor = token.to;
     }
 
@@ -75,9 +95,28 @@ export class ReviewReadingViewDecorator {
     return fragment;
   }
 
-  private appendTokenElement(fragment: DocumentFragment, token: ReviewToken): void {
+  private appendTokenElement(
+    fragment: DocumentFragment,
+    token: ReviewToken,
+    acceptedTextViewEnabled: boolean
+  ): void {
     switch (token.type) {
       case 'addition': {
+        if (acceptedTextViewEnabled) {
+          fragment.append(this.displayModeRenderer.renderAcceptedTextForToken(token));
+          return;
+        }
+        const headingMatch = token.text.match(/^(#{1,6})\s+([\s\S]*)$/);
+        if (headingMatch) {
+          const heading = document.createElement(`h${Math.min(6, headingMatch[1].length)}`);
+          heading.className = `review-token review-token-addition review-token-struct-heading review-token-struct-heading-${headingMatch[1].length}`;
+          heading.textContent = headingMatch[2];
+          heading.style.backgroundColor = 'var(--review-preview-addition)';
+          heading.style.color = 'var(--review-preview-text-addition)';
+          heading.style.display = 'inline-block';
+          fragment.append(heading);
+          return;
+        }
         const span = document.createElement('span');
         span.className = 'review-token review-token-addition';
         span.textContent = token.text;
@@ -87,6 +126,9 @@ export class ReviewReadingViewDecorator {
         return;
       }
       case 'deletion': {
+        if (acceptedTextViewEnabled) {
+          return;
+        }
         const span = document.createElement('span');
         span.className = 'review-token review-token-deletion';
         span.textContent = token.text;
@@ -97,6 +139,10 @@ export class ReviewReadingViewDecorator {
         return;
       }
       case 'substitution': {
+        if (acceptedTextViewEnabled) {
+          fragment.append(this.displayModeRenderer.renderAcceptedTextForToken(token));
+          return;
+        }
         const wrapper = document.createElement('span');
         wrapper.className = 'review-token review-token-substitution';
 
@@ -112,9 +158,8 @@ export class ReviewReadingViewDecorator {
 
         const newElement = document.createElement('span');
         newElement.className = 'review-sub-new';
-        newElement.textContent = token.newText;
+        this.appendInlineMarkdownFormatting(newElement, token.newText);
         newElement.style.color = 'var(--review-preview-text-addition)';
-        newElement.style.fontWeight = '600';
 
         wrapper.append(oldElement, arrowElement, newElement);
         fragment.append(wrapper);
@@ -137,7 +182,6 @@ export class ReviewReadingViewDecorator {
 
         const tooltip = this.buildCommentTooltip(token.author, token.text);
         commentBadge.setAttribute('data-review-tooltip', tooltip);
-        commentBadge.setAttribute('title', tooltip);
 
         fragment.append(commentBadge);
         return;
@@ -150,7 +194,6 @@ export class ReviewReadingViewDecorator {
 
         const tooltip = this.buildCommentTooltip(token.author, token.commentText);
         highlight.setAttribute('data-review-tooltip', tooltip);
-        highlight.setAttribute('title', tooltip);
         highlight.style.backgroundColor = 'var(--review-preview-highlight)';
         highlight.style.color = 'var(--review-preview-text-highlight)';
 
@@ -167,5 +210,43 @@ export class ReviewReadingViewDecorator {
     }
 
     return `${author}${ReviewReadingViewText.AUTHOR_SEPARATOR}${normalizedText}`;
+  }
+
+  private appendInlineMarkdownFormatting(container: HTMLElement, rawText: string): void {
+    const boldItalicMatch = rawText.match(INLINE_BOLD_ITALIC_PATTERN);
+    if (boldItalicMatch) {
+      const strong = document.createElement('strong');
+      const emphasis = document.createElement('em');
+      emphasis.textContent = boldItalicMatch[1];
+      strong.appendChild(emphasis);
+      container.appendChild(strong);
+      return;
+    }
+
+    const boldMatch = rawText.match(INLINE_BOLD_PATTERN);
+    if (boldMatch) {
+      const strong = document.createElement('strong');
+      strong.textContent = boldMatch[1];
+      container.appendChild(strong);
+      return;
+    }
+
+    const italicMatch = rawText.match(INLINE_ITALIC_PATTERN);
+    if (italicMatch) {
+      const emphasis = document.createElement('em');
+      emphasis.textContent = italicMatch[1];
+      container.appendChild(emphasis);
+      return;
+    }
+
+    const strikeMatch = rawText.match(INLINE_STRIKE_PATTERN);
+    if (strikeMatch) {
+      const strike = document.createElement('del');
+      strike.textContent = strikeMatch[1];
+      container.appendChild(strike);
+      return;
+    }
+
+    container.textContent = rawText;
   }
 }

@@ -5,6 +5,7 @@ import type {
   CommentPaneEntry,
   CommentToken,
   IReviewParser,
+  TrackedChangeEntry,
   ReviewToken,
 } from './review-types';
 
@@ -70,8 +71,56 @@ export class ReviewParser implements IReviewParser {
         commentText,
         author: token.author,
         highlightedText,
+        isAnchored: token.type === 'anchoredComment',
+        canResolve: true,
+        commentFrom: token.type === 'anchoredComment' ? token.commentRange.from : token.from,
+        commentTo: token.type === 'anchoredComment' ? token.commentRange.to : token.to,
       };
     });
+  }
+
+  buildTrackedChangeEntries(content: string): TrackedChangeEntry[] {
+    const tokens = this.parseTokens(content);
+    const lineStarts = this.getLineStarts(content);
+    const headings = this.collectHeadings(content);
+
+    return tokens
+      .filter(
+        (
+          token
+        ): token is Extract<ReviewToken, { type: 'addition' | 'deletion' | 'substitution' }> =>
+          token.type === 'addition' || token.type === 'deletion' || token.type === 'substitution'
+      )
+      .map((token, index) => {
+        const line = this.getLineNumber(lineStarts, token.from);
+        const heading = this.getNearestHeading(headings, token.from);
+        const context = content.slice(token.from, Math.min(content.length, token.to + 40)).trim();
+
+        if (token.type === 'substitution') {
+          return {
+            id: [token.type, token.from, token.to, index].join(':'),
+            type: token.type,
+            from: token.from,
+            to: token.to,
+            line,
+            heading,
+            context,
+            oldText: token.oldText,
+            newText: token.newText,
+          };
+        }
+
+        return {
+          id: [token.type, token.from, token.to, index].join(':'),
+          type: token.type,
+          from: token.from,
+          to: token.to,
+          line,
+          heading,
+          context,
+          text: token.text,
+        };
+      });
   }
 
   private collectCandidateTokens(content: string): CandidateToken[] {
