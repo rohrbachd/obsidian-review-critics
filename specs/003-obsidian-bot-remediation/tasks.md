@@ -21,9 +21,9 @@
 
 **Purpose**: Prepare compliance-gate tooling and planning artifacts.
 
-- [ ] T001 Add official Obsidian lint plugin dependency and baseline lint extension wiring in `package.json` and `.eslintrc.cjs`
-- [ ] T002 [P] Align feature docs baseline for FR-009 traceability in `specs/003-obsidian-bot-remediation/plan.md`, `specs/003-obsidian-bot-remediation/research.md`, and `docs/obsidian_bot_checks_26-04-22.md`
-- [ ] T003 [P] Validate design/contract consistency for FR-008 and FR-010 in `specs/003-obsidian-bot-remediation/data-model.md` and `specs/003-obsidian-bot-remediation/contracts/compliance-gate.openapi.yaml`
+- [X] T001 Add official Obsidian lint plugin dependency and baseline lint extension wiring in `package.json` and `eslint.config.mjs`
+- [X] T002 [P] Align feature docs baseline for FR-009 traceability in `specs/003-obsidian-bot-remediation/plan.md`, `specs/003-obsidian-bot-remediation/research.md`, and `docs/obsidian_bot_checks_26-04-22.md`
+- [X] T003 [P] Validate design/contract consistency for FR-008 and FR-010 in `specs/003-obsidian-bot-remediation/data-model.md` and `specs/003-obsidian-bot-remediation/contracts/compliance-gate.openapi.yaml`
 
 ---
 
@@ -33,9 +33,9 @@
 
 **WARNING**: No user story work can begin until this phase is complete.
 
-- [ ] T004 Implement repository-wide compliance guard harness for `src/**/*.ts` in `tests/unit/obsidian-bot-compliance.unit.test.ts`
-- [ ] T005 [P] Add allowlist/waiver validation and rationale checks in `tests/unit/obsidian-bot-compliance.unit.test.ts`
-- [ ] T006 [P] Update lint/test execution guidance and blocking policy in `specs/003-obsidian-bot-remediation/quickstart.md`
+- [X] T004 Implement repository-wide compliance guard harness for `src/**/*.ts` in `tests/unit/obsidian-bot-compliance.unit.test.ts`
+- [X] T005 [P] Add allowlist/waiver validation and rationale checks in `tests/unit/obsidian-bot-compliance.unit.test.ts`
+- [X] T006 [P] Update lint/test execution guidance and blocking policy in `specs/003-obsidian-bot-remediation/quickstart.md`
 
 **Checkpoint**: Foundation ready; user stories can be implemented independently.
 
@@ -49,18 +49,18 @@
 
 ### Tests for User Story 1
 
-- [ ] T007 [P] [US1] Add lifecycle and promise-handling assertions to `tests/unit/obsidian-bot-compliance.unit.test.ts`
-- [ ] T008 [P] [US1] Update renderer behavior assertions for class-based styling in `tests/unit/reading-view.unit.test.ts` and `tests/integration/us3-rendering.integration.test.ts`
+- [X] T007 [P] [US1] Add lifecycle and promise-handling assertions to `tests/unit/obsidian-bot-compliance.unit.test.ts`
+- [X] T008 [P] [US1] Update renderer behavior assertions for class-based styling in `tests/unit/reading-view.unit.test.ts` and `tests/integration/us3-rendering.integration.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T009 [US1] Remove unnecessary async `onOpen/onClose` signatures in `src/changes-view.ts`, `src/comments-view.ts`, and `src/quick-actions-view.ts`
-- [ ] T010 [US1] Correct async callback usage and awaited leaf reveal handling in `src/main.ts`
-- [ ] T011 [US1] Preserve pane placement by removing leaf detachment behavior in `src/main.ts`
-- [ ] T012 [US1] Replace settings heading elements with `Setting(...).setHeading()` patterns in `src/main.ts`
-- [ ] T013 [US1] Replace direct inline token style assignments with CSS-class-based rendering in `src/reading-view.ts`
-- [ ] T014 [US1] Add supporting CSS class for reading token heading layout in `styles.css`
-- [ ] T015 [US1] Update tracked remediation statuses and source links in `docs/obsidian_bot_checks_26-04-22.md`
+- [X] T009 [US1] Remove unnecessary async `onOpen/onClose` signatures in `src/changes-view.ts`, `src/comments-view.ts`, and `src/quick-actions-view.ts`
+- [X] T010 [US1] Correct async callback usage and awaited leaf reveal handling in `src/main.ts`
+- [X] T011 [US1] Preserve pane placement by removing leaf detachment behavior in `src/main.ts`
+- [X] T012 [US1] Replace settings heading elements with `Setting(...).setHeading()` patterns in `src/main.ts`
+- [X] T013 [US1] Replace direct inline token style assignments with CSS-class-based rendering in `src/reading-view.ts`
+- [X] T014 [US1] Add supporting CSS class for reading token heading layout in `styles.css`
+- [X] T015 [US1] Update tracked remediation statuses and source links in `docs/obsidian_bot_checks_26-04-22.md`
 
 **Checkpoint**: User Story 1 is fully functional and independently testable.
 
@@ -74,14 +74,14 @@
 
 ### Tests for User Story 2
 
-- [ ] T016 [P] [US2] Add full-scope `src/**/*.ts` guard assertions and allowlist behavior tests in `tests/unit/obsidian-bot-compliance.unit.test.ts`
-- [ ] T017 [P] [US2] Add a negative-path regression test case proving blocking failure behavior in `tests/unit/obsidian-bot-compliance.unit.test.ts`
+- [X] T016 [P] [US2] Add full-scope `src/**/*.ts` guard assertions and allowlist behavior tests in `tests/unit/obsidian-bot-compliance.unit.test.ts`
+- [X] T017 [P] [US2] Add a negative-path regression test case proving blocking failure behavior in `tests/unit/obsidian-bot-compliance.unit.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Enforce blocking compliance-gate execution in CI workflow in `.github/workflows/ci.yml`
-- [ ] T019 [US2] Normalize compliance gate rules/terminology in `specs/003-obsidian-bot-remediation/spec.md` and `specs/003-obsidian-bot-remediation/quickstart.md`
-- [ ] T020 [US2] Update canonical compliance entities and gate semantics in `docs/data-model.md` and `specs/003-obsidian-bot-remediation/data-model.md`
+- [X] T018 [US2] Enforce blocking compliance-gate execution in CI workflow in `.github/workflows/ci.yml`
+- [X] T019 [US2] Normalize compliance gate rules/terminology in `specs/003-obsidian-bot-remediation/spec.md` and `specs/003-obsidian-bot-remediation/quickstart.md`
+- [X] T020 [US2] Update canonical compliance entities and gate semantics in `docs/data-model.md` and `specs/003-obsidian-bot-remediation/data-model.md`
 
 **Checkpoint**: User Story 2 is fully functional and independently testable.
 
@@ -91,9 +91,9 @@
 
 **Purpose**: Final validation and release-readiness confirmation across stories.
 
-- [ ] T021 [P] Run full validation suite (`npm run lint`, `npm test`, `npm run build`) and record outcomes in `specs/003-obsidian-bot-remediation/quickstart.md`
-- [ ] T022 Prepare release-readiness summary and reviewer-facing notes in `docs/Obsidian Publication Guide.md`
-- [ ] T023 [P] Define SC-004 verification procedure (30-day window + evidence sources + pass/fail recording) in `specs/003-obsidian-bot-remediation/quickstart.md` and `docs/obsidian_bot_checks_26-04-22.md`
+- [X] T021 [P] Run full validation suite (`npm run lint`, `npm test`, `npm run build`) and record outcomes in `specs/003-obsidian-bot-remediation/quickstart.md`
+- [X] T022 Prepare release-readiness summary and reviewer-facing notes in `docs/Obsidian Publication Guide.md`
+- [X] T023 [P] Define SC-004 verification procedure (30-day window + evidence sources + pass/fail recording) in `specs/003-obsidian-bot-remediation/quickstart.md` and `docs/obsidian_bot_checks_26-04-22.md`
 
 ---
 

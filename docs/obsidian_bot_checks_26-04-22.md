@@ -38,3 +38,33 @@ None reported.
 - Create feature branch/spec `003-obsidian-bot-remediation`.
 - Apply source fixes in `src/` for all required findings.
 - Add regression tests to prevent reintroduction.
+
+## Compliance Gate Baseline
+
+- Official lint plugin rules enforced in `eslint.config.mjs`:
+  - `obsidianmd/detach-leaves`
+  - `obsidianmd/no-static-styles-assignment`
+  - `obsidianmd/settings-tab/no-manual-html-headings`
+- Local guard tests enforced in `tests/unit/obsidian-bot-compliance.unit.test.ts`:
+  - Full-scope scan over `src/**/*.ts`
+  - Prohibited-pattern checks for lifecycle async usage, leaf detachment, inline style assignment, and manual settings headings
+  - Allowlist metadata validation (`path`, `rationale`, `reviewBy`)
+  - Negative-path regression proof test
+
+## Waiver Register
+
+No waivers are currently active.
+
+If a waiver is added, record:
+
+- finding reference
+- rationale
+- approver
+- review date
+
+## SC-004 Follow-up Log
+
+- Window start: 2026-04-22
+- Window end: 2026-05-22
+- Evidence source: `obsidianmd/obsidian-releases` PR comments and check logs
+- Current status: pending window completion

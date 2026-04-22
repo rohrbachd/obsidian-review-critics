@@ -100,3 +100,16 @@ Before formal submission, you can publish GitHub releases and ask testers to ins
 6. Test manual install from the release assets on a fresh vault.
 7. Optionally run a short BRAT beta.
 8. Submit PR to `obsidianmd/obsidian-releases`.
+
+## 7. Reviewer-facing notes for community submission PRs
+
+- Use the official "I am submitting a new Community Plugin" PR template exactly, including checklist sections.
+- Keep plugin description free of the word `Obsidian` to satisfy submission bot policy checks.
+- In PR body, include:
+  - repository URL
+  - release version and tag (no `v` prefix)
+  - explicit confirmation that release assets include `manifest.json`, `main.js`, and `styles.css` (if used)
+- Before updating the submission PR, run local quality gate:
+  - `npm run lint`
+  - `npm test`
+  - `npm run build`
