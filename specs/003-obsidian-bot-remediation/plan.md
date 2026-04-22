@@ -11,12 +11,6 @@ Resolve all required ObsidianReviewBot findings for the plugin submission by ali
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
-
 **Language/Version**: TypeScript 5.x (strict), Node.js 22 toolchain  
 **Primary Dependencies**: Obsidian API, CodeMirror 6, esbuild, ESLint (`@typescript-eslint/*`), Vitest, Obsidian community lint rules (`eslint-plugin-obsidian`)  
 **Storage**: N/A for new feature data; existing plugin settings store and vault markdown remain authoritative stores  
@@ -64,13 +58,6 @@ specs/003-obsidian-bot-remediation/
 ```
 
 ### Source Code (repository root)
-
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
 
 ```text
 src/

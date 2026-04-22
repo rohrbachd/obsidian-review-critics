@@ -21,9 +21,9 @@
 
 **Purpose**: Prepare compliance-gate tooling and planning artifacts.
 
-- [ ] T001 Add and configure official Obsidian lint plugin in `.eslintrc.cjs` and `package.json`
-- [ ] T002 [P] Align feature docs baseline in `specs/003-obsidian-bot-remediation/plan.md`, `specs/003-obsidian-bot-remediation/research.md`, and `docs/obsidian_bot_checks_26-04-22.md`
-- [ ] T003 [P] Validate plan artifacts and contract consistency in `specs/003-obsidian-bot-remediation/data-model.md` and `specs/003-obsidian-bot-remediation/contracts/compliance-gate.openapi.yaml`
+- [ ] T001 Add official Obsidian lint plugin dependency and baseline lint extension wiring in `package.json` and `.eslintrc.cjs`
+- [ ] T002 [P] Align feature docs baseline for FR-009 traceability in `specs/003-obsidian-bot-remediation/plan.md`, `specs/003-obsidian-bot-remediation/research.md`, and `docs/obsidian_bot_checks_26-04-22.md`
+- [ ] T003 [P] Validate design/contract consistency for FR-008 and FR-010 in `specs/003-obsidian-bot-remediation/data-model.md` and `specs/003-obsidian-bot-remediation/contracts/compliance-gate.openapi.yaml`
 
 ---
 
@@ -79,7 +79,7 @@
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Enable Obsidian lint rules as blocking checks in `.eslintrc.cjs` and `package.json`
+- [ ] T018 [US2] Enforce blocking compliance-gate execution in CI workflow in `.github/workflows/ci.yml`
 - [ ] T019 [US2] Normalize compliance gate rules/terminology in `specs/003-obsidian-bot-remediation/spec.md` and `specs/003-obsidian-bot-remediation/quickstart.md`
 - [ ] T020 [US2] Update canonical compliance entities and gate semantics in `docs/data-model.md` and `specs/003-obsidian-bot-remediation/data-model.md`
 
@@ -92,8 +92,8 @@
 **Purpose**: Final validation and release-readiness confirmation across stories.
 
 - [ ] T021 [P] Run full validation suite (`npm run lint`, `npm test`, `npm run build`) and record outcomes in `specs/003-obsidian-bot-remediation/quickstart.md`
-- [ ] T022 [P] Verify AGENTS context consistency after changes in `AGENTS.md`
-- [ ] T023 Prepare release-readiness summary and reviewer-facing notes in `docs/Obsidian Publication Guide.md`
+- [ ] T022 Prepare release-readiness summary and reviewer-facing notes in `docs/Obsidian Publication Guide.md`
+- [ ] T023 [P] Define SC-004 verification procedure (30-day window + evidence sources + pass/fail recording) in `specs/003-obsidian-bot-remediation/quickstart.md` and `docs/obsidian_bot_checks_26-04-22.md`
 
 ---
 
@@ -124,7 +124,7 @@
 - Foundational: `T005` and `T006` can run in parallel after `T004`.
 - US1: `T007` and `T008` parallel; then `T009`/`T013` can proceed in parallel (different files).
 - US2: `T016` and `T017` parallel; then `T018` and `T020` can run in parallel.
-- Polish: `T021` and `T022` parallel.
+- Polish: `T021` and `T023` parallel.
 
 ---
 
@@ -171,3 +171,4 @@ Task: "T013 [US1] class-based token styling in src/reading-view.ts"
 - `[US1]` and `[US2]` labels provide traceability to spec priorities.
 - Compliance gate is explicitly blocking per clarified requirement.
 - Keep allowlist exceptions minimal and documented with rationale.
+- AGENTS context verification is operational guidance and can be performed ad hoc during PR review (not a required feature task).

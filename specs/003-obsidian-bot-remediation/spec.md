@@ -77,13 +77,20 @@ As a plugin maintainer, I want automated tests that specifically guard known rev
 - **FR-006**: Settings headings in flagged settings-tab sections MUST use Obsidian settings-heading API patterns instead of direct heading element creation.
 - **FR-007**: Reading-view token rendering MUST avoid direct inline style assignment for color/background/text-decoration/display where CSS classes can provide equivalent behavior.
 - **FR-008**: The compliance gate MUST combine official Obsidian lint/plugin rules and local regression checks over all `src/**/*.ts`, with explicit allowlisted exceptions for justified cases.
-- **FR-010**: Any compliance-gate violation MUST be treated as a blocking failure for CI and release readiness until resolved or explicitly waived with documented rationale.
+  - Allowlist owner MUST be the plugin maintainer.
+  - Allowlist storage location MUST be versioned in repository source under `tests/unit/obsidian-bot-compliance.unit.test.ts` or a dedicated checked-in compliance manifest.
+  - Each allowlist entry MUST include rule ID, scoped path/pattern, rationale, and expiration/review date.
 - **FR-009**: Documentation file `docs/obsidian_bot_checks_26-04-22.md` MUST capture the bot findings with direct source links and remediation status to serve as source-of-truth for this feature.
+- **FR-010**: Any compliance-gate violation MUST be treated as a blocking failure for CI and release readiness until resolved or explicitly waived with documented rationale.
+  - Waiver approval MUST require maintainer approval and repository traceability.
+  - Waiver evidence MUST be stored in `docs/obsidian_bot_checks_26-04-22.md` with finding reference, rationale, approver, and review date.
+  - Waivers MUST be reviewed at least once per release cycle.
 
 ### Key Entities (include if feature involves data)
 
-- **Bot Finding**: A single required submission check issue, with source links, rule description, and remediation status.
-- **Compliance Guard Rule**: A test assertion that encodes one prohibited/required source pattern tied to prior findings.
+- **ComplianceGuardRule**: A single enforceable compliance rule with scope, severity, source, and optional allowlist metadata.
+- **BotFindingStatus**: A tracked finding status record linking external review references to open/fixed/waived lifecycle state.
+- **ComplianceGateResult**: A gate-run outcome record describing per-rule results, blocking failures, and release eligibility.
 
 ## Success Criteria (mandatory)
 
@@ -93,4 +100,4 @@ As a plugin maintainer, I want automated tests that specifically guard known rev
 - **SC-002**: The combined lint-plus-regression compliance gate passes in CI and fails when each guarded prohibited pattern is intentionally reintroduced.
 - **SC-003**: Existing lint and test suites complete without regressions after remediation changes.
 - **SC-005**: A branch with an introduced compliance-rule violation fails CI before release publication.
-- **SC-004**: Manual reviewer follow-up on the same rule categories is reduced to zero in the next submission scan cycle.
+- **SC-004**: In the next submission scan cycle and within 30 calendar days of submission update, reviewer/bot follow-up count for the remediated rule categories is zero, evidenced by PR comments/check logs in `obsidianmd/obsidian-releases`.
