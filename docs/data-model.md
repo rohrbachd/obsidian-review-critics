@@ -85,3 +85,34 @@ This document defines the canonical conceptual model for review workflow feature
 
 - Markdown files in the vault are the source of record for review markup and comment content.
 - Plugin settings store is the source of record for user preferences.
+
+## Entity: ComplianceGuardRule
+
+- Fields:
+  - `id`
+  - `source` (`official-lint` | `local-regression-test`)
+  - `scopePattern` (for example `src/**/*.ts`)
+  - `assertion`
+  - optional `allowlist` (with justification)
+  - `severity` (`blocking` | `warning`)
+  - `enabled`
+
+## Entity: BotFindingStatus
+
+- Fields:
+  - `findingId`
+  - `externalReference`
+  - `category`
+  - `status` (`open` | `fixed` | `waived`)
+  - optional `waiverRationale`
+  - `updatedAt`
+
+## Entity: ComplianceGateResult
+
+- Fields:
+  - `runId`
+  - `ruleResults`
+  - `blockingFailures`
+  - `warnings`
+  - `finalStatus` (`pass` | `fail`)
+  - `releaseEligible`

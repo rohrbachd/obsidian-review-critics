@@ -13,6 +13,14 @@
 - Principle V (Automation and Documentation): source-level fixes and docs update for review findings tracking.
 - No constitution exceptions requested.
 
+## Clarifications
+
+### Session 2026-04-22
+
+- Q: What compliance gate should prevent future bot-check regressions? -> A: Use both official Obsidian lint rules and local focused unit-test guards.
+- Q: What files should compliance guards cover? -> A: Cover all `src/**/*.ts` with explicit allowlisted exceptions.
+- Q: Should compliance failures block release readiness? -> A: Yes, compliance failures are blocking and must fail CI/release readiness.
+
 ## User Scenarios and Testing (mandatory)
 
 ### Story Priorities and Motivation
@@ -44,7 +52,7 @@ As a plugin maintainer, I want automated tests that specifically guard known rev
 
 **Why this priority**: Prevents repeated reviewer feedback and late-cycle fixes.
 
-**Independent Test**: Run unit tests that statically inspect key source files for prohibited patterns and expected compliant patterns.
+**Independent Test**: Run unit tests that statically inspect all `src/**/*.ts` for prohibited patterns and required compliant patterns, with explicit allowlisted exceptions when justified.
 
 **Acceptance Scenarios**:
 
@@ -68,7 +76,8 @@ As a plugin maintainer, I want automated tests that specifically guard known rev
 - **FR-005**: Pane activation flows MUST explicitly handle promise-returning workspace operations so unhandled-promise warnings are not emitted.
 - **FR-006**: Settings headings in flagged settings-tab sections MUST use Obsidian settings-heading API patterns instead of direct heading element creation.
 - **FR-007**: Reading-view token rendering MUST avoid direct inline style assignment for color/background/text-decoration/display where CSS classes can provide equivalent behavior.
-- **FR-008**: The test suite MUST include regression checks that fail when any previously flagged required patterns reappear in the guarded files.
+- **FR-008**: The compliance gate MUST combine official Obsidian lint/plugin rules and local regression checks over all `src/**/*.ts`, with explicit allowlisted exceptions for justified cases.
+- **FR-010**: Any compliance-gate violation MUST be treated as a blocking failure for CI and release readiness until resolved or explicitly waived with documented rationale.
 - **FR-009**: Documentation file `docs/obsidian_bot_checks_26-04-22.md` MUST capture the bot findings with direct source links and remediation status to serve as source-of-truth for this feature.
 
 ### Key Entities (include if feature involves data)
@@ -81,6 +90,7 @@ As a plugin maintainer, I want automated tests that specifically guard known rev
 ### Measurable Outcomes
 
 - **SC-001**: 100% of required findings listed in the tracked bot-check document are resolved in source code with no unresolved items.
-- **SC-002**: Newly added compliance regression tests pass in CI and fail when each guarded prohibited pattern is intentionally reintroduced.
+- **SC-002**: The combined lint-plus-regression compliance gate passes in CI and fails when each guarded prohibited pattern is intentionally reintroduced.
 - **SC-003**: Existing lint and test suites complete without regressions after remediation changes.
+- **SC-005**: A branch with an introduced compliance-rule violation fails CI before release publication.
 - **SC-004**: Manual reviewer follow-up on the same rule categories is reduced to zero in the next submission scan cycle.
