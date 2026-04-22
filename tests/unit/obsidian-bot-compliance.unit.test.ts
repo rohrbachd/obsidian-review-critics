@@ -40,7 +40,8 @@ const COMPLIANCE_RULES: ComplianceRule[] = [
   },
   {
     id: 'no-manual-settings-headings',
-    assertion: 'Settings headings must use Setting(...).setHeading() rather than raw heading elements.',
+    assertion:
+      'Settings headings must use Setting(...).setHeading() rather than raw heading elements.',
     pattern: /(containerEl|section)\.createEl\('h[1-6]'/g,
     allowlist: [],
   },
@@ -152,7 +153,8 @@ describe('obsidian bot compliance guards', () => {
     const source = readSource('src/main.ts');
     expect(source).not.toMatch(/containerEl\.createEl\('h2'/);
     expect(source).not.toMatch(/section\.createEl\('h3'/);
-    const headingMatches = source.match(/new Setting\([^)]+\)\.setName\([^)]+\)\.setHeading\(\);/g) ?? [];
+    const headingMatches =
+      source.match(/new Setting\([^)]+\)\.setName\([^)]+\)\.setHeading\(\);/g) ?? [];
     expect(headingMatches.length).toBeGreaterThanOrEqual(3);
   });
 
