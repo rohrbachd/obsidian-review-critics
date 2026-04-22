@@ -75,4 +75,20 @@ describe('reading-view', () => {
     const plainNew = root.querySelector('.review-sub-new') as HTMLElement | null;
     expect(plainNew?.style.fontWeight).toBe('');
   });
+
+  it('uses classes instead of inline styles for decorated tokens', () => {
+    const root = document.createElement('div');
+    root.textContent = '{++add++}{--del--}{~~old~>new~~}{==hl==}';
+    decorator.decorate(root, {} as never, true, false);
+
+    const addition = root.querySelector('.review-token-addition') as HTMLElement | null;
+    const deletion = root.querySelector('.review-token-deletion') as HTMLElement | null;
+    const highlight = root.querySelector('.review-token-highlight') as HTMLElement | null;
+    const subOld = root.querySelector('.review-sub-old') as HTMLElement | null;
+
+    expect(addition?.getAttribute('style')).toBeNull();
+    expect(deletion?.getAttribute('style')).toBeNull();
+    expect(highlight?.getAttribute('style')).toBeNull();
+    expect(subOld?.getAttribute('style')).toBeNull();
+  });
 });

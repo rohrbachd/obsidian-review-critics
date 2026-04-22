@@ -30,7 +30,8 @@ describe('US3 rendering behavior', () => {
     expect(wrapper).toBeTruthy();
     expect(oldPart?.textContent).toBe('old');
     expect(newPart?.textContent).toBe('new');
-    expect(oldPart?.style.textDecoration).toContain('line-through');
+    expect(oldPart?.classList.contains('review-sub-old')).toBe(true);
+    expect(newPart?.classList.contains('review-sub-new')).toBe(true);
     expect(newPart?.style.textDecoration).toBe('');
     expect(wrapper?.style.textDecoration).toBe('');
   });

@@ -29,6 +29,10 @@
   padding: 0 0.2rem;
 }
 
+.review-token-inline-heading {
+  display: inline-block;
+}
+
 .review-token-addition {
   background: var(--review-preview-addition);
   color: var(--review-preview-text-addition);

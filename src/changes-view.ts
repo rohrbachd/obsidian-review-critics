@@ -58,11 +58,11 @@ export class ReviewChangesView extends ItemView {
     return ReviewChangesPaneText.ICON;
   }
 
-  async onOpen(): Promise<void> {
+  onOpen(): void {
     this.render();
   }
 
-  async onClose(): Promise<void> {
+  onClose(): void {
     this.contentEl.empty();
   }
 
