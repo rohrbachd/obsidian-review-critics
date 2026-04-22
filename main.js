@@ -286,9 +286,11 @@ var _ReviewCommentsView = class _ReviewCommentsView extends import_obsidian.Item
   }
   onOpen() {
     this.render();
+    return Promise.resolve();
   }
   onClose() {
     this.contentEl.empty();
+    return Promise.resolve();
   }
   setEntries(entries) {
     this.entries = entries;
@@ -477,9 +479,11 @@ var _ReviewChangesView = class _ReviewChangesView extends import_obsidian2.ItemV
   }
   onOpen() {
     this.render();
+    return Promise.resolve();
   }
   onClose() {
     this.contentEl.empty();
+    return Promise.resolve();
   }
   setEntries(entries) {
     this.entries = entries;
@@ -2528,7 +2532,9 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
             await this.resolveTrackedChange(entry, "reject");
           }, true);
         },
-        () => this.runCommandExclusive(() => this.acceptAllTrackedChanges(), true),
+        () => this.runCommandExclusive(() => this.acceptAllTrackedChanges(), true).then(() => {
+          return;
+        }),
         async (action) => {
           const result = await this.runCommandExclusive(
             async () => this.applyQuickAction(action),
