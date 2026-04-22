@@ -1,0 +1,116 @@
+openapi: 3.0.3
+info:
+  title: Compliance Gate Contract
+  version: 1.0.0
+  description: >
+    Logical contract for compliance gate evaluation used by CI/release readiness
+    in feature 003. This describes expected request/response payloads for
+    validation orchestration, independent of transport implementation.
+paths:
+  /compliance/evaluate:
+    post:
+      summary: Evaluate compliance rules for a candidate revision
+      operationId: evaluateCompliance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComplianceEvaluationRequest'
+      responses:
+        '200':
+          description: Evaluation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceEvaluationResult'
+  /compliance/findings:
+    get:
+      summary: List tracked bot findings and remediation status
+      operationId: listBotFindings
+      responses:
+        '200':
+          description: Current tracked finding statuses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BotFindingStatus'
+components:
+  schemas:
+    ComplianceEvaluationRequest:
+      type: object
+      required:
+        - revision
+        - files
+      properties:
+        revision:
+          type: string
+          description: Commit SHA or branch reference under evaluation
+        files:
+          type: array
+          items:
+            type: string
+          description: Candidate source files included in compliance scan scope
+    RuleResult:
+      type: object
+      required:
+        - ruleId
+        - status
+        - severity
+      properties:
+        ruleId:
+          type: string
+        status:
+          type: string
+          enum: [pass, fail]
+        severity:
+          type: string
+          enum: [blocking, warning]
+        message:
+          type: string
+    ComplianceEvaluationResult:
+      type: object
+      required:
+        - finalStatus
+        - releaseEligible
+        - blockingFailures
+        - warnings
+        - ruleResults
+      properties:
+        finalStatus:
+          type: string
+          enum: [pass, fail]
+        releaseEligible:
+          type: boolean
+        blockingFailures:
+          type: integer
+          minimum: 0
+        warnings:
+          type: integer
+          minimum: 0
+        ruleResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleResult'
+    BotFindingStatus:
+      type: object
+      required:
+        - findingId
+        - externalReference
+        - category
+        - status
+      properties:
+        findingId:
+          type: string
+        externalReference:
+          type: string
+          format: uri
+        category:
+          type: string
+        status:
+          type: string
+          enum: [open, fixed, waived]
+        waiverRationale:
+          type: string

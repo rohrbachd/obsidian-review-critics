@@ -63,7 +63,7 @@ export default class ReviewPlugin extends Plugin {
       (leaf: WorkspaceLeaf) =>
         new ReviewCommentsView(
           leaf,
-          async (entry) => this.navigateToComment(entry),
+          (entry) => this.navigateToComment(entry),
           async (entry) => {
             await this.runCommandExclusive(async () => {
               await this.resolveCommentEntry(entry);
@@ -78,7 +78,7 @@ export default class ReviewPlugin extends Plugin {
       (leaf: WorkspaceLeaf) =>
         new ReviewChangesView(
           leaf,
-          async (entry) => this.navigateToTrackedChange(entry),
+          (entry) => this.navigateToTrackedChange(entry),
           async (entry) => {
             await this.runCommandExclusive(async () => {
               await this.resolveTrackedChange(entry, 'accept');
@@ -89,11 +89,10 @@ export default class ReviewPlugin extends Plugin {
               await this.resolveTrackedChange(entry, 'reject');
             }, true);
           },
-          async () => {
-            await this.runCommandExclusive(async () => {
-              this.acceptAllTrackedChanges();
-            }, true);
-          },
+          () =>
+            this.runCommandExclusive(() => this.acceptAllTrackedChanges(), true).then(() => {
+              return;
+            }),
           async (action) => {
             const result = await this.runCommandExclusive(
               async () => this.applyQuickAction(action),
@@ -152,8 +151,7 @@ export default class ReviewPlugin extends Plugin {
   }
 
   onunload(): void {
-    this.app.workspace.detachLeavesOfType(ReviewCommentsView.VIEW_TYPE);
-    this.app.workspace.detachLeavesOfType(ReviewChangesView.VIEW_TYPE);
+    // Preserve user-arranged leaf placement across plugin unload/load cycles.
   }
 
   private addCommands(): void {
@@ -387,7 +385,7 @@ export default class ReviewPlugin extends Plugin {
       await leaf.setViewState({ type: ReviewCommentsView.VIEW_TYPE, active: true });
     }
 
-    this.app.workspace.revealLeaf(leaf);
+    await this.app.workspace.revealLeaf(leaf);
     await this.refreshCommentsPane();
   }
 
@@ -405,7 +403,7 @@ export default class ReviewPlugin extends Plugin {
       await leaf.setViewState({ type: ReviewChangesView.VIEW_TYPE, active: true });
     }
 
-    this.app.workspace.revealLeaf(leaf);
+    await this.app.workspace.revealLeaf(leaf);
     await this.refreshChangesPane();
   }
 
@@ -1048,7 +1046,7 @@ class ReviewSettingTab extends PluginSettingTab {
     containerEl.empty();
     this.selectedThemeId = this.plugin.settings.activeThemePresetId || '';
 
-    containerEl.createEl('h2', { text: ReviewSettingsText.TAB_TITLE });
+    new Setting(containerEl).setName(ReviewSettingsText.TAB_TITLE).setHeading();
     containerEl.createEl('p', {
       text: ReviewSettingsText.SETTINGS_DESCRIPTION,
       cls: ReviewCssClasses.SETTINGS_PRD_LINK,
@@ -1140,7 +1138,7 @@ class ReviewSettingTab extends PluginSettingTab {
     onSave: () => Promise<void>
   ): void {
     const section = this.containerEl.createDiv({ cls: ReviewCssClasses.COLOR_SECTION });
-    section.createEl('h3', { text: title });
+    new Setting(section).setName(title).setHeading();
 
     this.addColorTextSetting(
       section,
@@ -1216,7 +1214,7 @@ class ReviewSettingTab extends PluginSettingTab {
 
   private renderThemePresetSection(): void {
     const section = this.containerEl.createDiv({ cls: ReviewCssClasses.COLOR_SECTION });
-    section.createEl('h3', { text: ReviewSettingsText.THEMES_TITLE });
+    new Setting(section).setName(ReviewSettingsText.THEMES_TITLE).setHeading();
 
     new Setting(section).setName(ReviewSettingsText.THEME_ACTIVE_LABEL).addDropdown((dropdown) => {
       this.plugin.settings.themePresets.forEach((preset) => {

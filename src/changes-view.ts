@@ -58,12 +58,14 @@ export class ReviewChangesView extends ItemView {
     return ReviewChangesPaneText.ICON;
   }
 
-  async onOpen(): Promise<void> {
+  onOpen(): Promise<void> {
     this.render();
+    return Promise.resolve();
   }
 
-  async onClose(): Promise<void> {
+  onClose(): Promise<void> {
     this.contentEl.empty();
+    return Promise.resolve();
   }
 
   setEntries(entries: TrackedChangeEntry[]): void {

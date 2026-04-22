@@ -109,19 +109,14 @@ export class ReviewReadingViewDecorator {
         const headingMatch = token.text.match(/^(#{1,6})\s+([\s\S]*)$/);
         if (headingMatch) {
           const heading = document.createElement(`h${Math.min(6, headingMatch[1].length)}`);
-          heading.className = `review-token review-token-addition review-token-struct-heading review-token-struct-heading-${headingMatch[1].length}`;
+          heading.className = `review-token review-token-addition review-token-inline-heading review-token-struct-heading review-token-struct-heading-${headingMatch[1].length}`;
           heading.textContent = headingMatch[2];
-          heading.style.backgroundColor = 'var(--review-preview-addition)';
-          heading.style.color = 'var(--review-preview-text-addition)';
-          heading.style.display = 'inline-block';
           fragment.append(heading);
           return;
         }
         const span = document.createElement('span');
         span.className = 'review-token review-token-addition';
         span.textContent = token.text;
-        span.style.backgroundColor = 'var(--review-preview-addition)';
-        span.style.color = 'var(--review-preview-text-addition)';
         fragment.append(span);
         return;
       }
@@ -132,9 +127,6 @@ export class ReviewReadingViewDecorator {
         const span = document.createElement('span');
         span.className = 'review-token review-token-deletion';
         span.textContent = token.text;
-        span.style.backgroundColor = 'var(--review-preview-deletion)';
-        span.style.color = 'var(--review-preview-text-deletion)';
-        span.style.textDecoration = 'line-through';
         fragment.append(span);
         return;
       }
@@ -149,8 +141,6 @@ export class ReviewReadingViewDecorator {
         const oldElement = document.createElement('span');
         oldElement.className = 'review-sub-old';
         oldElement.textContent = token.oldText;
-        oldElement.style.color = 'var(--review-preview-text-deletion)';
-        oldElement.style.textDecoration = 'line-through';
 
         const arrowElement = document.createElement('span');
         arrowElement.className = 'review-sub-arrow';
@@ -159,7 +149,6 @@ export class ReviewReadingViewDecorator {
         const newElement = document.createElement('span');
         newElement.className = 'review-sub-new';
         this.appendInlineMarkdownFormatting(newElement, token.newText);
-        newElement.style.color = 'var(--review-preview-text-addition)';
 
         wrapper.append(oldElement, arrowElement, newElement);
         fragment.append(wrapper);
@@ -169,8 +158,6 @@ export class ReviewReadingViewDecorator {
         const mark = document.createElement('mark');
         mark.className = 'review-token review-token-highlight';
         mark.textContent = token.text;
-        mark.style.backgroundColor = 'var(--review-preview-highlight)';
-        mark.style.color = 'var(--review-preview-text-highlight)';
         fragment.append(mark);
         return;
       }
@@ -194,8 +181,6 @@ export class ReviewReadingViewDecorator {
 
         const tooltip = this.buildCommentTooltip(token.author, token.commentText);
         highlight.setAttribute('data-review-tooltip', tooltip);
-        highlight.style.backgroundColor = 'var(--review-preview-highlight)';
-        highlight.style.color = 'var(--review-preview-text-highlight)';
 
         fragment.append(highlight);
         return;

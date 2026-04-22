@@ -284,10 +284,10 @@ var _ReviewCommentsView = class _ReviewCommentsView extends import_obsidian.Item
   getIcon() {
     return ReviewCommentsPaneText.ICON;
   }
-  async onOpen() {
+  onOpen() {
     this.render();
   }
-  async onClose() {
+  onClose() {
     this.contentEl.empty();
   }
   setEntries(entries) {
@@ -475,10 +475,10 @@ var _ReviewChangesView = class _ReviewChangesView extends import_obsidian2.ItemV
   getIcon() {
     return ReviewChangesPaneText.ICON;
   }
-  async onOpen() {
+  onOpen() {
     this.render();
   }
-  async onClose() {
+  onClose() {
     this.contentEl.empty();
   }
   setEntries(entries) {
@@ -1700,19 +1700,14 @@ var ReviewReadingViewDecorator = class {
         const headingMatch = token.text.match(/^(#{1,6})\s+([\s\S]*)$/);
         if (headingMatch) {
           const heading = document.createElement(`h${Math.min(6, headingMatch[1].length)}`);
-          heading.className = `review-token review-token-addition review-token-struct-heading review-token-struct-heading-${headingMatch[1].length}`;
+          heading.className = `review-token review-token-addition review-token-inline-heading review-token-struct-heading review-token-struct-heading-${headingMatch[1].length}`;
           heading.textContent = headingMatch[2];
-          heading.style.backgroundColor = "var(--review-preview-addition)";
-          heading.style.color = "var(--review-preview-text-addition)";
-          heading.style.display = "inline-block";
           fragment.append(heading);
           return;
         }
         const span = document.createElement("span");
         span.className = "review-token review-token-addition";
         span.textContent = token.text;
-        span.style.backgroundColor = "var(--review-preview-addition)";
-        span.style.color = "var(--review-preview-text-addition)";
         fragment.append(span);
         return;
       }
@@ -1723,9 +1718,6 @@ var ReviewReadingViewDecorator = class {
         const span = document.createElement("span");
         span.className = "review-token review-token-deletion";
         span.textContent = token.text;
-        span.style.backgroundColor = "var(--review-preview-deletion)";
-        span.style.color = "var(--review-preview-text-deletion)";
-        span.style.textDecoration = "line-through";
         fragment.append(span);
         return;
       }
@@ -1739,15 +1731,12 @@ var ReviewReadingViewDecorator = class {
         const oldElement = document.createElement("span");
         oldElement.className = "review-sub-old";
         oldElement.textContent = token.oldText;
-        oldElement.style.color = "var(--review-preview-text-deletion)";
-        oldElement.style.textDecoration = "line-through";
         const arrowElement = document.createElement("span");
         arrowElement.className = "review-sub-arrow";
         arrowElement.textContent = ReviewReadingViewText.SUBSTITUTION_ARROW;
         const newElement = document.createElement("span");
         newElement.className = "review-sub-new";
         this.appendInlineMarkdownFormatting(newElement, token.newText);
-        newElement.style.color = "var(--review-preview-text-addition)";
         wrapper.append(oldElement, arrowElement, newElement);
         fragment.append(wrapper);
         return;
@@ -1756,8 +1745,6 @@ var ReviewReadingViewDecorator = class {
         const mark = document.createElement("mark");
         mark.className = "review-token review-token-highlight";
         mark.textContent = token.text;
-        mark.style.backgroundColor = "var(--review-preview-highlight)";
-        mark.style.color = "var(--review-preview-text-highlight)";
         fragment.append(mark);
         return;
       }
@@ -1777,8 +1764,6 @@ var ReviewReadingViewDecorator = class {
         highlight.textContent = token.highlightedText;
         const tooltip = this.buildCommentTooltip(token.author, token.commentText);
         highlight.setAttribute("data-review-tooltip", tooltip);
-        highlight.style.backgroundColor = "var(--review-preview-highlight)";
-        highlight.style.color = "var(--review-preview-text-highlight)";
         fragment.append(highlight);
         return;
       }
@@ -2519,7 +2504,7 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
       ReviewCommentsView.VIEW_TYPE,
       (leaf) => new ReviewCommentsView(
         leaf,
-        async (entry) => this.navigateToComment(entry),
+        (entry) => this.navigateToComment(entry),
         async (entry) => {
           await this.runCommandExclusive(async () => {
             await this.resolveCommentEntry(entry);
@@ -2532,7 +2517,7 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
       ReviewChangesView.VIEW_TYPE,
       (leaf) => new ReviewChangesView(
         leaf,
-        async (entry) => this.navigateToTrackedChange(entry),
+        (entry) => this.navigateToTrackedChange(entry),
         async (entry) => {
           await this.runCommandExclusive(async () => {
             await this.resolveTrackedChange(entry, "accept");
@@ -2543,11 +2528,7 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
             await this.resolveTrackedChange(entry, "reject");
           }, true);
         },
-        async () => {
-          await this.runCommandExclusive(async () => {
-            this.acceptAllTrackedChanges();
-          }, true);
-        },
+        () => this.runCommandExclusive(() => this.acceptAllTrackedChanges(), true),
         async (action) => {
           const result = await this.runCommandExclusive(
             async () => this.applyQuickAction(action),
@@ -2601,8 +2582,6 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
     await this.refreshChangesPane();
   }
   onunload() {
-    this.app.workspace.detachLeavesOfType(ReviewCommentsView.VIEW_TYPE);
-    this.app.workspace.detachLeavesOfType(ReviewChangesView.VIEW_TYPE);
   }
   addCommands() {
     const runEditor = (handler) => {
@@ -2809,7 +2788,7 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
       }
       await leaf.setViewState({ type: ReviewCommentsView.VIEW_TYPE, active: true });
     }
-    this.app.workspace.revealLeaf(leaf);
+    await this.app.workspace.revealLeaf(leaf);
     await this.refreshCommentsPane();
   }
   async activateChangesPane() {
@@ -2822,7 +2801,7 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
       }
       await leaf.setViewState({ type: ReviewChangesView.VIEW_TYPE, active: true });
     }
-    this.app.workspace.revealLeaf(leaf);
+    await this.app.workspace.revealLeaf(leaf);
     await this.refreshChangesPane();
   }
   async activateQuickActionsPane() {
@@ -3321,7 +3300,7 @@ var ReviewSettingTab = class extends import_obsidian4.PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
     this.selectedThemeId = this.plugin.settings.activeThemePresetId || "";
-    containerEl.createEl("h2", { text: ReviewSettingsText.TAB_TITLE });
+    new import_obsidian4.Setting(containerEl).setName(ReviewSettingsText.TAB_TITLE).setHeading();
     containerEl.createEl("p", {
       text: ReviewSettingsText.SETTINGS_DESCRIPTION,
       cls: ReviewCssClasses.SETTINGS_PRD_LINK
@@ -3388,7 +3367,7 @@ var ReviewSettingTab = class extends import_obsidian4.PluginSettingTab {
   }
   renderColorSection(title, target, onSave) {
     const section = this.containerEl.createDiv({ cls: ReviewCssClasses.COLOR_SECTION });
-    section.createEl("h3", { text: title });
+    new import_obsidian4.Setting(section).setName(title).setHeading();
     this.addColorTextSetting(
       section,
       ReviewSettingsText.COLOR_INSERT_LABEL,
@@ -3448,7 +3427,7 @@ var ReviewSettingTab = class extends import_obsidian4.PluginSettingTab {
   }
   renderThemePresetSection() {
     const section = this.containerEl.createDiv({ cls: ReviewCssClasses.COLOR_SECTION });
-    section.createEl("h3", { text: ReviewSettingsText.THEMES_TITLE });
+    new import_obsidian4.Setting(section).setName(ReviewSettingsText.THEMES_TITLE).setHeading();
     new import_obsidian4.Setting(section).setName(ReviewSettingsText.THEME_ACTIVE_LABEL).addDropdown((dropdown) => {
       this.plugin.settings.themePresets.forEach((preset) => {
         dropdown.addOption(preset.id, preset.name);
