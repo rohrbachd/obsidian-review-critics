@@ -36,12 +36,14 @@ export class ReviewCommentsView extends ItemView {
     return ReviewCommentsPaneText.ICON;
   }
 
-  onOpen(): void {
+  onOpen(): Promise<void> {
     this.render();
+    return Promise.resolve();
   }
 
-  onClose(): void {
+  onClose(): Promise<void> {
     this.contentEl.empty();
+    return Promise.resolve();
   }
 
   setEntries(entries: CommentPaneEntry[]): void {

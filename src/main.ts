@@ -89,7 +89,10 @@ export default class ReviewPlugin extends Plugin {
               await this.resolveTrackedChange(entry, 'reject');
             }, true);
           },
-          () => this.runCommandExclusive(() => this.acceptAllTrackedChanges(), true),
+          () =>
+            this.runCommandExclusive(() => this.acceptAllTrackedChanges(), true).then(() => {
+              return;
+            }),
           async (action) => {
             const result = await this.runCommandExclusive(
               async () => this.applyQuickAction(action),
