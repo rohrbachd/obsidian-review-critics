@@ -45,6 +45,13 @@ const COMPLIANCE_RULES: ComplianceRule[] = [
     pattern: /(containerEl|section)\.createEl\('h[1-6]'/g,
     allowlist: [],
   },
+  {
+    id: 'no-global-document-dom-apis-in-flagged-files',
+    assertion:
+      'Flagged rendering and styling paths must avoid direct global document DOM APIs in favor of helper/owner-document-safe patterns.',
+    pattern: /document\.(createElement|createDocumentFragment|createTreeWalker|documentElement)\b/g,
+    allowlist: [],
+  },
 ];
 
 function listSourceFiles(root: string): string[] {

@@ -66,7 +66,7 @@ export class ReviewCommentsView extends ItemView {
       return;
     }
 
-    const list = root.createEl('div', { cls: 'review-comments-list' });
+    const list = root.createDiv({ cls: 'review-comments-list' });
 
     this.entries.forEach((entry) => {
       const item = list.createEl('button', {
@@ -75,24 +75,24 @@ export class ReviewCommentsView extends ItemView {
       });
       item.disabled = this.isUiBusy();
 
-      const heading = item.createEl('div', { cls: 'review-comments-item-heading' });
+      const heading = item.createDiv({ cls: 'review-comments-item-heading' });
       heading.createSpan({
         text: `${entry.author || ReviewCommentsPaneText.UNKNOWN_AUTHOR} • ${ReviewCommentsPaneText.LINE_PREFIX}${entry.line}`,
       });
 
-      item.createEl('div', {
+      item.createDiv({
         cls: 'review-comments-item-body',
         text: `Comment: ${entry.commentText || ReviewCommentsPaneText.EMPTY_COMMENT}`,
       });
 
       if (entry.highlightedText) {
-        item.createEl('div', {
+        item.createDiv({
           cls: 'review-comments-item-snippet',
           text: `${ReviewCommentsPaneText.SNIPPET_PREFIX}${entry.highlightedText}${ReviewCommentsPaneText.SNIPPET_SUFFIX}`,
         });
       }
 
-      item.createEl('div', {
+      item.createDiv({
         cls: 'review-comments-item-context',
         text: `${ReviewCommentsPaneText.SECTION_PREFIX}${entry.heading}`,
       });
@@ -102,7 +102,7 @@ export class ReviewCommentsView extends ItemView {
       });
 
       if (entry.canResolve) {
-        const actions = item.createEl('div', { cls: 'review-comments-item-actions' });
+        const actions = item.createDiv({ cls: 'review-comments-item-actions' });
         const resolveButton = actions.createEl('button', {
           cls: 'review-comments-resolve-button',
           attr: { type: 'button' },

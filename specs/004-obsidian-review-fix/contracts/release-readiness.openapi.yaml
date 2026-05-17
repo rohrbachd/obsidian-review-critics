@@ -1,0 +1,273 @@
+openapi: 3.1.0
+info:
+  title: Obsidian Review Remediation Release Readiness Contract
+  version: 1.1.1
+  description: |
+    Logical contract for validating, publishing, and proving readiness of the
+    1.1.1 remediation release.
+servers:
+  - url: https://local.plugin.invalid
+    description: Logical local workflow namespace
+paths:
+  /reviews/findings:
+    get:
+      summary: List tracked review findings and remediation status
+      operationId: listReviewFindings
+      responses:
+        '200':
+          description: Findings returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  findings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReviewFindingRecord'
+                required:
+                  - findings
+  /releases/{version}/compatibility:
+    get:
+      summary: Retrieve compatibility metadata for target release
+      operationId: getReleaseCompatibility
+      parameters:
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Compatibility mapping returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseCompatibilityRecord'
+    put:
+      summary: Register compatibility mapping for release candidate
+      operationId: setReleaseCompatibility
+      parameters:
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleaseCompatibilityRecordInput'
+      responses:
+        '200':
+          description: Compatibility mapping updated
+        '409':
+          description: Conflicts with historical release mapping
+  /releases/{version}/validate:
+    post:
+      summary: Run required release validation checks
+      operationId: validateReleaseCandidate
+      parameters:
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tagName:
+                  type: string
+              required:
+                - tagName
+      responses:
+        '200':
+          description: Validation results returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseValidationResult'
+        '422':
+          description: Version/tag mismatch or missing required checks
+  /releases/{version}/artifacts/provenance:
+    get:
+      summary: List attestation state for required release artifacts
+      operationId: listReleaseArtifactProvenance
+      parameters:
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Provenance records returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  artifacts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReleaseArtifactProvenance'
+                required:
+                  - artifacts
+  /releases/{version}/readiness:
+    get:
+      summary: Compute final resubmission readiness for target release
+      operationId: getReleaseReadiness
+      parameters:
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Readiness state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseReadinessResult'
+components:
+  schemas:
+    ReviewFindingRecord:
+      type: object
+      properties:
+        id:
+          type: string
+        sourceDate:
+          type: string
+          format: date
+        category:
+          type: string
+          enum: [blocking, warning]
+        summary:
+          type: string
+        locationRefs:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [open, fixed, waived]
+        evidenceRefs:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - sourceDate
+        - category
+        - summary
+        - status
+    ReleaseCompatibilityRecordInput:
+      type: object
+      properties:
+        minAppVersion:
+          type: string
+      required:
+        - minAppVersion
+    ReleaseCompatibilityRecord:
+      allOf:
+        - $ref: '#/components/schemas/ReleaseCompatibilityRecordInput'
+        - type: object
+          properties:
+            pluginVersion:
+              type: string
+            status:
+              type: string
+              enum: [published, candidate]
+            historical:
+              type: boolean
+          required:
+            - pluginVersion
+            - minAppVersion
+            - status
+            - historical
+    ReleaseValidationCheck:
+      type: object
+      properties:
+        name:
+          type: string
+          enum: [build, typecheck, lint, format, test, release-asset-validation]
+        status:
+          type: string
+          enum: [pass, fail]
+      required:
+        - name
+        - status
+    ReleaseValidationResult:
+      type: object
+      properties:
+        releaseVersion:
+          type: string
+        tagName:
+          type: string
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReleaseValidationCheck'
+        overallStatus:
+          type: string
+          enum: [pass, fail]
+        failedChecks:
+          type: array
+          items:
+            type: string
+      required:
+        - releaseVersion
+        - tagName
+        - checks
+        - overallStatus
+        - failedChecks
+    ReleaseArtifactProvenance:
+      type: object
+      properties:
+        releaseVersion:
+          type: string
+        artifactName:
+          type: string
+          enum: [main.js, manifest.json, styles.css]
+        attested:
+          type: boolean
+        attestationRef:
+          type: string
+        published:
+          type: boolean
+      required:
+        - releaseVersion
+        - artifactName
+        - attested
+        - published
+    ReleaseReadinessResult:
+      type: object
+      properties:
+        releaseVersion:
+          type: string
+        blockerFindingsOpen:
+          type: integer
+          minimum: 0
+        validationPassed:
+          type: boolean
+        allArtifactsAttested:
+          type: boolean
+        readyForResubmission:
+          type: boolean
+        evidenceRefs:
+          type: array
+          items:
+            type: string
+      required:
+        - releaseVersion
+        - blockerFindingsOpen
+        - validationPassed
+        - allArtifactsAttested
+        - readyForResubmission
+        - evidenceRefs

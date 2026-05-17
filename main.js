@@ -308,28 +308,28 @@ var _ReviewCommentsView = class _ReviewCommentsView extends import_obsidian.Item
       });
       return;
     }
-    const list = root.createEl("div", { cls: "review-comments-list" });
+    const list = root.createDiv({ cls: "review-comments-list" });
     this.entries.forEach((entry) => {
       const item = list.createEl("button", {
         cls: "review-comments-item",
         attr: { type: "button" }
       });
       item.disabled = this.isUiBusy();
-      const heading = item.createEl("div", { cls: "review-comments-item-heading" });
+      const heading = item.createDiv({ cls: "review-comments-item-heading" });
       heading.createSpan({
         text: `${entry.author || ReviewCommentsPaneText.UNKNOWN_AUTHOR} \u2022 ${ReviewCommentsPaneText.LINE_PREFIX}${entry.line}`
       });
-      item.createEl("div", {
+      item.createDiv({
         cls: "review-comments-item-body",
         text: `Comment: ${entry.commentText || ReviewCommentsPaneText.EMPTY_COMMENT}`
       });
       if (entry.highlightedText) {
-        item.createEl("div", {
+        item.createDiv({
           cls: "review-comments-item-snippet",
           text: `${ReviewCommentsPaneText.SNIPPET_PREFIX}${entry.highlightedText}${ReviewCommentsPaneText.SNIPPET_SUFFIX}`
         });
       }
-      item.createEl("div", {
+      item.createDiv({
         cls: "review-comments-item-context",
         text: `${ReviewCommentsPaneText.SECTION_PREFIX}${entry.heading}`
       });
@@ -337,7 +337,7 @@ var _ReviewCommentsView = class _ReviewCommentsView extends import_obsidian.Item
         void this.onNavigate(entry);
       });
       if (entry.canResolve) {
-        const actions = item.createEl("div", { cls: "review-comments-item-actions" });
+        const actions = item.createDiv({ cls: "review-comments-item-actions" });
         const resolveButton = actions.createEl("button", {
           cls: "review-comments-resolve-button",
           attr: { type: "button" },
@@ -663,8 +663,8 @@ var INLINE_STRIKE_PATTERN = /^~~([\s\S]+)~~$/;
 function appendInlineMarkdownFormatting(container, rawText) {
   const boldItalicMatch = rawText.match(INLINE_BOLD_ITALIC_PATTERN);
   if (boldItalicMatch) {
-    const strong = document.createElement("strong");
-    const emphasis = document.createElement("em");
+    const strong = createEl("strong");
+    const emphasis = createEl("em");
     emphasis.textContent = boldItalicMatch[1];
     strong.appendChild(emphasis);
     container.appendChild(strong);
@@ -672,21 +672,21 @@ function appendInlineMarkdownFormatting(container, rawText) {
   }
   const boldMatch = rawText.match(INLINE_BOLD_PATTERN);
   if (boldMatch) {
-    const strong = document.createElement("strong");
+    const strong = createEl("strong");
     strong.textContent = boldMatch[1];
     container.appendChild(strong);
     return;
   }
   const italicMatch = rawText.match(INLINE_ITALIC_PATTERN);
   if (italicMatch) {
-    const emphasis = document.createElement("em");
+    const emphasis = createEl("em");
     emphasis.textContent = italicMatch[1];
     container.appendChild(emphasis);
     return;
   }
   const strikeMatch = rawText.match(INLINE_STRIKE_PATTERN);
   if (strikeMatch) {
-    const strike = document.createElement("del");
+    const strike = createEl("del");
     strike.textContent = strikeMatch[1];
     container.appendChild(strike);
     return;
@@ -695,9 +695,7 @@ function appendInlineMarkdownFormatting(container, rawText) {
 }
 var HiddenDelimiterWidget = class extends import_view.WidgetType {
   toDOM() {
-    const element = document.createElement("span");
-    element.className = "review-live-hidden-delimiter";
-    return element;
+    return createSpan({ cls: "review-live-hidden-delimiter" });
   }
 };
 var CommentBadgeWidget = class extends import_view.WidgetType {
@@ -706,9 +704,10 @@ var CommentBadgeWidget = class extends import_view.WidgetType {
     this.tooltipText = tooltipText;
   }
   toDOM() {
-    const element = document.createElement("span");
-    element.className = "review-comment-badge review-live-comment-badge";
-    element.textContent = ReviewReadingViewText.COMMENT_BADGE;
+    const element = createSpan({
+      cls: "review-comment-badge review-live-comment-badge",
+      text: ReviewReadingViewText.COMMENT_BADGE
+    });
     element.setAttribute("role", "note");
     element.setAttribute("data-review-tooltip", this.tooltipText);
     return element;
@@ -721,16 +720,16 @@ var SubstitutionWidget = class extends import_view.WidgetType {
     this.newText = newText;
   }
   toDOM() {
-    const wrapper = document.createElement("span");
-    wrapper.className = "review-live review-live-substitution";
-    const oldSpan = document.createElement("span");
-    oldSpan.className = "review-live-substitution-old";
-    oldSpan.textContent = this.oldText;
-    const arrow = document.createElement("span");
-    arrow.className = "review-sub-arrow";
-    arrow.textContent = ReviewReadingViewText.SUBSTITUTION_ARROW;
-    const newSpan = document.createElement("span");
-    newSpan.className = "review-live-substitution-new";
+    const wrapper = createSpan({ cls: "review-live review-live-substitution" });
+    const oldSpan = createSpan({
+      cls: "review-live-substitution-old",
+      text: this.oldText
+    });
+    const arrow = createSpan({
+      cls: "review-sub-arrow",
+      text: ReviewReadingViewText.SUBSTITUTION_ARROW
+    });
+    const newSpan = createSpan({ cls: "review-live-substitution-new" });
     appendInlineMarkdownFormatting(newSpan, this.newText);
     wrapper.append(oldSpan, arrow, newSpan);
     return wrapper;
@@ -1651,7 +1650,7 @@ var ReviewReadingViewDecorator = class {
     if (!enabled) {
       return;
     }
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const walker = root.ownerDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     const textNodes = [];
     let currentNode = walker.nextNode();
     while (currentNode) {
@@ -1677,7 +1676,7 @@ var ReviewReadingViewDecorator = class {
     if (tokens.length === 0) {
       return null;
     }
-    const fragment = document.createDocumentFragment();
+    const fragment = createFragment();
     let cursor = 0;
     for (const token of tokens) {
       if (token.from < cursor) {
@@ -1703,15 +1702,17 @@ var ReviewReadingViewDecorator = class {
         }
         const headingMatch = token.text.match(/^(#{1,6})\s+([\s\S]*)$/);
         if (headingMatch) {
-          const heading = document.createElement(`h${Math.min(6, headingMatch[1].length)}`);
+          const level = Math.min(6, headingMatch[1].length);
+          const heading = createEl(`h${level}`);
           heading.className = `review-token review-token-addition review-token-inline-heading review-token-struct-heading review-token-struct-heading-${headingMatch[1].length}`;
           heading.textContent = headingMatch[2];
           fragment.append(heading);
           return;
         }
-        const span = document.createElement("span");
-        span.className = "review-token review-token-addition";
-        span.textContent = token.text;
+        const span = createSpan({
+          cls: "review-token review-token-addition",
+          text: token.text
+        });
         fragment.append(span);
         return;
       }
@@ -1719,9 +1720,10 @@ var ReviewReadingViewDecorator = class {
         if (acceptedTextViewEnabled) {
           return;
         }
-        const span = document.createElement("span");
-        span.className = "review-token review-token-deletion";
-        span.textContent = token.text;
+        const span = createSpan({
+          cls: "review-token review-token-deletion",
+          text: token.text
+        });
         fragment.append(span);
         return;
       }
@@ -1730,32 +1732,34 @@ var ReviewReadingViewDecorator = class {
           fragment.append(this.displayModeRenderer.renderAcceptedTextForToken(token));
           return;
         }
-        const wrapper = document.createElement("span");
-        wrapper.className = "review-token review-token-substitution";
-        const oldElement = document.createElement("span");
-        oldElement.className = "review-sub-old";
-        oldElement.textContent = token.oldText;
-        const arrowElement = document.createElement("span");
-        arrowElement.className = "review-sub-arrow";
-        arrowElement.textContent = ReviewReadingViewText.SUBSTITUTION_ARROW;
-        const newElement = document.createElement("span");
-        newElement.className = "review-sub-new";
+        const wrapper = createSpan({ cls: "review-token review-token-substitution" });
+        const oldElement = createSpan({
+          cls: "review-sub-old",
+          text: token.oldText
+        });
+        const arrowElement = createSpan({
+          cls: "review-sub-arrow",
+          text: ReviewReadingViewText.SUBSTITUTION_ARROW
+        });
+        const newElement = createSpan({ cls: "review-sub-new" });
         this.appendInlineMarkdownFormatting(newElement, token.newText);
         wrapper.append(oldElement, arrowElement, newElement);
         fragment.append(wrapper);
         return;
       }
       case "highlight": {
-        const mark = document.createElement("mark");
-        mark.className = "review-token review-token-highlight";
-        mark.textContent = token.text;
+        const mark = createEl("mark", {
+          cls: "review-token review-token-highlight",
+          text: token.text
+        });
         fragment.append(mark);
         return;
       }
       case "comment": {
-        const commentBadge = document.createElement("span");
-        commentBadge.className = "review-comment-badge";
-        commentBadge.textContent = ReviewReadingViewText.COMMENT_BADGE;
+        const commentBadge = createSpan({
+          cls: "review-comment-badge",
+          text: ReviewReadingViewText.COMMENT_BADGE
+        });
         commentBadge.setAttribute("role", "note");
         const tooltip = this.buildCommentTooltip(token.author, token.text);
         commentBadge.setAttribute("data-review-tooltip", tooltip);
@@ -1763,9 +1767,10 @@ var ReviewReadingViewDecorator = class {
         return;
       }
       case "anchoredComment": {
-        const highlight = document.createElement("mark");
-        highlight.className = "review-token review-token-highlight review-token-anchored review-token-has-tooltip";
-        highlight.textContent = token.highlightedText;
+        const highlight = createEl("mark", {
+          cls: "review-token review-token-highlight review-token-anchored review-token-has-tooltip",
+          text: token.highlightedText
+        });
         const tooltip = this.buildCommentTooltip(token.author, token.commentText);
         highlight.setAttribute("data-review-tooltip", tooltip);
         fragment.append(highlight);
@@ -1783,8 +1788,8 @@ var ReviewReadingViewDecorator = class {
   appendInlineMarkdownFormatting(container, rawText) {
     const boldItalicMatch = rawText.match(INLINE_BOLD_ITALIC_PATTERN2);
     if (boldItalicMatch) {
-      const strong = document.createElement("strong");
-      const emphasis = document.createElement("em");
+      const strong = createEl("strong");
+      const emphasis = createEl("em");
       emphasis.textContent = boldItalicMatch[1];
       strong.appendChild(emphasis);
       container.appendChild(strong);
@@ -1792,21 +1797,21 @@ var ReviewReadingViewDecorator = class {
     }
     const boldMatch = rawText.match(INLINE_BOLD_PATTERN2);
     if (boldMatch) {
-      const strong = document.createElement("strong");
+      const strong = createEl("strong");
       strong.textContent = boldMatch[1];
       container.appendChild(strong);
       return;
     }
     const italicMatch = rawText.match(INLINE_ITALIC_PATTERN2);
     if (italicMatch) {
-      const emphasis = document.createElement("em");
+      const emphasis = createEl("em");
       emphasis.textContent = italicMatch[1];
       container.appendChild(emphasis);
       return;
     }
     const strikeMatch = rawText.match(INLINE_STRIKE_PATTERN2);
     if (strikeMatch) {
-      const strike = document.createElement("del");
+      const strike = createEl("del");
       strike.textContent = strikeMatch[1];
       container.appendChild(strike);
       return;
@@ -3126,7 +3131,8 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
     return true;
   }
   applyCssVariables() {
-    const root = document.documentElement;
+    const activeDoc = globalThis.activeDocument ?? document;
+    const root = activeDoc.documentElement;
     root.style.setProperty(ReviewCssVariables.PREVIEW_INSERT, this.settings.previewColors.insert);
     root.style.setProperty(
       ReviewCssVariables.PREVIEW_ADDITION,

@@ -60,4 +60,16 @@ describe('US3 rendering behavior', () => {
     expect(root.textContent).toContain('y');
     expect(root.querySelector('.review-comment-badge')).toBeTruthy();
   });
+
+  it('uses the owner document for tree-walker traversal in popout-like documents', () => {
+    const popoutDocument = document.implementation.createHTMLDocument('popout');
+    const root = popoutDocument.createElement('div');
+    root.textContent = '{++Alt++}';
+    popoutDocument.body.append(root);
+
+    decorator.decorate(root, {} as never, true);
+
+    const addition = root.querySelector('.review-token-addition') as HTMLElement | null;
+    expect(addition?.textContent).toBe('Alt');
+  });
 });

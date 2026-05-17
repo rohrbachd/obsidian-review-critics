@@ -20,11 +20,12 @@ Use this checklist before submitting to `obsidianmd/obsidian-releases`.
 ## Release
 
 - [ ] Create Git tag exactly equal to version (`0.1.0`, not `v0.1.0`)
-- [ ] Create GitHub release for the matching tag
-- [ ] Upload release assets:
+- [ ] Push tag and let `.github/workflows/release.yml` create the release automatically
+- [ ] Confirm release assets uploaded by workflow:
   - `manifest.json`
   - `main.js`
   - `styles.css`
+- [ ] Verify artifact attestations for uploaded assets (`gh attestation verify ...`)
 
 ## Submission PR (`obsidianmd/obsidian-releases`)
 

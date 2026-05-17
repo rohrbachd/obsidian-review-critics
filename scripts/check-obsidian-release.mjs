@@ -3,8 +3,10 @@ import path from 'node:path';
 
 const repoRoot = process.cwd();
 const manifestPath = path.join(repoRoot, 'manifest.json');
+const packageJsonPath = path.join(repoRoot, 'package.json');
 const versionsPath = path.join(repoRoot, 'versions.json');
 const requiredAssets = ['manifest.json', 'main.js', 'styles.css'];
+const SEMVER_TAG_PATTERN = /^\d+\.\d+\.\d+$/;
 
 function fail(message) {
   console.error(`[release-check] ${message}`);
@@ -24,6 +26,7 @@ function readJson(filePath) {
 }
 
 const manifest = readJson(manifestPath);
+const packageJson = readJson(packageJsonPath);
 const versions = readJson(versionsPath);
 const tagFromArg = process.argv[2];
 const tagFromCi =
@@ -36,6 +39,16 @@ if (!manifest.version || typeof manifest.version !== 'string') {
 
 if (!manifest.minAppVersion || typeof manifest.minAppVersion !== 'string') {
   fail('manifest.json must contain a string "minAppVersion" value.');
+}
+
+if (!packageJson.version || typeof packageJson.version !== 'string') {
+  fail('package.json must contain a string "version" value.');
+}
+
+if (packageJson.version !== manifest.version) {
+  fail(
+    `package.json version "${packageJson.version}" must match manifest version "${manifest.version}".`
+  );
 }
 
 if (versions[manifest.version] !== manifest.minAppVersion) {
@@ -57,10 +70,8 @@ for (const asset of requiredAssets) {
 }
 
 if (releaseTag) {
-  if (releaseTag.startsWith('v')) {
-    fail(
-      `Release tag "${releaseTag}" is invalid. Use "${manifest.version}" without a leading "v".`
-    );
+  if (!SEMVER_TAG_PATTERN.test(releaseTag)) {
+    fail(`Release tag "${releaseTag}" is invalid. Use x.y.z semantic version tags without prefix.`);
   }
 
   if (releaseTag !== manifest.version) {

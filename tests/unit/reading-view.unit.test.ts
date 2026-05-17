@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { ReviewParser } from '../../src/review-parser';
@@ -90,5 +92,13 @@ describe('reading-view', () => {
     expect(deletion?.getAttribute('style')).toBeNull();
     expect(highlight?.getAttribute('style')).toBeNull();
     expect(subOld?.getAttribute('style')).toBeNull();
+  });
+
+  it('uses owner-document-safe traversal and helper element creation patterns', () => {
+    const source = readFileSync(path.resolve(process.cwd(), 'src/reading-view.ts'), 'utf8');
+    expect(source).toContain('root.ownerDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT)');
+    expect(source).toContain('const fragment = createFragment();');
+    expect(source).not.toMatch(/document\.createElement\(/);
+    expect(source).not.toContain('document.createDocumentFragment');
   });
 });

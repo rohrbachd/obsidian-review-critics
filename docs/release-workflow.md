@@ -1,121 +1,76 @@
-# Release Workflow (Repeatable)
+# Release Workflow (Attested Automation)
 
-This is the exact process to publish each new plugin release.
+This project publishes release assets through GitHub Actions tag workflows.
 
-```powershell
-.\scripts\release.ps1 -Type patch
-```
+## Workflow Source
 
-or
+- `.github/workflows/release.yml`
 
-```powershell
-npm run release:auto -- patch
-```
+## Trigger
 
-Supported types:
+- Push a semantic tag without `v` prefix (example: `1.1.1`).
 
-patch (0.1.1 -> 0.1.2)
-minor (0.1.1 -> 0.2.0)
-major (1.1.4 -> 2.0.0)
+## Required Tag and Metadata Alignment
 
-## One-time Setup
+Before publishing, the workflow enforces:
 
-### 1. Install GitHub CLI (`gh`)
+- tag matches `manifest.json.version`
+- tag matches `package.json.version`
+- `versions.json[version]` matches `manifest.json.minAppVersion`
 
-Windows (recommended):
+If any check fails, release publication stops.
 
-```powershell
-winget install --id GitHub.cli
-```
+## Release Pipeline Gates
 
-Alternative (Chocolatey):
+The workflow runs, in order:
 
-```powershell
-choco install gh
-```
+1. `npm ci`
+2. `npm run build`
+3. `npm run check`
+4. `npm run lint`
+5. `npm run format:check`
+6. `npm test`
+7. `npm run release:check -- ${{ github.ref_name }}`
 
-macOS:
+## Provenance and Publication
 
-```bash
-brew install gh
-```
+After all gates pass:
 
-Linux:
+1. Generate attestations with `actions/attest@v4` for:
+   - `main.js`
+   - `manifest.json`
+   - `styles.css`
+2. Create GitHub release using `gh release create`.
+3. Upload exactly:
+   - `main.js`
+   - `manifest.json`
+   - `styles.css`
 
-Use the official instructions: `https://github.com/cli/cli#installation`
+## Local Validation Before Tag Push
 
-### 2. Authenticate once
-
-```powershell
-gh auth login
-```
-
-Choose `GitHub.com`, then `HTTPS`, then follow browser login.
-
-### 3. Verify setup
+Run:
 
 ```powershell
-gh --version
-gh auth status
+npm install
+npm run build
+npm run check
+npm run lint
+npm run format:check
+npm test
+npm run release:check -- 1.1.1
 ```
 
-## Every Time You Want a New Release
+## Post-Release Verification
 
-Assume your feature/fix commits are already pushed to `main`.
-
-### 1. Run a single release command
-
-PowerShell:
+Verify attestations with GitHub CLI:
 
 ```powershell
-.\scripts\release.ps1 -Type patch
+gh release download 1.1.1 --repo rohrbachd/obsidian-review-critics --pattern main.js --clobber
+gh attestation verify main.js -R rohrbachd/obsidian-review-critics
+
+gh release download 1.1.1 --repo rohrbachd/obsidian-review-critics --pattern styles.css --clobber
+gh attestation verify styles.css -R rohrbachd/obsidian-review-critics
+
+gh release download 1.1.1 --repo rohrbachd/obsidian-review-critics --pattern manifest.json --clobber
+gh attestation verify manifest.json -R rohrbachd/obsidian-review-critics
 ```
-
-or with npm:
-
-```powershell
-npm run release:auto -- patch
-```
-
-Release types:
-
-- `patch`: `0.1.1 -> 0.1.2`
-- `minor`: `0.1.1 -> 0.2.0`
-- `major`: `1.1.4 -> 2.0.0`
-
-### 2. What this single command does
-
-1. Verifies you are on `main`
-2. Verifies clean working tree
-3. Reads latest **published GitHub release** and compares with local `manifest.json`
-4. Uses the higher version as release base (prevents downgrade on retries)
-5. Bumps version in `manifest.json` and `package.json`
-6. Updates `versions.json` for the new version
-7. Commits release bump (`release: <newVersion>`)
-8. Builds plugin artifacts
-9. Runs release validation checks
-10. Pushes `main` to `origin`
-11. Creates and pushes git tag `<newVersion>` (no `v`)
-12. Creates GitHub release `<newVersion>`
-13. Uploads `manifest.json`, `main.js`, `styles.css`
-
-### 3. Verify on GitHub
-
-Open:
-
-`https://github.com/rohrbachd/obsidian-review-critics/releases`
-
-Check that the new release contains:
-
-- `manifest.json`
-- `main.js`
-- `styles.css`
-
-## Common Errors
-
-- `tag already exists`: bump version in `manifest.json` and `versions.json` and retry.
-- `working tree is not clean`: commit/stash changes first.
-- `gh auth` failure: run `gh auth login` again.
-- version mismatch error: ensure release version equals `manifest.json` version exactly.
-- `not on main`: checkout `main` and pull latest before running release.
-- publish failed before release creation: rerun the same command. The script uses the higher of latest published release and local manifest, so retries do not downgrade or keep incrementing unexpectedly.

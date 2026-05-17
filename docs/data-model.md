@@ -116,3 +116,43 @@ This document defines the canonical conceptual model for review workflow feature
   - `warnings`
   - `finalStatus` (`pass` | `fail`)
   - `releaseEligible`
+
+## Entity: ReviewFindingRecord
+
+- Fields:
+  - `id`
+  - `sourceDate`
+  - `category` (`blocking` | `warning`)
+  - `locationRefs`
+  - `summary`
+  - `status` (`open` | `fixed` | `waived`)
+  - `evidenceRefs`
+  - `updatedAt`
+
+## Entity: ReleaseCompatibilityRecord
+
+- Fields:
+  - `pluginVersion`
+  - `minAppVersion`
+  - `status` (`published` | `candidate`)
+  - `historical`
+
+## Entity: ReleaseValidationResult
+
+- Fields:
+  - `releaseVersion`
+  - `tagName`
+  - `checks`
+  - `overallStatus` (`pass` | `fail`)
+  - `failedChecks`
+  - `completedAt`
+
+## Entity: ReleaseArtifactProvenance
+
+- Fields:
+  - `releaseVersion`
+  - `artifactName` (`main.js` | `manifest.json` | `styles.css`)
+  - `attested`
+  - `attestationRef`
+  - `published`
+  - `verifiedAt`

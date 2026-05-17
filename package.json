@@ -1,6 +1,6 @@
 {
   "name": "review-critic",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Obsidian plugin for review comments and CriticMarkup-inspired editing.",
   "main": "main.js",
   "scripts": {
@@ -31,6 +31,8 @@
   "author": "Daniel Rohrbach",
   "license": "MIT",
   "dependencies": {
+    "@codemirror/state": "^6.5.0",
+    "@codemirror/view": "^6.38.6",
     "obsidian": "latest"
   },
   "devDependencies": {
@@ -38,7 +40,6 @@
     "@types/node": "latest",
     "@typescript-eslint/eslint-plugin": "^8.46.1",
     "@typescript-eslint/parser": "^8.46.1",
-    "builtin-modules": "latest",
     "esbuild": "latest",
     "eslint": "^9.39.4",
     "eslint-plugin-obsidianmd": "^0.2.4",

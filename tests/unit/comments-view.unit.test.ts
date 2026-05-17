@@ -34,4 +34,32 @@ describe('comments-view', () => {
     ]);
     expect(view.contentEl.querySelector('.review-comments-resolve-button')).toBeTruthy();
   });
+
+  it('uses div helpers for comments pane structural containers', () => {
+    const view = new ReviewCommentsView(
+      {} as never,
+      async () => {},
+      async () => {},
+      () => false
+    );
+    view.setEntries([
+      {
+        id: '1',
+        from: 0,
+        to: 10,
+        line: 1,
+        heading: 'Root',
+        commentText: 'Check',
+        highlightedText: 'Snippet',
+        canResolve: true,
+      },
+    ]);
+
+    expect(view.contentEl.querySelector('.review-comments-list')?.tagName).toBe('DIV');
+    expect(view.contentEl.querySelector('.review-comments-item-heading')?.tagName).toBe('DIV');
+    expect(view.contentEl.querySelector('.review-comments-item-body')?.tagName).toBe('DIV');
+    expect(view.contentEl.querySelector('.review-comments-item-snippet')?.tagName).toBe('DIV');
+    expect(view.contentEl.querySelector('.review-comments-item-context')?.tagName).toBe('DIV');
+    expect(view.contentEl.querySelector('.review-comments-item-actions')?.tagName).toBe('DIV');
+  });
 });

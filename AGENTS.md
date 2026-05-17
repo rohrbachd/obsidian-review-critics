@@ -4,6 +4,9 @@ Auto-generated from all feature plans. Last updated: 2026-04-17
 
 ## Active Technologies
 
+- TypeScript 5.x (strict), Node.js 22 toolchain + Obsidian API, CodeMirror 6 (`@codemirror/state`, `@codemirror/view`), esbuild, ESLint (`@typescript-eslint/*`, `eslint-plugin-obsidian`), Vitest, GitHub Actions release tooling (004-obsidian-review-fix)
+- Existing plugin settings store and vault markdown remain authoritative runtime stores; release metadata files (`manifest.json`, `versions.json`, `package.json`) are authoritative for compatibility declarations (004-obsidian-review-fix)
+
 - TypeScript 5.x (strict), Node.js 22 toolchain + Obsidian API, CodeMirror 6, esbuild, ESLint (`@typescript-eslint/*`), Vitest, Obsidian community lint rules (`eslint-plugin-obsidian`) (003-obsidian-bot-remediation)
 - N/A for new feature data; existing plugin settings store and vault markdown remain authoritative stores (003-obsidian-bot-remediation)
 
@@ -32,11 +35,11 @@ TypeScript 5.x (strict mode), Node.js 22 runtime for build tooling: Follow stand
 
 ## Recent Changes
 
+- 004-obsidian-review-fix: Added TypeScript 5.x (strict), Node.js 22 toolchain + Obsidian API, CodeMirror 6 (`@codemirror/state`, `@codemirror/view`), esbuild, ESLint (`@typescript-eslint/*`, `eslint-plugin-obsidian`), Vitest, GitHub Actions release tooling
+
 - 003-obsidian-bot-remediation: Added TypeScript 5.x (strict), Node.js 22 toolchain + Obsidian API, CodeMirror 6, esbuild, ESLint (`@typescript-eslint/*`), Vitest, Obsidian community lint rules (`eslint-plugin-obsidian`)
 
 - 002-track-changes-workflow: Added TypeScript 5.x (strict mode), Node.js 22 toolchain + Obsidian API, CodeMirror 6 (`@codemirror/state`, `@codemirror/view`), esbuild
-
-- 002-track-changes-workflow: Added TypeScript 5.x (strict mode), Node.js 22 toolchain + Obsidian API, CodeMirror 6 (`@codemirror/view`, `@codemirror/state`), esbuild
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

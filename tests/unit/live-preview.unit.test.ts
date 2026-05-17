@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ReviewLivePreviewExtensionFactory } from '../../src/live-preview';
 import { ReviewParser } from '../../src/review-parser';
@@ -32,5 +34,14 @@ describe('live-preview', () => {
     });
 
     expect(state.doc.toString()).toBe('{~~old~>new~~}');
+  });
+
+  it('uses helper element creation patterns in the live-preview renderer', () => {
+    const source = readFileSync(path.resolve(process.cwd(), 'src/live-preview.ts'), 'utf8');
+    expect(source).not.toMatch(/document\.createElement\(/);
+    expect(source).toContain("createEl('strong')");
+    expect(source).toContain("createEl('em')");
+    expect(source).toContain("createEl('del')");
+    expect(source).toContain("createSpan({ cls: 'review-live-hidden-delimiter' })");
   });
 });
