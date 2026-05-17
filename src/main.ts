@@ -830,7 +830,9 @@ export default class ReviewPlugin extends Plugin {
   }
 
   private applyCssVariables(): void {
-    const root = document.documentElement;
+    const activeDoc =
+      (globalThis as typeof globalThis & { activeDocument?: Document }).activeDocument ?? document;
+    const root = activeDoc.documentElement;
 
     root.style.setProperty(ReviewCssVariables.PREVIEW_INSERT, this.settings.previewColors.insert);
     root.style.setProperty(

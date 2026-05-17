@@ -48,6 +48,30 @@ There are also warnings about:
 
 Because Obsidian says review feedback should be addressed with a new incremented release version, do this as release `1.1.1`, not by editing or replacing the existing `1.1.0` release.
 
+## Canonical Findings Baseline (2026-05-07)
+
+Use this baseline as the authoritative remediation and evidence checklist for this release:
+
+- `RF-001` (blocking): `Workspace.revealLeaf` requires Obsidian `1.7.2` while `minAppVersion` is `1.5.0`.
+- `RF-002` (warning): missing artifact attestations for `main.js` and `styles.css`.
+- `RF-003` (warning): deprecated `builtin-modules` usage.
+- `RF-004` (warning): direct CodeMirror dependency declarations missing.
+- `RF-005` (warning): flagged `createEl('div', ...)` usage where `createDiv(...)` is expected.
+- `RF-006` (warning): direct global `document` usage and raw DOM creation patterns in flagged rendering paths.
+- `RF-007` (warning): popout compatibility risk from document ownership assumptions.
+
+## Remediation Status Tracker
+
+| Finding | Severity | Status | Evidence |
+| --- | --- | --- | --- |
+| RF-001 | blocking | Resolved | `manifest.json` now declares `version: 1.1.1` and `minAppVersion: 1.7.2`; `versions.json` includes `"1.1.1": "1.7.2"`; `package.json` version aligned to `1.1.1`. |
+| RF-002 | warning | In Progress | Pending attested release workflow execution and post-release verification evidence. |
+| RF-003 | warning | Resolved | `esbuild.config.mjs` now imports `builtinModules` from `node:module`; `builtin-modules` removed from dependencies. |
+| RF-004 | warning | Resolved | `@codemirror/state` and `@codemirror/view` are direct dependencies in `package.json`. |
+| RF-005 | warning | Resolved | Flagged `createEl('div', ...)` calls migrated to `createDiv(...)` in `src/comments-view.ts`. |
+| RF-006 | warning | Resolved | Flagged direct global `document` DOM creation patterns replaced with helper APIs in `src/live-preview.ts` and `src/reading-view.ts`; root styling path updated in `src/main.ts`. |
+| RF-007 | warning | Resolved | Rendering traversal now uses owner-document-safe tree walker in `src/reading-view.ts`; popout compatibility coverage added in integration tests. |
+
 ## High-level plan
 
 1. Create a fix branch.

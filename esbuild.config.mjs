@@ -1,6 +1,6 @@
 import esbuild from 'esbuild';
+import { builtinModules } from 'node:module';
 import process from 'node:process';
-import builtins from 'builtin-modules';
 
 const banner = '/* Bundled for Obsidian */';
 const prod = process.argv.includes('production');
@@ -20,7 +20,7 @@ const context = await esbuild.context({
     '@codemirror/search',
     '@codemirror/autocomplete',
     '@lezer/common',
-    ...builtins,
+    ...builtinModules,
   ],
   format: 'cjs',
   target: 'es2020',

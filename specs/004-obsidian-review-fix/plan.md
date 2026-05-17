@@ -112,3 +112,9 @@ Design outputs:
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 | --------- | ---------- | ------------------------------------ |
 | None      | N/A        | N/A                                  |
+
+## Implementation Reconciliation (2026-05-17)
+
+- `spec.md` canonical findings baseline (`RF-001` through `RF-007`) matches remediation tracking in `docs/review-critic-obsidian-review-fix-plan.md`.
+- `tasks.md` completion sequencing for validation/perf reconciliation follows `T031 -> T034 -> T033`.
+- `quickstart.md` now records validation gate outcomes and performance evidence for this implementation cycle.

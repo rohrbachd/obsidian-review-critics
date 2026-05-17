@@ -260,9 +260,14 @@ components:
           type: boolean
         readyForResubmission:
           type: boolean
+        evidenceRefs:
+          type: array
+          items:
+            type: string
       required:
         - releaseVersion
         - blockerFindingsOpen
         - validationPassed
         - allArtifactsAttested
         - readyForResubmission
+        - evidenceRefs

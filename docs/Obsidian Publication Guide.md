@@ -113,3 +113,19 @@ Before formal submission, you can publish GitHub releases and ask testers to ins
   - `npm run lint`
   - `npm test`
   - `npm run build`
+
+## 8. Release 1.1.1 remediation notes (2026-05-17)
+
+For the 2026-05-07 failed review remediation cycle:
+
+- Canonical findings tracked in `docs/review-critic-obsidian-review-fix-plan.md` as `RF-001` through `RF-007`.
+- Blocking finding `RF-001` resolved by declaring `minAppVersion: 1.7.2` and publishing metadata as `1.1.1`.
+- Warning findings `RF-003` through `RF-007` resolved in source/dependency changes and regression tests.
+- Warning finding `RF-002` remains dependent on successful tag-triggered release workflow execution and post-release attestation verification.
+
+Before resubmission:
+
+1. Push tag `1.1.1` (no `v` prefix).
+2. Confirm `.github/workflows/release.yml` completes all gates and publishes assets.
+3. Verify attestations for `main.js`, `manifest.json`, and `styles.css`.
+4. Capture evidence references in reviewer-facing notes and readiness checklist.

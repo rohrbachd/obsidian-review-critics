@@ -18,8 +18,8 @@ const INLINE_STRIKE_PATTERN = /^~~([\s\S]+)~~$/;
 function appendInlineMarkdownFormatting(container: HTMLElement, rawText: string): void {
   const boldItalicMatch = rawText.match(INLINE_BOLD_ITALIC_PATTERN);
   if (boldItalicMatch) {
-    const strong = document.createElement('strong');
-    const emphasis = document.createElement('em');
+    const strong = createEl('strong');
+    const emphasis = createEl('em');
     emphasis.textContent = boldItalicMatch[1];
     strong.appendChild(emphasis);
     container.appendChild(strong);
@@ -28,7 +28,7 @@ function appendInlineMarkdownFormatting(container: HTMLElement, rawText: string)
 
   const boldMatch = rawText.match(INLINE_BOLD_PATTERN);
   if (boldMatch) {
-    const strong = document.createElement('strong');
+    const strong = createEl('strong');
     strong.textContent = boldMatch[1];
     container.appendChild(strong);
     return;
@@ -36,7 +36,7 @@ function appendInlineMarkdownFormatting(container: HTMLElement, rawText: string)
 
   const italicMatch = rawText.match(INLINE_ITALIC_PATTERN);
   if (italicMatch) {
-    const emphasis = document.createElement('em');
+    const emphasis = createEl('em');
     emphasis.textContent = italicMatch[1];
     container.appendChild(emphasis);
     return;
@@ -44,7 +44,7 @@ function appendInlineMarkdownFormatting(container: HTMLElement, rawText: string)
 
   const strikeMatch = rawText.match(INLINE_STRIKE_PATTERN);
   if (strikeMatch) {
-    const strike = document.createElement('del');
+    const strike = createEl('del');
     strike.textContent = strikeMatch[1];
     container.appendChild(strike);
     return;
@@ -55,9 +55,7 @@ function appendInlineMarkdownFormatting(container: HTMLElement, rawText: string)
 
 class HiddenDelimiterWidget extends WidgetType {
   toDOM(): HTMLElement {
-    const element = document.createElement('span');
-    element.className = 'review-live-hidden-delimiter';
-    return element;
+    return createSpan({ cls: 'review-live-hidden-delimiter' });
   }
 }
 
@@ -70,9 +68,10 @@ class CommentBadgeWidget extends WidgetType {
   }
 
   toDOM(): HTMLElement {
-    const element = document.createElement('span');
-    element.className = 'review-comment-badge review-live-comment-badge';
-    element.textContent = ReviewReadingViewText.COMMENT_BADGE;
+    const element = createSpan({
+      cls: 'review-comment-badge review-live-comment-badge',
+      text: ReviewReadingViewText.COMMENT_BADGE,
+    });
     element.setAttribute('role', 'note');
     element.setAttribute('data-review-tooltip', this.tooltipText);
     return element;
@@ -90,19 +89,19 @@ class SubstitutionWidget extends WidgetType {
   }
 
   toDOM(): HTMLElement {
-    const wrapper = document.createElement('span');
-    wrapper.className = 'review-live review-live-substitution';
+    const wrapper = createSpan({ cls: 'review-live review-live-substitution' });
 
-    const oldSpan = document.createElement('span');
-    oldSpan.className = 'review-live-substitution-old';
-    oldSpan.textContent = this.oldText;
+    const oldSpan = createSpan({
+      cls: 'review-live-substitution-old',
+      text: this.oldText,
+    });
 
-    const arrow = document.createElement('span');
-    arrow.className = 'review-sub-arrow';
-    arrow.textContent = ReviewReadingViewText.SUBSTITUTION_ARROW;
+    const arrow = createSpan({
+      cls: 'review-sub-arrow',
+      text: ReviewReadingViewText.SUBSTITUTION_ARROW,
+    });
 
-    const newSpan = document.createElement('span');
-    newSpan.className = 'review-live-substitution-new';
+    const newSpan = createSpan({ cls: 'review-live-substitution-new' });
     appendInlineMarkdownFormatting(newSpan, this.newText);
 
     wrapper.append(oldSpan, arrow, newSpan);

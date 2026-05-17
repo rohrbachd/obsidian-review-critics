@@ -34,7 +34,7 @@ export class ReviewReadingViewDecorator {
       return;
     }
 
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const walker = root.ownerDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     const textNodes: Text[] = [];
 
     let currentNode = walker.nextNode();
@@ -72,7 +72,7 @@ export class ReviewReadingViewDecorator {
       return null;
     }
 
-    const fragment = document.createDocumentFragment();
+    const fragment = createFragment();
     let cursor = 0;
 
     for (const token of tokens) {
@@ -108,15 +108,17 @@ export class ReviewReadingViewDecorator {
         }
         const headingMatch = token.text.match(/^(#{1,6})\s+([\s\S]*)$/);
         if (headingMatch) {
-          const heading = document.createElement(`h${Math.min(6, headingMatch[1].length)}`);
+          const level = Math.min(6, headingMatch[1].length);
+          const heading = createEl(`h${level}` as keyof HTMLElementTagNameMap);
           heading.className = `review-token review-token-addition review-token-inline-heading review-token-struct-heading review-token-struct-heading-${headingMatch[1].length}`;
           heading.textContent = headingMatch[2];
           fragment.append(heading);
           return;
         }
-        const span = document.createElement('span');
-        span.className = 'review-token review-token-addition';
-        span.textContent = token.text;
+        const span = createSpan({
+          cls: 'review-token review-token-addition',
+          text: token.text,
+        });
         fragment.append(span);
         return;
       }
@@ -124,9 +126,10 @@ export class ReviewReadingViewDecorator {
         if (acceptedTextViewEnabled) {
           return;
         }
-        const span = document.createElement('span');
-        span.className = 'review-token review-token-deletion';
-        span.textContent = token.text;
+        const span = createSpan({
+          cls: 'review-token review-token-deletion',
+          text: token.text,
+        });
         fragment.append(span);
         return;
       }
@@ -135,19 +138,19 @@ export class ReviewReadingViewDecorator {
           fragment.append(this.displayModeRenderer.renderAcceptedTextForToken(token));
           return;
         }
-        const wrapper = document.createElement('span');
-        wrapper.className = 'review-token review-token-substitution';
+        const wrapper = createSpan({ cls: 'review-token review-token-substitution' });
 
-        const oldElement = document.createElement('span');
-        oldElement.className = 'review-sub-old';
-        oldElement.textContent = token.oldText;
+        const oldElement = createSpan({
+          cls: 'review-sub-old',
+          text: token.oldText,
+        });
 
-        const arrowElement = document.createElement('span');
-        arrowElement.className = 'review-sub-arrow';
-        arrowElement.textContent = ReviewReadingViewText.SUBSTITUTION_ARROW;
+        const arrowElement = createSpan({
+          cls: 'review-sub-arrow',
+          text: ReviewReadingViewText.SUBSTITUTION_ARROW,
+        });
 
-        const newElement = document.createElement('span');
-        newElement.className = 'review-sub-new';
+        const newElement = createSpan({ cls: 'review-sub-new' });
         this.appendInlineMarkdownFormatting(newElement, token.newText);
 
         wrapper.append(oldElement, arrowElement, newElement);
@@ -155,16 +158,18 @@ export class ReviewReadingViewDecorator {
         return;
       }
       case 'highlight': {
-        const mark = document.createElement('mark');
-        mark.className = 'review-token review-token-highlight';
-        mark.textContent = token.text;
+        const mark = createEl('mark', {
+          cls: 'review-token review-token-highlight',
+          text: token.text,
+        });
         fragment.append(mark);
         return;
       }
       case 'comment': {
-        const commentBadge = document.createElement('span');
-        commentBadge.className = 'review-comment-badge';
-        commentBadge.textContent = ReviewReadingViewText.COMMENT_BADGE;
+        const commentBadge = createSpan({
+          cls: 'review-comment-badge',
+          text: ReviewReadingViewText.COMMENT_BADGE,
+        });
         commentBadge.setAttribute('role', 'note');
 
         const tooltip = this.buildCommentTooltip(token.author, token.text);
@@ -174,10 +179,10 @@ export class ReviewReadingViewDecorator {
         return;
       }
       case 'anchoredComment': {
-        const highlight = document.createElement('mark');
-        highlight.className =
-          'review-token review-token-highlight review-token-anchored review-token-has-tooltip';
-        highlight.textContent = token.highlightedText;
+        const highlight = createEl('mark', {
+          cls: 'review-token review-token-highlight review-token-anchored review-token-has-tooltip',
+          text: token.highlightedText,
+        });
 
         const tooltip = this.buildCommentTooltip(token.author, token.commentText);
         highlight.setAttribute('data-review-tooltip', tooltip);
@@ -200,8 +205,8 @@ export class ReviewReadingViewDecorator {
   private appendInlineMarkdownFormatting(container: HTMLElement, rawText: string): void {
     const boldItalicMatch = rawText.match(INLINE_BOLD_ITALIC_PATTERN);
     if (boldItalicMatch) {
-      const strong = document.createElement('strong');
-      const emphasis = document.createElement('em');
+      const strong = createEl('strong');
+      const emphasis = createEl('em');
       emphasis.textContent = boldItalicMatch[1];
       strong.appendChild(emphasis);
       container.appendChild(strong);
@@ -210,7 +215,7 @@ export class ReviewReadingViewDecorator {
 
     const boldMatch = rawText.match(INLINE_BOLD_PATTERN);
     if (boldMatch) {
-      const strong = document.createElement('strong');
+      const strong = createEl('strong');
       strong.textContent = boldMatch[1];
       container.appendChild(strong);
       return;
@@ -218,7 +223,7 @@ export class ReviewReadingViewDecorator {
 
     const italicMatch = rawText.match(INLINE_ITALIC_PATTERN);
     if (italicMatch) {
-      const emphasis = document.createElement('em');
+      const emphasis = createEl('em');
       emphasis.textContent = italicMatch[1];
       container.appendChild(emphasis);
       return;
@@ -226,7 +231,7 @@ export class ReviewReadingViewDecorator {
 
     const strikeMatch = rawText.match(INLINE_STRIKE_PATTERN);
     if (strikeMatch) {
-      const strike = document.createElement('del');
+      const strike = createEl('del');
       strike.textContent = strikeMatch[1];
       container.appendChild(strike);
       return;
