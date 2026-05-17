@@ -11,7 +11,7 @@ describe('release workflow contract', () => {
 
   it('includes attest and release-publish gate expectations', () => {
     const content = readFileSync(releaseWorkflowPath, 'utf8');
-    expect(content).toContain("tags:");
+    expect(content).toContain('tags:');
     expect(content).toContain("'*.*.*'");
     expect(content).toContain('attestations: write');
     expect(content).toContain('npm run release:check -- ${{ github.ref_name }}');
@@ -22,4 +22,3 @@ describe('release workflow contract', () => {
     expect(content).toContain('gh release create');
   });
 });
-

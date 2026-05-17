@@ -34,4 +34,3 @@ describe('release metadata consistency', () => {
     expect(versions['1.1.0']).toBe('1.5.0');
   });
 });
-

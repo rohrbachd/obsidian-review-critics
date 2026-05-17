@@ -28,4 +28,3 @@ if (typeof document !== 'undefined') {
     globalAny.createFragment = (): DocumentFragment => document.createDocumentFragment();
   }
 }
-

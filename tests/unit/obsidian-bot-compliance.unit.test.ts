@@ -49,8 +49,7 @@ const COMPLIANCE_RULES: ComplianceRule[] = [
     id: 'no-global-document-dom-apis-in-flagged-files',
     assertion:
       'Flagged rendering and styling paths must avoid direct global document DOM APIs in favor of helper/owner-document-safe patterns.',
-    pattern:
-      /document\.(createElement|createDocumentFragment|createTreeWalker|documentElement)\b/g,
+    pattern: /document\.(createElement|createDocumentFragment|createTreeWalker|documentElement)\b/g,
     allowlist: [],
   },
 ];

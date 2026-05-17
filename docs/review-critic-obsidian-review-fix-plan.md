@@ -62,15 +62,15 @@ Use this baseline as the authoritative remediation and evidence checklist for th
 
 ## Remediation Status Tracker
 
-| Finding | Severity | Status | Evidence |
-| --- | --- | --- | --- |
-| RF-001 | blocking | Resolved | `manifest.json` now declares `version: 1.1.1` and `minAppVersion: 1.7.2`; `versions.json` includes `"1.1.1": "1.7.2"`; `package.json` version aligned to `1.1.1`. |
-| RF-002 | warning | In Progress | Pending attested release workflow execution and post-release verification evidence. |
-| RF-003 | warning | Resolved | `esbuild.config.mjs` now imports `builtinModules` from `node:module`; `builtin-modules` removed from dependencies. |
-| RF-004 | warning | Resolved | `@codemirror/state` and `@codemirror/view` are direct dependencies in `package.json`. |
-| RF-005 | warning | Resolved | Flagged `createEl('div', ...)` calls migrated to `createDiv(...)` in `src/comments-view.ts`. |
-| RF-006 | warning | Resolved | Flagged direct global `document` DOM creation patterns replaced with helper APIs in `src/live-preview.ts` and `src/reading-view.ts`; root styling path updated in `src/main.ts`. |
-| RF-007 | warning | Resolved | Rendering traversal now uses owner-document-safe tree walker in `src/reading-view.ts`; popout compatibility coverage added in integration tests. |
+| Finding | Severity | Status      | Evidence                                                                                                                                                                         |
+| ------- | -------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RF-001  | blocking | Resolved    | `manifest.json` now declares `version: 1.1.1` and `minAppVersion: 1.7.2`; `versions.json` includes `"1.1.1": "1.7.2"`; `package.json` version aligned to `1.1.1`.                |
+| RF-002  | warning  | In Progress | Pending attested release workflow execution and post-release verification evidence.                                                                                              |
+| RF-003  | warning  | Resolved    | `esbuild.config.mjs` now imports `builtinModules` from `node:module`; `builtin-modules` removed from dependencies.                                                               |
+| RF-004  | warning  | Resolved    | `@codemirror/state` and `@codemirror/view` are direct dependencies in `package.json`.                                                                                            |
+| RF-005  | warning  | Resolved    | Flagged `createEl('div', ...)` calls migrated to `createDiv(...)` in `src/comments-view.ts`.                                                                                     |
+| RF-006  | warning  | Resolved    | Flagged direct global `document` DOM creation patterns replaced with helper APIs in `src/live-preview.ts` and `src/reading-view.ts`; root styling path updated in `src/main.ts`. |
+| RF-007  | warning  | Resolved    | Rendering traversal now uses owner-document-safe tree walker in `src/reading-view.ts`; popout compatibility coverage added in integration tests.                                 |
 
 ## High-level plan
 
@@ -341,15 +341,15 @@ The review flags direct global `document` usage and raw `document.createElement(
 
 General replacement rules:
 
-| Current pattern | Preferred replacement |
-|---|---|
-| `document.createElement('span')` | `createSpan()` |
-| `document.createElement('strong')` | `createEl('strong')` |
-| `document.createElement('em')` | `createEl('em')` |
-| `document.createElement('del')` | `createEl('del')` |
-| `document.createElement('mark')` | `createEl('mark')` |
-| `document.createDocumentFragment()` | `createFragment()` |
-| `document.documentElement` | `activeDocument.documentElement` |
+| Current pattern                                         | Preferred replacement                                                                                              |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `document.createElement('span')`                        | `createSpan()`                                                                                                     |
+| `document.createElement('strong')`                      | `createEl('strong')`                                                                                               |
+| `document.createElement('em')`                          | `createEl('em')`                                                                                                   |
+| `document.createElement('del')`                         | `createEl('del')`                                                                                                  |
+| `document.createElement('mark')`                        | `createEl('mark')`                                                                                                 |
+| `document.createDocumentFragment()`                     | `createFragment()`                                                                                                 |
+| `document.documentElement`                              | `activeDocument.documentElement`                                                                                   |
 | `document.createTreeWalker(root, NodeFilter.SHOW_TEXT)` | `root.ownerDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT)` or the Obsidian-compatible `activeDocument` form |
 
 ## `src/live-preview.ts`

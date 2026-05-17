@@ -21,9 +21,9 @@
 
 **Purpose**: Prepare implementation scaffolding and review-tracking context.
 
-- [X] T001 Reconcile release-remediation scope references in `docs/review-critic-obsidian-review-fix-plan.md` and `specs/004-obsidian-review-fix/quickstart.md`
-- [X] T002 [P] Create metadata/readiness regression test scaffolds in `tests/unit/release-metadata.unit.test.ts` and `tests/unit/release-workflow.unit.test.ts`
-- [X] T003 [P] Create release-readiness integration test scaffold in `tests/integration/us-release-readiness.integration.test.ts`
+- [x] T001 Reconcile release-remediation scope references in `docs/review-critic-obsidian-review-fix-plan.md` and `specs/004-obsidian-review-fix/quickstart.md`
+- [x] T002 [P] Create metadata/readiness regression test scaffolds in `tests/unit/release-metadata.unit.test.ts` and `tests/unit/release-workflow.unit.test.ts`
+- [x] T003 [P] Create release-readiness integration test scaffold in `tests/integration/us-release-readiness.integration.test.ts`
 
 ---
 
@@ -33,9 +33,9 @@
 
 **WARNING**: No user story work can begin until this phase is complete.
 
-- [X] T004 Add 2026-05-07 canonical review-finding baseline entries (`RF-001` through `RF-007`) in `docs/review-critic-obsidian-review-fix-plan.md`
-- [X] T005 [P] Extend compliance guard coverage for flagged API/DOM patterns in `tests/unit/obsidian-bot-compliance.unit.test.ts`
-- [X] T006 [P] Add release metadata consistency assertions to `scripts/check-obsidian-release.mjs` and `tests/unit/release-metadata.unit.test.ts`
+- [x] T004 Add 2026-05-07 canonical review-finding baseline entries (`RF-001` through `RF-007`) in `docs/review-critic-obsidian-review-fix-plan.md`
+- [x] T005 [P] Extend compliance guard coverage for flagged API/DOM patterns in `tests/unit/obsidian-bot-compliance.unit.test.ts`
+- [x] T006 [P] Add release metadata consistency assertions to `scripts/check-obsidian-release.mjs` and `tests/unit/release-metadata.unit.test.ts`
 
 **Checkpoint**: Foundation ready; user stories can be implemented independently.
 
@@ -49,16 +49,16 @@
 
 ### Tests for User Story 1
 
-- [X] T007 [P] [US1] Implement metadata consistency tests for version and min-app mapping in `tests/unit/release-metadata.unit.test.ts`
-- [X] T008 [P] [US1] Add release-check validation case for `1.1.1` in `tests/integration/us-release-readiness.integration.test.ts`
+- [x] T007 [P] [US1] Implement metadata consistency tests for version and min-app mapping in `tests/unit/release-metadata.unit.test.ts`
+- [x] T008 [P] [US1] Add release-check validation case for `1.1.1` in `tests/integration/us-release-readiness.integration.test.ts`
 
 ### Implementation for User Story 1
 
-- [X] T009 [US1] Update plugin release metadata to `1.1.1` and `1.7.2` in `manifest.json`
-- [X] T010 [US1] Update package release version to `1.1.1` in `package.json`
-- [X] T011 [US1] Append compatibility mapping `"1.1.1": "1.7.2"` in `versions.json`
-- [X] T012 [US1] Ensure release-check logic validates the new metadata/tag pair in `scripts/check-obsidian-release.mjs`
-- [X] T013 [US1] Document blocker-resolution evidence for `RF-001` compatibility mismatch in `docs/review-critic-obsidian-review-fix-plan.md`
+- [x] T009 [US1] Update plugin release metadata to `1.1.1` and `1.7.2` in `manifest.json`
+- [x] T010 [US1] Update package release version to `1.1.1` in `package.json`
+- [x] T011 [US1] Append compatibility mapping `"1.1.1": "1.7.2"` in `versions.json`
+- [x] T012 [US1] Ensure release-check logic validates the new metadata/tag pair in `scripts/check-obsidian-release.mjs`
+- [x] T013 [US1] Document blocker-resolution evidence for `RF-001` compatibility mismatch in `docs/review-critic-obsidian-review-fix-plan.md`
 
 **Checkpoint**: User Story 1 is fully functional and independently testable.
 
@@ -72,20 +72,20 @@
 
 ### Tests for User Story 2
 
-- [X] T014 [P] [US2] Add helper-usage rendering regression assertions in `tests/unit/live-preview.unit.test.ts` and `tests/unit/reading-view.unit.test.ts`
-- [X] T015 [P] [US2] Add comments-pane structure assertions for helper migration in `tests/unit/comments-view.unit.test.ts`
-- [X] T016 [P] [US2] Add popout-safe document-owner behavior coverage in `tests/integration/us3-rendering.integration.test.ts`
+- [x] T014 [P] [US2] Add helper-usage rendering regression assertions in `tests/unit/live-preview.unit.test.ts` and `tests/unit/reading-view.unit.test.ts`
+- [x] T015 [P] [US2] Add comments-pane structure assertions for helper migration in `tests/unit/comments-view.unit.test.ts`
+- [x] T016 [P] [US2] Add popout-safe document-owner behavior coverage in `tests/integration/us3-rendering.integration.test.ts`
 
 ### Implementation for User Story 2
 
-- [X] T017 [US2] Replace deprecated module-list import usage with Node native builtins in `esbuild.config.mjs`
-- [X] T018 [US2] Remove `builtin-modules` dependency and refresh lockfile in `package.json` and `package-lock.json`
-- [X] T019 [US2] Add direct `@codemirror/state` and `@codemirror/view` dependencies in `package.json` and `package-lock.json`
-- [X] T020 [US2] Replace `createEl('div', ...)` with `createDiv(...)` in flagged comment-pane blocks in `src/comments-view.ts`
-- [X] T021 [US2] Replace direct element creation with helper APIs in `src/live-preview.ts`
-- [X] T022 [US2] Replace document-dependent rendering calls with helper/owner-document APIs in `src/reading-view.ts`
-- [X] T023 [US2] Replace global document-root access with active-document-compatible root handling in `src/main.ts`
-- [X] T024 [US2] Update warning-remediation evidence status for `RF-002` through `RF-007` in `docs/review-critic-obsidian-review-fix-plan.md`
+- [x] T017 [US2] Replace deprecated module-list import usage with Node native builtins in `esbuild.config.mjs`
+- [x] T018 [US2] Remove `builtin-modules` dependency and refresh lockfile in `package.json` and `package-lock.json`
+- [x] T019 [US2] Add direct `@codemirror/state` and `@codemirror/view` dependencies in `package.json` and `package-lock.json`
+- [x] T020 [US2] Replace `createEl('div', ...)` with `createDiv(...)` in flagged comment-pane blocks in `src/comments-view.ts`
+- [x] T021 [US2] Replace direct element creation with helper APIs in `src/live-preview.ts`
+- [x] T022 [US2] Replace document-dependent rendering calls with helper/owner-document APIs in `src/reading-view.ts`
+- [x] T023 [US2] Replace global document-root access with active-document-compatible root handling in `src/main.ts`
+- [x] T024 [US2] Update warning-remediation evidence status for `RF-002` through `RF-007` in `docs/review-critic-obsidian-review-fix-plan.md`
 
 **Checkpoint**: User Story 2 is fully functional and independently testable.
 
@@ -99,15 +99,15 @@
 
 ### Tests for User Story 3
 
-- [X] T025 [P] [US3] Add workflow-gate assertions for release checks and artifact list in `tests/unit/release-workflow.unit.test.ts`
-- [X] T026 [P] [US3] Add release-readiness integration assertion for required provenance artifacts in `tests/integration/us-release-readiness.integration.test.ts`
+- [x] T025 [P] [US3] Add workflow-gate assertions for release checks and artifact list in `tests/unit/release-workflow.unit.test.ts`
+- [x] T026 [P] [US3] Add release-readiness integration assertion for required provenance artifacts in `tests/integration/us-release-readiness.integration.test.ts`
 
 ### Implementation for User Story 3
 
-- [X] T027 [US3] Create tag-triggered attested release workflow in `.github/workflows/release.yml`
-- [X] T028 [US3] Align release-check behavior and workflow gate expectations in `scripts/check-obsidian-release.mjs` and `.github/workflows/release.yml`
-- [X] T029 [US3] Document automated release + attestation verification process in `docs/release-workflow.md` and `docs/publication-checklist.md`
-- [X] T030 [US3] Record resubmission evidence procedure and contract linkage in `specs/004-obsidian-review-fix/quickstart.md` and `specs/004-obsidian-review-fix/contracts/release-readiness.openapi.yaml`
+- [x] T027 [US3] Create tag-triggered attested release workflow in `.github/workflows/release.yml`
+- [x] T028 [US3] Align release-check behavior and workflow gate expectations in `scripts/check-obsidian-release.mjs` and `.github/workflows/release.yml`
+- [x] T029 [US3] Document automated release + attestation verification process in `docs/release-workflow.md` and `docs/publication-checklist.md`
+- [x] T030 [US3] Record resubmission evidence procedure and contract linkage in `specs/004-obsidian-review-fix/quickstart.md` and `specs/004-obsidian-review-fix/contracts/release-readiness.openapi.yaml`
 
 **Checkpoint**: User Story 3 is fully functional and independently testable.
 
@@ -117,10 +117,10 @@
 
 **Purpose**: Final verification, documentation consistency, and release readiness sign-off.
 
-- [X] T031 [P] Run full validation sequence for `1.1.1` and capture outcomes in `specs/004-obsidian-review-fix/quickstart.md`
-- [X] T032 Prepare final publication/resubmission notes in `docs/Obsidian Publication Guide.md`
-- [X] T033 Reconcile final spec/plan/tasks consistency after performance delta capture in `specs/004-obsidian-review-fix/spec.md`, `specs/004-obsidian-review-fix/plan.md`, and `specs/004-obsidian-review-fix/tasks.md`
-- [X] T034 Run targeted performance regression checks in `tests/perf/us1-track-typing-latency.perf.test.ts` and `tests/perf/us3-pane-refresh.perf.test.ts`, and record baseline deltas in `specs/004-obsidian-review-fix/quickstart.md`
+- [x] T031 [P] Run full validation sequence for `1.1.1` and capture outcomes in `specs/004-obsidian-review-fix/quickstart.md`
+- [x] T032 Prepare final publication/resubmission notes in `docs/Obsidian Publication Guide.md`
+- [x] T033 Reconcile final spec/plan/tasks consistency after performance delta capture in `specs/004-obsidian-review-fix/spec.md`, `specs/004-obsidian-review-fix/plan.md`, and `specs/004-obsidian-review-fix/tasks.md`
+- [x] T034 Run targeted performance regression checks in `tests/perf/us1-track-typing-latency.perf.test.ts` and `tests/perf/us3-pane-refresh.perf.test.ts`, and record baseline deltas in `specs/004-obsidian-review-fix/quickstart.md`
 
 ---
 
