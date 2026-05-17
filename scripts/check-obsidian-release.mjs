@@ -5,7 +5,9 @@ const repoRoot = process.cwd();
 const manifestPath = path.join(repoRoot, 'manifest.json');
 const packageJsonPath = path.join(repoRoot, 'package.json');
 const versionsPath = path.join(repoRoot, 'versions.json');
+const releaseWorkflowPath = path.join(repoRoot, '.github/workflows/release.yml');
 const requiredAssets = ['manifest.json', 'main.js', 'styles.css'];
+const requiredAttestedAssets = ['main.js', 'styles.css'];
 const SEMVER_TAG_PATTERN = /^\d+\.\d+\.\d+$/;
 
 function fail(message) {
@@ -22,6 +24,27 @@ function readJson(filePath) {
     return JSON.parse(fs.readFileSync(filePath, 'utf8'));
   } catch (error) {
     fail(`Invalid JSON in ${path.basename(filePath)}: ${String(error)}`);
+  }
+}
+
+function ensureReleaseWorkflowProvenanceChecks() {
+  if (!fs.existsSync(releaseWorkflowPath)) {
+    fail('Missing required release workflow: .github/workflows/release.yml');
+  }
+
+  const workflow = fs.readFileSync(releaseWorkflowPath, 'utf8');
+  if (!workflow.includes('actions/attest@v4')) {
+    fail('Release workflow must include actions/attest@v4 for provenance attestations.');
+  }
+
+  if (!workflow.includes('subject-path:')) {
+    fail('Release workflow must define subject-path for artifact attestation.');
+  }
+
+  for (const asset of requiredAttestedAssets) {
+    if (!workflow.includes(asset)) {
+      fail(`Release workflow is missing attestation coverage for required asset: ${asset}`);
+    }
   }
 }
 
@@ -69,6 +92,8 @@ for (const asset of requiredAssets) {
   }
 }
 
+ensureReleaseWorkflowProvenanceChecks();
+
 if (releaseTag) {
   if (!SEMVER_TAG_PATTERN.test(releaseTag)) {
     fail(`Release tag "${releaseTag}" is invalid. Use x.y.z semantic version tags without prefix.`);
@@ -80,5 +105,5 @@ if (releaseTag) {
 }
 
 console.log(
-  `[release-check] OK: version=${manifest.version}, minAppVersion=${manifest.minAppVersion}, assets=${requiredAssets.join(', ')}`
+  `[release-check] OK: version=${manifest.version}, minAppVersion=${manifest.minAppVersion}, assets=${requiredAssets.join(', ')}, attested=${requiredAttestedAssets.join(', ')}`
 );

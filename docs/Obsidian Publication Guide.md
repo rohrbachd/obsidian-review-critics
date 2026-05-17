@@ -129,3 +129,14 @@ Before resubmission:
 2. Confirm `.github/workflows/release.yml` completes all gates and publishes assets.
 3. Verify attestations for `main.js`, `manifest.json`, and `styles.css`.
 4. Capture evidence references in reviewer-facing notes and readiness checklist.
+
+## 9. Feature 005 release-readiness additions (2026-05-17)
+
+For provenance and scoped CSS warning closure:
+
+1. Confirm required attested assets include:
+   - `main.js`
+   - `styles.css`
+2. Run scoped warning guard coverage in `tests/unit/obsidian-bot-compliance.unit.test.ts`.
+3. Capture timed provenance verification evidence (target `<= 10` minutes) in `specs/005-release-attestation-css/quickstart.md`.
+4. Link closure evidence to contract routes in `specs/005-release-attestation-css/contracts/release-provenance-css.openapi.yaml`.

@@ -32,6 +32,20 @@ The workflow runs, in order:
 6. `npm test`
 7. `npm run release:check -- ${{ github.ref_name }}`
 
+## Scoped Policy Gates (Feature 005)
+
+For `005-release-attestation-css`, release readiness is blocked unless:
+
+1. Attestation coverage includes required reviewer-facing assets:
+   - `main.js`
+   - `styles.css`
+2. `scripts/check-obsidian-release.mjs` validates:
+   - release asset presence for `manifest.json`, `main.js`, `styles.css`
+   - release workflow provenance step presence (`actions/attest@v4`, `subject-path`)
+   - required attested asset references for `main.js` and `styles.css`
+3. Scoped stylesheet warning guard checks pass in:
+   - `tests/unit/obsidian-bot-compliance.unit.test.ts`
+
 ## Provenance and Publication
 
 After all gates pass:

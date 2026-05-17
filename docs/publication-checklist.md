@@ -26,6 +26,8 @@ Use this checklist before submitting to `obsidianmd/obsidian-releases`.
   - `main.js`
   - `styles.css`
 - [ ] Verify artifact attestations for uploaded assets (`gh attestation verify ...`)
+  - [ ] Required recommendation closure assets verified: `main.js`, `styles.css`
+  - [ ] Timed provenance verification evidence captured (target: <= 10 minutes)
 
 ## Submission PR (`obsidianmd/obsidian-releases`)
 

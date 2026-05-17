@@ -72,4 +72,25 @@ describe('US3 rendering behavior', () => {
     const addition = root.querySelector('.review-token-addition') as HTMLElement | null;
     expect(addition?.textContent).toBe('Alt');
   });
+
+  it('preserves substitution and comment pane-facing class hooks without inline styling regressions', () => {
+    const root = document.createElement('div');
+    root.textContent = '{~~legacy~>modern~~} {>> [author=A] note <<}';
+    decorator.decorate(root, {} as never, true);
+
+    const substitution = root.querySelector('.review-token-substitution') as HTMLElement | null;
+    const oldSide = root.querySelector('.review-sub-old') as HTMLElement | null;
+    const arrow = root.querySelector('.review-sub-arrow') as HTMLElement | null;
+    const newSide = root.querySelector('.review-sub-new') as HTMLElement | null;
+    const badge = root.querySelector('.review-comment-badge') as HTMLElement | null;
+
+    expect(substitution).toBeTruthy();
+    expect(oldSide).toBeTruthy();
+    expect(arrow).toBeTruthy();
+    expect(newSide).toBeTruthy();
+    expect(badge).toBeTruthy();
+    expect(oldSide?.getAttribute('style')).toBeNull();
+    expect(newSide?.getAttribute('style')).toBeNull();
+    expect(badge?.getAttribute('style')).toBeNull();
+  });
 });

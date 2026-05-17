@@ -1,0 +1,219 @@
+openapi: 3.1.0
+info:
+  title: Release Provenance and CSS Readiness Contract
+  version: 0.1.0
+  description: |
+    Logical readiness contract for recommendation closure covering release
+    artifact attestations and scoped stylesheet warning remediation.
+servers:
+  - url: https://local.plugin.invalid
+    description: Logical local workflow namespace
+paths:
+  /releases/{version}/artifacts/provenance:
+    get:
+      summary: List attestation state for required release artifacts
+      operationId: listReleaseArtifactProvenance
+      parameters:
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Artifact provenance records
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  artifacts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReleaseArtifactProvenance'
+                required:
+                  - artifacts
+  /stylesheets/styles.css/warnings:
+    get:
+      summary: Return scoped stylesheet warning status for tracked recommendation set
+      operationId: getStylesheetWarningStatus
+      responses:
+        '200':
+          description: Scoped warning status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StylesheetWarningStatus'
+  /releases/{version}/validate:
+    post:
+      summary: Evaluate release readiness gates for provenance and stylesheet quality
+      operationId: validateReleaseReadiness
+      parameters:
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tagName:
+                  type: string
+                includeWarningCategories:
+                  type: array
+                  items:
+                    type: string
+                    enum: [important-usage, duplicate-selector]
+              required:
+                - tagName
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseValidationResult'
+        '422':
+          description: Version/tag mismatch or failing required gate
+  /releases/{version}/readiness:
+    get:
+      summary: Compute recommendation closure and resubmission readiness
+      operationId: getReleaseReadiness
+      parameters:
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Final readiness decision
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseReadinessResult'
+components:
+  schemas:
+    ReleaseArtifactProvenance:
+      type: object
+      properties:
+        releaseVersion:
+          type: string
+        artifactName:
+          type: string
+          enum: [main.js, styles.css, manifest.json]
+        attested:
+          type: boolean
+        attestationRef:
+          type: string
+        published:
+          type: boolean
+      required:
+        - releaseVersion
+        - artifactName
+        - attested
+        - published
+    StylesheetWarningStatus:
+      type: object
+      properties:
+        targetFile:
+          type: string
+          enum: [styles.css]
+        importantUsageWarnings:
+          type: integer
+          minimum: 0
+        duplicateSelectorWarnings:
+          type: integer
+          minimum: 0
+        remainingWarningRefs:
+          type: array
+          items:
+            type: string
+        trackedRecommendationIds:
+          type: array
+          items:
+            type: string
+      required:
+        - targetFile
+        - importantUsageWarnings
+        - duplicateSelectorWarnings
+        - remainingWarningRefs
+        - trackedRecommendationIds
+    ReleaseValidationCheck:
+      type: object
+      properties:
+        name:
+          type: string
+          enum:
+            - build
+            - typecheck
+            - lint
+            - format
+            - test
+            - release-check
+            - asset-attestation
+            - stylesheet-warning-remediation
+        status:
+          type: string
+          enum: [pass, fail]
+      required:
+        - name
+        - status
+    ReleaseValidationResult:
+      type: object
+      properties:
+        releaseVersion:
+          type: string
+        tagName:
+          type: string
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReleaseValidationCheck'
+        overallStatus:
+          type: string
+          enum: [pass, fail]
+        failedChecks:
+          type: array
+          items:
+            type: string
+      required:
+        - releaseVersion
+        - tagName
+        - checks
+        - overallStatus
+        - failedChecks
+    ReleaseReadinessResult:
+      type: object
+      properties:
+        releaseVersion:
+          type: string
+        allRequiredArtifactsAttested:
+          type: boolean
+        stylesheetWarningsCleared:
+          type: boolean
+        openRecommendationCount:
+          type: integer
+          minimum: 0
+        readyForResubmission:
+          type: boolean
+        evidenceRefs:
+          type: array
+          items:
+            type: string
+        recommendationIdsClosed:
+          type: array
+          items:
+            type: string
+      required:
+        - releaseVersion
+        - allRequiredArtifactsAttested
+        - stylesheetWarningsCleared
+        - openRecommendationCount
+        - readyForResubmission
+        - evidenceRefs
+        - recommendationIdsClosed
