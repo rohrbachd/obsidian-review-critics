@@ -54,6 +54,14 @@ const COMPLIANCE_RULES: ComplianceRule[] = [
   },
 ];
 
+const SCOPED_CSS_WARNING_REFS = [
+  'R-CSS-001 (!important usage)',
+  'R-CSS-002 (.review-changes-toolbar duplicate selector)',
+  'R-CSS-003 (.review-quick-actions-row,.review-changes-controls-row duplicate selector)',
+  'R-CSS-004 (.review-track-toggle duplicate selector)',
+  'R-CSS-005 (.review-pane-separator duplicate selector)',
+] as const;
+
 function listSourceFiles(root: string): string[] {
   const absoluteRoot = path.resolve(process.cwd(), root);
   const output: string[] = [];
@@ -168,5 +176,26 @@ describe('obsidian bot compliance guards', () => {
   it('avoids direct inline style assignments in reading-view decorator', () => {
     const source = readSource('src/reading-view.ts');
     expect(source).not.toMatch(/\.style\.(backgroundColor|color|display|textDecoration)\s*=/);
+  });
+
+  it('keeps styles.css free of scoped !important and duplicate-selector warnings', () => {
+    const stylesSource = readSource('styles.css');
+    expect(stylesSource).not.toMatch(/!important/);
+    expect(SCOPED_CSS_WARNING_REFS.length).toBe(5);
+
+    const selectorCounts = [
+      { selector: /^\.review-changes-toolbar\s*\{/gm, expected: 1 },
+      {
+        selector: /^\.review-quick-actions-row,\s*\r?\n\.review-changes-controls-row\s*\{/gm,
+        expected: 1,
+      },
+      { selector: /^\.review-track-toggle\s*\{/gm, expected: 1 },
+      { selector: /^\.review-pane-separator\s*\{/gm, expected: 1 },
+    ];
+
+    for (const { selector, expected } of selectorCounts) {
+      const count = stylesSource.match(selector)?.length ?? 0;
+      expect(count).toBe(expected);
+    }
   });
 });

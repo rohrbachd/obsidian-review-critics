@@ -1,6 +1,6 @@
+// @vitest-environment jsdom
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-// @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { ReviewParser } from '../../src/review-parser';
 import { ReviewReadingViewDecorator } from '../../src/reading-view';
@@ -100,5 +100,13 @@ describe('reading-view', () => {
     expect(source).toContain('const fragment = createFragment();');
     expect(source).not.toMatch(/document\.createElement\(/);
     expect(source).not.toContain('document.createDocumentFragment');
+  });
+
+  it('keeps substitution-related style hooks free from !important usage assumptions', () => {
+    const styles = readFileSync(path.resolve(process.cwd(), 'styles.css'), 'utf8');
+    expect(styles).toContain('.review-live-substitution {');
+    expect(styles).toContain('.review-live-substitution-new {');
+    expect(styles).toContain('.review-live-substitution-accepted-new {');
+    expect(styles).not.toMatch(/review-live-substitution[\s\S]*!important/);
   });
 });

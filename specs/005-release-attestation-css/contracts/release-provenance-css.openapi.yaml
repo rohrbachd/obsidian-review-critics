@@ -133,11 +133,16 @@ components:
           type: array
           items:
             type: string
+        trackedRecommendationIds:
+          type: array
+          items:
+            type: string
       required:
         - targetFile
         - importantUsageWarnings
         - duplicateSelectorWarnings
         - remainingWarningRefs
+        - trackedRecommendationIds
     ReleaseValidationCheck:
       type: object
       properties:
@@ -200,6 +205,10 @@ components:
           type: array
           items:
             type: string
+        recommendationIdsClosed:
+          type: array
+          items:
+            type: string
       required:
         - releaseVersion
         - allRequiredArtifactsAttested
@@ -207,3 +216,4 @@ components:
         - openRecommendationCount
         - readyForResubmission
         - evidenceRefs
+        - recommendationIdsClosed

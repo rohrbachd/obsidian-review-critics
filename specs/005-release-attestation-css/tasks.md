@@ -21,9 +21,9 @@
 
 **Purpose**: Prepare feature documentation scaffolding and verification targets.
 
-- [ ] T001 Reconcile implementation scope and acceptance evidence targets in `specs/005-release-attestation-css/spec.md` and `specs/005-release-attestation-css/quickstart.md`
-- [ ] T002 [P] Document recommendation IDs, warning line references, and closure mapping in `docs/review-critic-obsidian-review-fix-plan.md`
-- [ ] T003 [P] Confirm release-readiness contract routes and schema naming consistency in `specs/005-release-attestation-css/contracts/release-provenance-css.openapi.yaml`
+- [x] T001 Reconcile implementation scope and acceptance evidence targets in `specs/005-release-attestation-css/spec.md` and `specs/005-release-attestation-css/quickstart.md`
+- [x] T002 [P] Document recommendation IDs, warning line references, and closure mapping in `docs/review-critic-obsidian-review-fix-plan.md`
+- [x] T003 [P] Confirm release-readiness contract routes and schema naming consistency in `specs/005-release-attestation-css/contracts/release-provenance-css.openapi.yaml`
 
 ---
 
@@ -33,10 +33,10 @@
 
 **WARNING**: No user story work can begin until this phase is complete.
 
-- [ ] T004 Add release-gate assertions for required asset-attestation checks in `tests/unit/release-workflow.unit.test.ts`
-- [ ] T005 [P] Extend release-readiness integration coverage for required provenance artifacts in `tests/integration/us-release-readiness.integration.test.ts`
-- [ ] T006 [P] Add scoped stylesheet warning guard assertions for `!important` and duplicate selectors in `tests/unit/obsidian-bot-compliance.unit.test.ts`
-- [ ] T007 Update CI/release gate policy documentation for scoped provenance and stylesheet warning checks in `docs/release-workflow.md`
+- [x] T004 Add release-gate assertions for required asset-attestation checks in `tests/unit/release-workflow.unit.test.ts`
+- [x] T005 [P] Extend release-readiness integration coverage for required provenance artifacts in `tests/integration/us-release-readiness.integration.test.ts`
+- [x] T006 [P] Add scoped stylesheet warning guard assertions for `!important` and duplicate selectors in `tests/unit/obsidian-bot-compliance.unit.test.ts`
+- [x] T007 Update CI/release gate policy documentation for scoped provenance and stylesheet warning checks in `docs/release-workflow.md`
 
 **Checkpoint**: Shared validation baseline in place; user story work can proceed independently.
 
@@ -50,15 +50,15 @@
 
 ### Tests for User Story 1
 
-- [ ] T008 [P] [US1] Add metadata/readiness unit assertions for required artifact coverage in `tests/unit/release-metadata.unit.test.ts`
-- [ ] T009 [P] [US1] Add contract-level readiness assertions for provenance endpoints in `tests/integration/us-release-readiness.integration.test.ts`
+- [x] T008 [P] [US1] Add metadata/readiness unit assertions for required artifact coverage in `tests/unit/release-metadata.unit.test.ts`
+- [x] T009 [P] [US1] Add contract-level readiness assertions for provenance endpoints in `tests/integration/us-release-readiness.integration.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T010 [US1] Enforce required asset-attestation gate logic in `.github/workflows/release.yml`
-- [ ] T011 [US1] Add/adjust release-check validations for required provenance expectations in `scripts/check-obsidian-release.mjs`
-- [ ] T012 [US1] Update maintainer publication and provenance verification runbook steps in `docs/publication-checklist.md` and `specs/005-release-attestation-css/quickstart.md`
-- [ ] T013 [US1] Record provenance recommendation closure evidence requirements in `specs/005-release-attestation-css/quickstart.md`
+- [x] T010 [US1] Enforce required asset-attestation gate logic in `.github/workflows/release.yml`
+- [x] T011 [US1] Add/adjust release-check validations for required provenance expectations in `scripts/check-obsidian-release.mjs`
+- [x] T012 [US1] Update maintainer publication and provenance verification runbook steps in `docs/publication-checklist.md` and `specs/005-release-attestation-css/quickstart.md`
+- [x] T013 [US1] Record provenance recommendation closure evidence requirements in `specs/005-release-attestation-css/quickstart.md`
 
 **Checkpoint**: User Story 1 delivers verifiable attestation coverage and readiness evidence for required artifacts.
 
@@ -72,15 +72,15 @@
 
 ### Tests for User Story 2
 
-- [ ] T014 [P] [US2] Add stylesheet regression assertions for review pane behavior in `tests/integration/us3-rendering.integration.test.ts`
-- [ ] T015 [P] [US2] Add unit-level assertions covering selector behavior assumptions in `tests/unit/reading-view.unit.test.ts` and `tests/unit/comments-view.unit.test.ts`
+- [x] T014 [P] [US2] Add stylesheet regression assertions for review pane behavior in `tests/integration/us3-rendering.integration.test.ts`
+- [x] T015 [P] [US2] Add unit-level assertions covering selector behavior assumptions in `tests/unit/reading-view.unit.test.ts` and `tests/unit/comments-view.unit.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] Refactor targeted `!important` declarations by selector precedence updates in `styles.css`
-- [ ] T017 [US2] Consolidate duplicate selector blocks (`.review-changes-toolbar`, `.review-quick-actions-row,.review-changes-controls-row`, `.review-track-toggle`, `.review-pane-separator`) in `styles.css`
-- [ ] T018 [US2] Align scoped lint-guard rule descriptions and warning references in `tests/unit/obsidian-bot-compliance.unit.test.ts`
-- [ ] T019 [US2] Update remediation status and evidence notes for scoped CSS warnings in `docs/review-critic-obsidian-review-fix-plan.md`
+- [x] T016 [US2] Refactor targeted `!important` declarations by selector precedence updates in `styles.css`
+- [x] T017 [US2] Consolidate duplicate selector blocks (`.review-changes-toolbar`, `.review-quick-actions-row,.review-changes-controls-row`, `.review-track-toggle`, `.review-pane-separator`) in `styles.css`
+- [x] T018 [US2] Align scoped lint-guard rule descriptions and warning references in `tests/unit/obsidian-bot-compliance.unit.test.ts`
+- [x] T019 [US2] Update remediation status and evidence notes for scoped CSS warnings in `docs/review-critic-obsidian-review-fix-plan.md`
 
 **Checkpoint**: User Story 2 delivers zero scoped stylesheet warnings and preserves review UI behavior.
 
@@ -90,10 +90,10 @@
 
 **Purpose**: Finalize evidence, run end-to-end validation, and reconcile feature artifacts.
 
-- [ ] T020 [P] Run full validation sequence, capture timed provenance verification evidence (<=10 minutes), and record results in `specs/005-release-attestation-css/quickstart.md`
-- [ ] T021 Reconcile final plan/spec/tasks consistency and update FR-007 traceability notes in `specs/005-release-attestation-css/spec.md`, `specs/005-release-attestation-css/plan.md`, and `specs/005-release-attestation-css/tasks.md`
-- [ ] T022 [P] Update canonical release guidance references for this feature in `docs/Obsidian Publication Guide.md`
-- [ ] T023 Capture final readiness evidence linkage to contract endpoints in `specs/005-release-attestation-css/contracts/release-provenance-css.openapi.yaml` and `specs/005-release-attestation-css/quickstart.md`
+- [x] T020 [P] Run full validation sequence, capture timed provenance verification evidence (<=10 minutes), and record results in `specs/005-release-attestation-css/quickstart.md`
+- [x] T021 Reconcile final plan/spec/tasks consistency and update FR-007 traceability notes in `specs/005-release-attestation-css/spec.md`, `specs/005-release-attestation-css/plan.md`, and `specs/005-release-attestation-css/tasks.md`
+- [x] T022 [P] Update canonical release guidance references for this feature in `docs/Obsidian Publication Guide.md`
+- [x] T023 Capture final readiness evidence linkage to contract endpoints in `specs/005-release-attestation-css/contracts/release-provenance-css.openapi.yaml` and `specs/005-release-attestation-css/quickstart.md`
 
 ---
 

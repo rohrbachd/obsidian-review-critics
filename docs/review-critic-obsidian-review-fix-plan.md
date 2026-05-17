@@ -72,6 +72,18 @@ Use this baseline as the authoritative remediation and evidence checklist for th
 | RF-006  | warning  | Resolved    | Flagged direct global `document` DOM creation patterns replaced with helper APIs in `src/live-preview.ts` and `src/reading-view.ts`; root styling path updated in `src/main.ts`. |
 | RF-007  | warning  | Resolved    | Rendering traversal now uses owner-document-safe tree walker in `src/reading-view.ts`; popout compatibility coverage added in integration tests.                                 |
 
+## Feature 005 Recommendation Closure Mapping (2026-05-17)
+
+| Recommendation ID | Scope                                                                       | Status      | Evidence Target                                                                                      |
+| ----------------- | --------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------- |
+| R-ATTEST-001      | `main.js` artifact attestation missing                                      | In Progress | `.github/workflows/release.yml` attestation subject-path + `gh attestation verify main.js` output    |
+| R-ATTEST-002      | `styles.css` artifact attestation missing                                   | In Progress | `.github/workflows/release.yml` attestation subject-path + `gh attestation verify styles.css` output |
+| R-CSS-001         | `!important` usage warnings in `styles.css`                                 | Resolved    | `styles.css` substitution declarations no longer use `!important`; scoped warning assertions pass    |
+| R-CSS-002         | Duplicate selector `.review-changes-toolbar`                                | Resolved    | `styles.css` keeps a single `.review-changes-toolbar` block; scoped warning assertions pass          |
+| R-CSS-003         | Duplicate selector `.review-quick-actions-row,.review-changes-controls-row` | Resolved    | `styles.css` keeps a single combined selector block; scoped warning assertions pass                  |
+| R-CSS-004         | Duplicate selector `.review-track-toggle`                                   | Resolved    | `styles.css` keeps a single `.review-track-toggle` block; scoped warning assertions pass             |
+| R-CSS-005         | Duplicate selector `.review-pane-separator`                                 | Resolved    | duplicate `.review-pane-separator` block removed; scoped warning assertions pass                     |
+
 ## High-level plan
 
 1. Create a fix branch.
