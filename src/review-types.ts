@@ -138,6 +138,8 @@ export interface IReviewMarkupBuilder {
   createAnchoredCommentMarkup(selection: string, authorName: string): string;
   wrapSelectionMarkup(selection: string, prefix: string, suffix: string): string;
   createSubstitutionMarkup(selection: string): string;
+  commentCursorOffset(markup: string): number;
+  substitutionCursorOffset(markup: string): number;
 }
 
 export interface IReviewParser {

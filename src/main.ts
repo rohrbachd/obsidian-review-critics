@@ -175,17 +175,14 @@ export default class ReviewPlugin extends Plugin {
       name: ReviewCommands.INSERT_COMMENT_NAME,
       editorCallback: runEditor(async (editor) => {
         const selection = editor.getSelection();
-        if (selection) {
-          this.replaceSelectionWithoutTrackChanges(
-            editor,
-            this.markupBuilder.createAnchoredCommentMarkup(selection, this.settings.authorName)
-          );
-        } else {
-          this.replaceSelectionWithoutTrackChanges(
-            editor,
-            this.markupBuilder.createCommentMarkup(this.settings.authorName)
-          );
-        }
+        const startOffset = editor.posToOffset(editor.getCursor('from'));
+        const markup = selection
+          ? this.markupBuilder.createAnchoredCommentMarkup(selection, this.settings.authorName)
+          : this.markupBuilder.createCommentMarkup(this.settings.authorName);
+        this.replaceSelectionWithoutTrackChanges(editor, markup);
+        editor.setCursor(
+          editor.offsetToPos(startOffset + this.markupBuilder.commentCursorOffset(markup))
+        );
         await Promise.all([this.refreshCommentsPane(), this.refreshChangesPane()]);
       }),
     });
@@ -200,9 +197,14 @@ export default class ReviewPlugin extends Plugin {
           return;
         }
 
-        this.replaceSelectionWithoutTrackChanges(
-          editor,
-          this.markupBuilder.createAnchoredCommentMarkup(selection, this.settings.authorName)
+        const startOffset = editor.posToOffset(editor.getCursor('from'));
+        const markup = this.markupBuilder.createAnchoredCommentMarkup(
+          selection,
+          this.settings.authorName
+        );
+        this.replaceSelectionWithoutTrackChanges(editor, markup);
+        editor.setCursor(
+          editor.offsetToPos(startOffset + this.markupBuilder.commentCursorOffset(markup))
         );
         await Promise.all([this.refreshCommentsPane(), this.refreshChangesPane()]);
       }),
@@ -260,9 +262,11 @@ export default class ReviewPlugin extends Plugin {
           return;
         }
 
-        this.replaceSelectionWithoutTrackChanges(
-          editor,
-          this.markupBuilder.createSubstitutionMarkup(selection)
+        const startOffset = editor.posToOffset(editor.getCursor('from'));
+        const markup = this.markupBuilder.createSubstitutionMarkup(selection);
+        this.replaceSelectionWithoutTrackChanges(editor, markup);
+        editor.setCursor(
+          editor.offsetToPos(startOffset + this.markupBuilder.substitutionCursorOffset(markup))
         );
         await Promise.all([this.refreshCommentsPane(), this.refreshChangesPane()]);
       }),
@@ -642,9 +646,12 @@ export default class ReviewPlugin extends Plugin {
     }
 
     if (action === 'comment' && !selection) {
-      this.replaceSelectionWithoutTrackChanges(
-        editor,
-        this.markupBuilder.createCommentMarkup(this.settings.authorName)
+      const before = editor.getCursor();
+      const startOffset = editor.posToOffset(before);
+      const markup = this.markupBuilder.createCommentMarkup(this.settings.authorName);
+      this.replaceSelectionWithoutTrackChanges(editor, markup);
+      editor.setCursor(
+        editor.offsetToPos(startOffset + this.markupBuilder.commentCursorOffset(markup))
       );
       await this.refreshCommentsPane();
       await this.refreshChangesPane();
@@ -680,15 +687,31 @@ export default class ReviewPlugin extends Plugin {
       case 'highlight':
         this.replaceSelectionWithoutTrackChanges(editor, `{==${selection}==}`);
         break;
-      case 'replace':
-        this.replaceSelectionWithoutTrackChanges(editor, `{~~${selection}~>~~}`);
-        break;
-      case 'comment':
-        this.replaceSelectionWithoutTrackChanges(
-          editor,
-          this.markupBuilder.createAnchoredCommentMarkup(selection, this.settings.authorName)
+      case 'replace': {
+        const replaceStartOffset = editor.posToOffset(editor.getCursor('from'));
+        const replaceMarkup = `{~~${selection}~>~~}`;
+        this.replaceSelectionWithoutTrackChanges(editor, replaceMarkup);
+        editor.setCursor(
+          editor.offsetToPos(
+            replaceStartOffset + this.markupBuilder.substitutionCursorOffset(replaceMarkup)
+          )
         );
         break;
+      }
+      case 'comment': {
+        const commentStartOffset = editor.posToOffset(editor.getCursor('from'));
+        const commentMarkup = this.markupBuilder.createAnchoredCommentMarkup(
+          selection,
+          this.settings.authorName
+        );
+        this.replaceSelectionWithoutTrackChanges(editor, commentMarkup);
+        editor.setCursor(
+          editor.offsetToPos(
+            commentStartOffset + this.markupBuilder.commentCursorOffset(commentMarkup)
+          )
+        );
+        break;
+      }
     }
 
     await this.refreshCommentsPane();

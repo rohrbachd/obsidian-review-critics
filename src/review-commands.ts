@@ -25,6 +25,14 @@ export class ReviewMarkupBuilder implements IReviewMarkupBuilder {
   createSubstitutionMarkup(selection: string): string {
     return `${ReviewMarkupSyntax.SUBSTITUTION_PREFIX}${selection}${ReviewMarkupSyntax.SUBSTITUTION_MIDDLE}${ReviewMarkupSyntax.SUBSTITUTION_SUFFIX}`;
   }
+
+  commentCursorOffset(markup: string): number {
+    return markup.length - ReviewMarkupSyntax.COMMENT_SUFFIX.length - 1;
+  }
+
+  substitutionCursorOffset(markup: string): number {
+    return markup.length - ReviewMarkupSyntax.SUBSTITUTION_SUFFIX.length;
+  }
 }
 
 export interface IEditorContextService {
