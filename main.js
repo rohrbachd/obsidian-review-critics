@@ -264,6 +264,28 @@ ReviewRegexPatterns.FENCE = /^\s*(```+|~~~+)/;
 ReviewRegexPatterns.ANCHORED_WHITESPACE = /^\s*$/;
 ReviewRegexPatterns.INLINE_TOKEN = /(?:\{\+\+|‹\+\+)[\s\S]*?(?:\+\+\}|\+\+›)|(?:\{--|‹--)[\s\S]+?(?:--\}|--›)|(?:\{~~|‹~~)[\s\S]+?~>[\s\S]*?(?:~~\}|~~›)|(?:\{==|‹==)[\s\S]+?(?:==\}|==›)|(?:\{>>|‹>>)\s*(?:\[author=[^\]]+\]\s*)?[\s\S]*?\s*(?:<<\}|<<›)/;
 
+// src/press-activation.ts
+var PRESS_DEDUPE_WINDOW_MS = 600;
+function attachPressHandler(button, onPress) {
+  let lastPointerPressAt = 0;
+  button.addEventListener("mousedown", (event) => {
+    if (event.button !== 0) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    lastPointerPressAt = Date.now();
+    onPress();
+  });
+  button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (Date.now() - lastPointerPressAt < PRESS_DEDUPE_WINDOW_MS) {
+      return;
+    }
+    onPress();
+  });
+}
+
 // src/comments-view.ts
 var _ReviewCommentsView = class _ReviewCommentsView extends import_obsidian.ItemView {
   constructor(leaf, onNavigate, onResolve, isBusy) {
@@ -271,6 +293,7 @@ var _ReviewCommentsView = class _ReviewCommentsView extends import_obsidian.Item
     this.entries = [];
     this.pendingEntryIds = /* @__PURE__ */ new Set();
     this.localBusy = false;
+    this.lastRenderSignature = "";
     this.onNavigate = onNavigate;
     this.onResolve = onResolve;
     this.isBusy = isBusy;
@@ -293,6 +316,16 @@ var _ReviewCommentsView = class _ReviewCommentsView extends import_obsidian.Item
     return Promise.resolve();
   }
   setEntries(entries) {
+    const signature = JSON.stringify({
+      entries,
+      pendingEntryIds: [...this.pendingEntryIds],
+      localBusy: this.localBusy,
+      busy: this.isBusy()
+    });
+    if (signature === this.lastRenderSignature) {
+      return;
+    }
+    this.lastRenderSignature = signature;
     this.entries = entries;
     this.render();
   }
@@ -333,7 +366,7 @@ var _ReviewCommentsView = class _ReviewCommentsView extends import_obsidian.Item
         cls: "review-comments-item-context",
         text: `${ReviewCommentsPaneText.SECTION_PREFIX}${entry.heading}`
       });
-      item.addEventListener("click", () => {
+      attachPressHandler(item, () => {
         void this.onNavigate(entry);
       });
       if (entry.canResolve) {
@@ -344,8 +377,7 @@ var _ReviewCommentsView = class _ReviewCommentsView extends import_obsidian.Item
           text: this.pendingEntryIds.has(entry.id) ? "Working..." : "Resolve"
         });
         resolveButton.disabled = this.pendingEntryIds.has(entry.id) || this.isUiBusy();
-        resolveButton.addEventListener("click", (event) => {
-          event.stopPropagation();
+        attachPressHandler(resolveButton, () => {
           void this.handleResolve(entry);
         });
       }
@@ -457,6 +489,7 @@ var _ReviewChangesView = class _ReviewChangesView extends import_obsidian2.ItemV
     this.pendingEntryIds = /* @__PURE__ */ new Set();
     this.acceptAllPending = false;
     this.localBusy = false;
+    this.lastRenderSignature = "";
     this.onNavigate = onNavigate;
     this.onAccept = onAccept;
     this.onReject = onReject;
@@ -486,6 +519,19 @@ var _ReviewChangesView = class _ReviewChangesView extends import_obsidian2.ItemV
     return Promise.resolve();
   }
   setEntries(entries) {
+    const signature = JSON.stringify({
+      entries,
+      trackChanges: this.isTrackChangesEnabled(),
+      acceptedView: this.isAcceptedTextViewEnabled(),
+      acceptAllPending: this.acceptAllPending,
+      pendingEntryIds: [...this.pendingEntryIds],
+      localBusy: this.localBusy,
+      busy: this.isBusy()
+    });
+    if (signature === this.lastRenderSignature) {
+      return;
+    }
+    this.lastRenderSignature = signature;
     this.entries = entries;
     this.render();
   }
@@ -506,9 +552,8 @@ var _ReviewChangesView = class _ReviewChangesView extends import_obsidian2.ItemV
         text: action.label,
         attr: { type: "button" }
       });
-      button.addEventListener("mousedown", (event) => event.preventDefault());
       button.disabled = this.isUiBusy();
-      button.addEventListener("click", () => {
+      attachPressHandler(button, () => {
         void this.handleQuickAction(action.id);
       });
     }
@@ -528,11 +573,10 @@ var _ReviewChangesView = class _ReviewChangesView extends import_obsidian2.ItemV
       attr: { type: "button" },
       cls: "review-accepted-toggle"
     });
-    acceptedButton.addEventListener("mousedown", (event) => event.preventDefault());
-    acceptedButton.addEventListener("click", () => {
+    acceptedButton.disabled = this.isUiBusy();
+    attachPressHandler(acceptedButton, () => {
       void this.handleToggleAcceptedTextView();
     });
-    acceptedButton.disabled = this.isUiBusy();
     const acceptAllButton = controlsRow.createEl("button", {
       text: this.acceptAllPending ? "Working..." : "Accept All",
       attr: { type: "button" },
@@ -557,7 +601,7 @@ var _ReviewChangesView = class _ReviewChangesView extends import_obsidian2.ItemV
       button.disabled = this.isUiBusy();
       button.createDiv({ text: `${entry.type} - line ${entry.line}` });
       button.createDiv({ text: entry.context });
-      button.addEventListener("click", () => {
+      attachPressHandler(button, () => {
         void this.onNavigate(entry);
       });
       const actions2 = list.createDiv({ cls: "review-changes-item-actions" });
@@ -566,17 +610,13 @@ var _ReviewChangesView = class _ReviewChangesView extends import_obsidian2.ItemV
         text: isPending ? "Working..." : "Accept",
         attr: { type: "button" }
       });
-      acceptButton.addEventListener("mousedown", (event) => event.preventDefault());
       acceptButton.disabled = isPending || this.isUiBusy();
-      acceptButton.addEventListener("click", (event) => {
-        event.stopPropagation();
+      attachPressHandler(acceptButton, () => {
         void this.handleEntryAction(entry, "accept");
       });
       const rejectButton = actions2.createEl("button", { text: "Reject", attr: { type: "button" } });
-      rejectButton.addEventListener("mousedown", (event) => event.preventDefault());
       rejectButton.disabled = isPending || this.isUiBusy();
-      rejectButton.addEventListener("click", (event) => {
-        event.stopPropagation();
+      attachPressHandler(rejectButton, () => {
         void this.handleEntryAction(entry, "reject");
       });
     }
@@ -2496,6 +2536,7 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
     super(...arguments);
     this.commandInFlight = false;
     this.bypassNoticeShownThisSession = false;
+    this.lastPaneRefreshPath = null;
     this.parser = new ReviewParser();
     this.markupBuilder = new ReviewMarkupBuilder();
     this.readingViewDecorator = new ReviewReadingViewDecorator(this.parser);
@@ -2759,6 +2800,11 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
   registerEvents() {
     this.registerEvent(
       this.app.workspace.on(ReviewWorkspaceEvents.ACTIVE_LEAF_CHANGE, () => {
+        const activeFile = this.app.workspace.getActiveFile();
+        const activePath = activeFile ? activeFile.path : null;
+        if (activePath === this.lastPaneRefreshPath) {
+          return;
+        }
         void this.refreshCommentsPane();
         void this.refreshChangesPane();
       })
@@ -2830,6 +2876,7 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
         leaf.view.setEntries(entries);
       }
     }
+    this.lastPaneRefreshPath = activeFile ? activeFile.path : null;
   }
   async refreshChangesPane() {
     const leaves = this.app.workspace.getLeavesOfType(ReviewChangesView.VIEW_TYPE);
@@ -2843,6 +2890,7 @@ var ReviewPlugin = class extends import_obsidian4.Plugin {
         leaf.view.setEntries(entries);
       }
     }
+    this.lastPaneRefreshPath = activeFile ? activeFile.path : null;
   }
   async getEntriesForFile(file) {
     if (!file || file.extension !== ReviewDocumentKeys.MARKDOWN_EXTENSION) {

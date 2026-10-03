@@ -43,6 +43,7 @@ export default class ReviewPlugin extends Plugin {
   settings!: ReviewPluginSettings;
   private commandInFlight = false;
   private bypassNoticeShownThisSession = false;
+  private lastPaneRefreshPath: string | null = null;
 
   private readonly parser = new ReviewParser();
   private readonly markupBuilder = new ReviewMarkupBuilder();
@@ -336,6 +337,16 @@ export default class ReviewPlugin extends Plugin {
   private registerEvents(): void {
     this.registerEvent(
       this.app.workspace.on(ReviewWorkspaceEvents.ACTIVE_LEAF_CHANGE, () => {
+        // Focusing a pane fires this event while a button press is still in
+        // progress; refreshing here rebuilds the pane DOM and swallows the
+        // in-flight click (the two-clicks-to-activate symptom). Pane entries
+        // only depend on the active file, so skip when the file did not
+        // change. File switches remain covered by the FILE_OPEN handler.
+        const activeFile = this.app.workspace.getActiveFile();
+        const activePath = activeFile ? activeFile.path : null;
+        if (activePath === this.lastPaneRefreshPath) {
+          return;
+        }
         void this.refreshCommentsPane();
         void this.refreshChangesPane();
       })
@@ -425,6 +436,7 @@ export default class ReviewPlugin extends Plugin {
         leaf.view.setEntries(entries);
       }
     }
+    this.lastPaneRefreshPath = activeFile ? activeFile.path : null;
   }
 
   async refreshChangesPane(): Promise<void> {
@@ -441,6 +453,7 @@ export default class ReviewPlugin extends Plugin {
         leaf.view.setEntries(entries);
       }
     }
+    this.lastPaneRefreshPath = activeFile ? activeFile.path : null;
   }
 
   private async getEntriesForFile(file: TFile | null): Promise<CommentPaneEntry[]> {

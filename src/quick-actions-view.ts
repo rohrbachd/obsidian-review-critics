@@ -1,5 +1,6 @@
 import { ItemView, Notice, type WorkspaceLeaf } from 'obsidian';
 import { ReviewNotices, ReviewQuickActionsPaneText, ReviewViewIds } from './review-config';
+import { attachPressHandler } from './press-activation';
 import type { QuickActionType } from './review-types';
 
 export class ReviewQuickActionsView extends ItemView {
@@ -49,7 +50,7 @@ export class ReviewQuickActionsView extends ItemView {
     const row = this.contentEl.createDiv({ cls: 'review-quick-actions-row' });
     for (const action of actions) {
       const button = row.createEl('button', { text: action.label, attr: { type: 'button' } });
-      button.addEventListener('click', () => {
+      attachPressHandler(button, () => {
         void this.handleAction(action.id);
       });
     }

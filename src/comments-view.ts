@@ -1,5 +1,6 @@
 import { ItemView, type WorkspaceLeaf } from 'obsidian';
 import { ReviewCommentsPaneText, ReviewViewIds } from './review-config';
+import { attachPressHandler } from './press-activation';
 import type { CommentPaneEntry } from './review-types';
 
 export class ReviewCommentsView extends ItemView {
@@ -11,6 +12,7 @@ export class ReviewCommentsView extends ItemView {
   private isBusy: () => boolean;
   private pendingEntryIds = new Set<string>();
   private localBusy = false;
+  private lastRenderSignature = '';
 
   constructor(
     leaf: WorkspaceLeaf,
@@ -47,6 +49,19 @@ export class ReviewCommentsView extends ItemView {
   }
 
   setEntries(entries: CommentPaneEntry[]): void {
+    // Refreshes fire on many workspace events; skip the destructive rebuild
+    // (root.empty()) when nothing that affects rendering has changed, so an
+    // in-flight button press is not interrupted.
+    const signature = JSON.stringify({
+      entries,
+      pendingEntryIds: [...this.pendingEntryIds],
+      localBusy: this.localBusy,
+      busy: this.isBusy(),
+    });
+    if (signature === this.lastRenderSignature) {
+      return;
+    }
+    this.lastRenderSignature = signature;
     this.entries = entries;
     this.render();
   }
@@ -97,7 +112,7 @@ export class ReviewCommentsView extends ItemView {
         text: `${ReviewCommentsPaneText.SECTION_PREFIX}${entry.heading}`,
       });
 
-      item.addEventListener('click', () => {
+      attachPressHandler(item, () => {
         void this.onNavigate(entry);
       });
 
@@ -109,8 +124,7 @@ export class ReviewCommentsView extends ItemView {
           text: this.pendingEntryIds.has(entry.id) ? 'Working...' : 'Resolve',
         });
         resolveButton.disabled = this.pendingEntryIds.has(entry.id) || this.isUiBusy();
-        resolveButton.addEventListener('click', (event) => {
-          event.stopPropagation();
+        attachPressHandler(resolveButton, () => {
           void this.handleResolve(entry);
         });
       }

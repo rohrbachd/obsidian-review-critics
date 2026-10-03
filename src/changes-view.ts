@@ -1,5 +1,6 @@
 import { ItemView, Notice, type WorkspaceLeaf } from 'obsidian';
 import { ReviewChangesPaneText, ReviewNotices, ReviewViewIds } from './review-config';
+import { attachPressHandler } from './press-activation';
 import type { QuickActionType, TrackedChangeEntry } from './review-types';
 
 export class ReviewChangesView extends ItemView {
@@ -19,6 +20,7 @@ export class ReviewChangesView extends ItemView {
   private pendingEntryIds = new Set<string>();
   private acceptAllPending = false;
   private localBusy = false;
+  private lastRenderSignature = '';
 
   constructor(
     leaf: WorkspaceLeaf,
@@ -69,6 +71,22 @@ export class ReviewChangesView extends ItemView {
   }
 
   setEntries(entries: TrackedChangeEntry[]): void {
+    // Refreshes fire on many workspace events; skip the destructive rebuild
+    // (contentEl.empty()) when nothing that affects rendering has changed, so
+    // an in-flight button press is not interrupted.
+    const signature = JSON.stringify({
+      entries,
+      trackChanges: this.isTrackChangesEnabled(),
+      acceptedView: this.isAcceptedTextViewEnabled(),
+      acceptAllPending: this.acceptAllPending,
+      pendingEntryIds: [...this.pendingEntryIds],
+      localBusy: this.localBusy,
+      busy: this.isBusy(),
+    });
+    if (signature === this.lastRenderSignature) {
+      return;
+    }
+    this.lastRenderSignature = signature;
     this.entries = entries;
     this.render();
   }
@@ -92,9 +110,8 @@ export class ReviewChangesView extends ItemView {
         text: action.label,
         attr: { type: 'button' },
       });
-      button.addEventListener('mousedown', (event) => event.preventDefault());
       button.disabled = this.isUiBusy();
-      button.addEventListener('click', () => {
+      attachPressHandler(button, () => {
         void this.handleQuickAction(action.id);
       });
     }
@@ -116,11 +133,10 @@ export class ReviewChangesView extends ItemView {
       attr: { type: 'button' },
       cls: 'review-accepted-toggle',
     });
-    acceptedButton.addEventListener('mousedown', (event) => event.preventDefault());
-    acceptedButton.addEventListener('click', () => {
+    acceptedButton.disabled = this.isUiBusy();
+    attachPressHandler(acceptedButton, () => {
       void this.handleToggleAcceptedTextView();
     });
-    acceptedButton.disabled = this.isUiBusy();
 
     const acceptAllButton = controlsRow.createEl('button', {
       text: this.acceptAllPending ? 'Working...' : 'Accept All',
@@ -149,7 +165,7 @@ export class ReviewChangesView extends ItemView {
       button.disabled = this.isUiBusy();
       button.createDiv({ text: `${entry.type} - line ${entry.line}` });
       button.createDiv({ text: entry.context });
-      button.addEventListener('click', () => {
+      attachPressHandler(button, () => {
         void this.onNavigate(entry);
       });
 
@@ -159,18 +175,14 @@ export class ReviewChangesView extends ItemView {
         text: isPending ? 'Working...' : 'Accept',
         attr: { type: 'button' },
       });
-      acceptButton.addEventListener('mousedown', (event) => event.preventDefault());
       acceptButton.disabled = isPending || this.isUiBusy();
-      acceptButton.addEventListener('click', (event) => {
-        event.stopPropagation();
+      attachPressHandler(acceptButton, () => {
         void this.handleEntryAction(entry, 'accept');
       });
 
       const rejectButton = actions.createEl('button', { text: 'Reject', attr: { type: 'button' } });
-      rejectButton.addEventListener('mousedown', (event) => event.preventDefault());
       rejectButton.disabled = isPending || this.isUiBusy();
-      rejectButton.addEventListener('click', (event) => {
-        event.stopPropagation();
+      attachPressHandler(rejectButton, () => {
         void this.handleEntryAction(entry, 'reject');
       });
     }
